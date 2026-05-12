@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhythm — WBS & Gantt Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #e0e7ff;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: white;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+    }
+
+    header h1 { margin: 0; font-size: 1.8rem; }
+    header p { margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.95rem; }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    section {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+      border-left: 4px solid var(--primary);
+      padding-left: 0.75rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary);
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.7rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    tr:hover td { background: #f8fafc; }
+
+    .wbs-id {
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .level-1 td {
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--primary);
+      border-top: 2px solid var(--primary);
+    }
+
+    .task-name { font-weight: 500; }
+
+    .subtasks {
+      margin: 0;
+      padding-left: 1rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .subtasks li { margin-bottom: 0.25rem; }
+
+    .deliverable {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .mermaid {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎵 Rhythm — WBS & Gantt Chart</h1>
+    <p>Flutter 기반 디지털 자기관찰 아카이브 앱 프로젝트</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>📋 WBS 테이블 <span class="badge">Lv.1 ~ Lv.3</span></h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px">WBS</th>
+            <th style="width:140px">작업명</th>
+            <th>세부 작업 (Lv.3)</th>
+            <th style="width:180px">산출물</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="level-1">
+            <td class="wbs-id">1</td>
+            <td class="task-name" colspan="3">기획 및 설계</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">1.1</td>
+            <td class="task-name">프로젝트 기획</td>
+            <td>
+              <ul class="subtasks">
+                <li>비전 및 문제 정의 문서화</li>
+                <li>핵심 시나리오 3개 및 MoSCoW 작성</li>
+                <li>AUTHORING 메타데이터 및 라이선스 정의</li>
+              </ul>
+            </td>
+            <td class="deliverable">00-vision.md<br>01-requirements.md</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">1.2</td>
+            <td class="task-name">시스템 설계</td>
+            <td>
+              <ul class="subtasks">
+                <li>Clean Architecture 레이어 구조 설계</li>
+                <li>Isar DB 스키마 설계</li>
+                <li>UI/UX 와이어프레임 및 화면 흐름도</li>
+                <li>Particle 시각화 컨셉 및 색상-데이터 매핑 규칙</li>
+              </ul>
+            </td>
+            <td class="deliverable">설계 문서</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">1.3</td>
+            <td class="task-name">개발 문서화</td>
+            <td>
+              <ul class="subtasks">
+                <li>WBS 작성</li>
+                <li>일정 및 리스크 문서화</li>
+                <li>설계 결정 문서(ADR) 초안</li>
+              </ul>
+            </td>
+            <td class="deliverable">02-wbs.md<br>04-schedule.md</td>
+          </tr>
+
+          <tr class="level-1">
+            <td class="wbs-id">2</td>
+            <td class="task-name" colspan="3">개발 환경 구축</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">2.1</td>
+            <td class="task-name">프로젝트 초기화</td>
+            <td>
+              <ul class="subtasks">
+                <li>Flutter 프로젝트 생성 및 폴더 구조 설정</li>
+                <li>필수 패키지 의존성 추가</li>
+                <li>.gitignore, analysis_options.yaml 설정</li>
+              </ul>
+            </td>
+            <td class="deliverable">프로젝트 템플릿</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">2.2</td>
+            <td class="task-name">아키텍처 기반 구축</td>
+            <td>
+              <ul class="subtasks">
+                <li>Clean Architecture 폴더 구조 구현</li>
+                <li>Riverpod Provider 구조 및 DI 설정</li>
+                <li>공통 유틸리티 및 확장 함수 정의</li>
+              </ul>
+            </td>
+            <td class="deliverable">lib/ 초기 구조</td>
+          </tr>
+
+          <tr class="level-1">
+            <td class="wbs-id">3</td>
+            <td class="task-name" colspan="3">도메인 및 데이터 레이어 개발</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">3.1</td>
+            <td class="task-name">도메인 레이어</td>
+            <td>
+              <ul class="subtasks">
+                <li>핵심 Entity 정의</li>
+                <li>Repository 인터페이스 정의</li>
+                <li>UseCase 구현</li>
+              </ul>
+            </td>
+            <td class="deliverable">domain/ 레이어</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">3.2</td>
+            <td class="task-name">데이터 레이어</td>
+            <td>
+              <ul class="subtasks">
+                <li>Isar DB 초기화 및 마이그레이션</li>
+                <li>Isar Collection 모델 정의</li>
+                <li>Repository 구현체 작성</li>
+                <li>예외 처리 및 트랜잭션 관리</li>
+              </ul>
+            </td>
+            <td class="deliverable">data/ 레이어</td>
+          </tr>
+
+          <tr class="level-1">
+            <td class="wbs-id">4</td>
+            <td class="task-name" colspan="3">프레젠테이션 레이어 개발</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">4.1</td>
+            <td class="task-name">공통 UI 인프라</td>
+            <td>
+              <ul class="subtasks">
+                <li>앱 테마 및 디자인 시스템</li>
+                <li>공통 위젯 라이브러리</li>
+                <li>앱 네비게이션 구조</li>
+              </ul>
+            </td>
+            <td class="deliverable">테마 / 공통 위젯</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">4.2</td>
+            <td class="task-name">홈 화면 (일일 입력)</td>
+            <td>
+              <ul class="subtasks">
+                <li>에너지 레벨 슬라이더</li>
+                <li>감정 키워드 다중 선택</li>
+                <li>활동 태그 다중 선택</li>
+                <li>짧은 메모 입력 필드</li>
+                <li>저장 액션 및 상태 피드백</li>
+                <li>Particle Canvas 실시간 연동</li>
+              </ul>
+            </td>
+            <td class="deliverable">홈 화면</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">4.3</td>
+            <td class="task-name">패턴 화면 (통계/분석)</td>
+            <td>
+              <ul class="subtasks">
+                <li>주간 리듬 뷰</li>
+                <li>월간 리듬 뷰</li>
+                <li>통계 카드 UI</li>
+                <li>Multi-Layer 블렌딩 뷰</li>
+                <li>"나의 관찰 노트" UI</li>
+              </ul>
+            </td>
+            <td class="deliverable">패턴 화면</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">4.4</td>
+            <td class="task-name">히스토리 화면</td>
+            <td>
+              <ul class="subtasks">
+                <li>캘린더 기반 기록 탐색</li>
+                <li>특정 날짜 상세 조회 및 수정/삭제</li>
+                <li>무한 스크롤 타임라인 뷰</li>
+              </ul>
+            </td>
+            <td class="deliverable">히스토리 화면</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">4.5</td>
+            <td class="task-name">설정 화면</td>
+            <td>
+              <ul class="subtasks">
+                <li>일일 리마인드 알림 시간 설정</li>
+                <li>데이터 익스포트(JSON/CSV)</li>
+                <li>테마/다크모드 토글</li>
+              </ul>
+            </td>
+            <td class="deliverable">설정 화면</td>
+          </tr>
+
+          <tr class="level-1">
+            <td class="wbs-id">5</td>
+            <td class="task-name" colspan="3">Particle 시각화 시스템</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">5.1</td>
+            <td class="task-name">Particle 엔진</td>
+            <td>
+              <ul class="subtasks">
+                <li>CustomPainter 기반 캔버스</li>
+                <li>Particle 클래스 설계</li>
+                <li>프레임 루프(60fps 최적화)</li>
+                <li>터치/제스처 인터랙션</li>
+              </ul>
+            </td>
+            <td class="deliverable">Particle 엔진</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">5.2</td>
+            <td class="task-name">데이터-시각화 매핑</td>
+            <td>
+              <ul class="subtasks">
+                <li>감정 키워드 ↔ 색상/형태 매핑</li>
+                <li>에너지 레벨 ↔ 파동 강도 매핑</li>
+                <li>활동 태그 ↔ 궤적/클러스터 매핑</li>
+                <li>시간 흐름에 따른 상태 변화 로직</li>
+              </ul>
+            </td>
+            <td class="deliverable">매핑 규칙</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">5.3</td>
+            <td class="task-name">Multi-Layer 블렌딩</td>
+            <td>
+              <ul class="subtasks">
+                <li>개별 레이어 렌더링</li>
+                <li>BlendMode 기반 레이어 합성</li>
+                <li>레이어 투명도/가중치 조절</li>
+                <li>레이어별 독립 제어 및 최적화</li>
+              </ul>
+            </td>
+            <td class="deliverable">블렌딩 시스템</td>
+          </tr>
+
+          <tr class="level-1">
+            <td class="wbs-id">6</td>
+            <td class="task-name" colspan="3">통계 및 패턴 분석</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">6.1</td>
+            <td class="task-name">기초 통계 엔진</td>
+            <td>
+              <ul class="subtasks">
+                <li>에너지 평균/표준편차/최빈값</li>
+                <li>감정 키워드 빈도 및 분포</li>
+                <li>활동 태그별 집계</li>
+              </ul>
+            </td>
+            <td class="deliverable">통계 로직</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">6.2</td>
+            <td class="task-name">상관관계 분석</td>
+            <td>
+              <ul class="subtasks">
+                <li>활동-감정 Pearson 상관계수</li>
+                <li>요일-에너지 상관관계</li>
+                <li>감정-에너지 공변 분석</li>
+              </ul>
+            </td>
+            <td class="deliverable">상관관계 로직</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">6.3</td>
+            <td class="task-name">패턴 검출 및 힌트</td>
+            <td>
+              <ul class="subtasks">
+                <li>주간 반복 패턴 탐지</li>
+                <li>감정/에너지 급변 시점 탐지</li>
+                <li>사용자 친화적 힌트 문구 생성</li>
+                <li>최소 데이터(2주) 기준 가드</li>
+              </ul>
+            </td>
+            <td class="deliverable">패턴 힌트 로직</td>
+          </tr>
+
+          <tr class="level-1">
+            <td class="wbs-id">7</td>
+            <td class="task-name" colspan="3">테스트 및 품질 보증</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">7.1</td>
+            <td class="task-name">단위 테스트</td>
+            <td>
+              <ul class="subtasks">
+                <li>Entity 및 Value Object 테스트</li>
+                <li>UseCase 비즈니스 로직 테스트</li>
+                <li>통계 분석 알고리즘 테스트</li>
+              </ul>
+            </td>
+            <td class="deliverable">테스트 코드</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">7.2</td>
+            <td class="task-name">위젯 테스트</td>
+            <td>
+              <ul class="subtasks">
+                <li>홈 화면 입력 흐름 테스트</li>
+                <li>패턴 화면 통계 카드 렌더링 테스트</li>
+                <li>Particle Canvas 기본 렌더링 테스트</li>
+              </ul>
+            </td>
+            <td class="deliverable">테스트 코드</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">7.3</td>
+            <td class="task-name">통합 테스트</td>
+            <td>
+              <ul class="subtasks">
+                <li>저장→조회→통계 E2E 흐름 테스트</li>
+                <li>DB 마이그레이션 호환성 테스트</li>
+              </ul>
+            </td>
+            <td class="deliverable">테스트 코드</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">7.4</td>
+            <td class="task-name">성능 및 안정성</td>
+            <td>
+              <ul class="subtasks">
+                <li>렌더링 16ms 이하(60fps) 벤치마크</li>
+                <li>Isar 복합 쿼리 100ms 이하 측정</li>
+                <li>오프라인 CRUD 동작 검증</li>
+                <li>메모리 누수 및 리소스 정리 검증</li>
+              </ul>
+            </td>
+            <td class="deliverable">성능 리포트</td>
+          </tr>
+
+          <tr class="level-1">
+            <td class="wbs-id">8</td>
+            <td class="task-name" colspan="3">배포 및 릴리즈</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">8.1</td>
+            <td class="task-name">빌드 및 서명</td>
+            <td>
+              <ul class="subtasks">
+                <li>Android APK/AAB 빌드 및 서명</li>
+                <li>iOS Archive 빌드 및 서명</li>
+                <li>릴리즈 모드 최적화</li>
+              </ul>
+            </td>
+            <td class="deliverable">빌드 산출물</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">8.2</td>
+            <td class="task-name">스토어 배포 준비</td>
+            <td>
+              <ul class="subtasks">
+                <li>앱 아이콘, 스플래시, 스크린샷</li>
+                <li>스토어 메타데이터 작성</li>
+                <li>프라이버시 정책 및 라이선스 고지</li>
+              </ul>
+            </td>
+            <td class="deliverable">스토어 에셋</td>
+          </tr>
+          <tr>
+            <td class="wbs-id">8.3</td>
+            <td class="task-name">문서 및 발표</td>
+            <td>
+              <ul class="subtasks">
+                <li>중간 발표 자료 작성</li>
+                <li>최종 발표 자료 작성</li>
+                <li>사용자 가이드 및 개발자 문서 완성</li>
+              </ul>
+            </td>
+            <td class="deliverable">docs/presentation/</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>📅 Gantt Chart <span class="badge">개략 일정</span></h2>
+      <div class="mermaid">
+gantt
+    title Rhythm 개발 일정 개략
+    dateFormat  YYYY-MM-DD
+    section 기획 및 설계
+    기획 및 설계           :done,    plan, 2026-05-12, 7d
+    section 개발 환경
+    개발 환경 구축         :active,  env,  after plan, 5d
+    section 도메인/데이터
+    도메인 및 데이터 레이어 :         domain, after env, 10d
+    section 프레젠테이션
+    공통 UI 및 홈 화면    :         ui1, after domain, 10d
+    패턴/히스토리/설정    :         ui2, after ui1, 7d
+    section 시각화
+    Particle 시각화 시스템 :         viz, after env, 14d
+    section 통계
+    통계 및 패턴 분석     :         stat, after domain, 10d
+    section 테스트
+    테스트 및 품질 보증   :         test, after ui2, 7d
+    section 배포
+    배포 및 릴리즈       :         deploy, after test, 5d
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Rhythm Project · WBS v2.0 · 2026-05-12
+  </footer>
+</body>
+</html>

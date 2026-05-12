@@ -1,546 +1,292 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rhythm — WBS & Gantt Chart</title>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({ startOnLoad: true, theme: 'default' });</script>
-  <style>
-    :root {
-      --primary: #4f46e5;
-      --primary-light: #e0e7ff;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rhythm — WBS &amp; Gantt Chart</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
+    font-size: 12px;
+    color: #111;
+    background: #fff;
+    padding: 16px;
+  }
+  h2 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
 
-    * { box-sizing: border-box; }
+  /* ===== Table ===== */
+  .wbs-table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+  }
+  .wbs-table th, .wbs-table td {
+    border: 1px solid #b4b4b4;
+    padding: 3px 5px;
+    vertical-align: middle;
+    height: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wbs-table th {
+    background: #f2f2f2;
+    font-weight: 700;
+    text-align: center;
+  }
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
+  /* Column widths */
+  .col-wbs     { width: 50px; text-align: center; }
+  .col-task    { width: 160px; }
+  .col-owner   { width: 70px; text-align: center; }
+  .col-status  { width: 85px; text-align: center; }
+  .col-start   { width: 80px; text-align: center; }
+  .col-finish  { width: 80px; text-align: center; }
+  .col-w       { width: 35px; text-align: center; }
+  .col-pct     { width: 40px; text-align: center; }
+  .col-gantt   { width: 340px; position: relative; }
 
-    header {
-      background: linear-gradient(135deg, var(--primary), #7c3aed);
-      color: white;
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-    }
+  /* Level styling */
+  .lv1 td {
+    background: #d9d9d9 !important;
+    font-weight: 700;
+  }
+  .lv1 .col-task { padding-left: 5px; }
+  .lv2 .col-task { padding-left: 18px; }
+  .lv3 .col-task { padding-left: 32px; font-size: 11px; }
 
-    header h1 { margin: 0; font-size: 1.8rem; }
-    header p { margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.95rem; }
+  /* Status colors */
+  .st-completed { color: #0000ff; }
+  .st-progress  { color: #0000ff; }
+  .st-notstart  { color: #808080; }
+  .st-milestone { background: #e6f3ff !important; color: #0000ff; font-weight: 600; }
 
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
+  /* Gantt header scale */
+  .gantt-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #555;
+    padding: 0 2px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid #ddd;
+  }
 
-    section {
-      background: var(--card);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-    }
+  /* Gantt bar cell */
+  .gantt-cell {
+    position: relative;
+    padding: 0 !important;
+  }
+  .gantt-track {
+    position: relative;
+    height: 18px;
+    width: 100%;
+  }
+  .gantt-bar {
+    position: absolute;
+    top: 4px;
+    height: 10px;
+    border-radius: 1px;
+    min-width: 2px;
+  }
+  .bar-completed { background: #4472c4; }
+  .bar-progress  { background: #4472c4; }
+  .bar-notstart  { background: #d9d9d9; border: 1px solid #b4b4b4; }
+  .bar-milestone {
+    width: 10px !important; height: 10px;
+    background: #4472c4;
+    transform: rotate(45deg);
+    top: 4px;
+  }
 
-    h2 {
-      margin: 0 0 1rem;
-      font-size: 1.25rem;
-      border-left: 4px solid var(--primary);
-      padding-left: 0.75rem;
-    }
+  /* Today line (optional) */
+  .today-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: red;
+    z-index: 2;
+  }
 
-    .badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.15rem 0.5rem;
-      border-radius: 999px;
-      background: var(--primary-light);
-      color: var(--primary);
-      margin-left: 0.5rem;
-      vertical-align: middle;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-
-    th, td {
-      padding: 0.7rem 0.6rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-    }
-
-    th {
-      background: #f1f5f9;
-      font-weight: 600;
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-
-    tr:hover td { background: #f8fafc; }
-
-    .wbs-id {
-      font-family: 'Courier New', monospace;
-      font-weight: 700;
-      color: var(--primary);
-      white-space: nowrap;
-    }
-
-    .level-1 td {
-      background: #f8fafc;
-      font-weight: 700;
-      color: var(--primary);
-      border-top: 2px solid var(--primary);
-    }
-
-    .task-name { font-weight: 500; }
-
-    .subtasks {
-      margin: 0;
-      padding-left: 1rem;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }
-
-    .subtasks li { margin-bottom: 0.25rem; }
-
-    .deliverable {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .mermaid {
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 1rem;
-      overflow-x: auto;
-    }
-
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-  </style>
+  /* Hover */
+  tr:not(.lv1):hover td {
+    background: #f5f5f5;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>🎵 Rhythm — WBS & Gantt Chart</h1>
-    <p>Flutter 기반 디지털 자기관찰 아카이브 앱 프로젝트</p>
-  </header>
 
-  <main>
-    <section>
-      <h2>📋 WBS 테이블 <span class="badge">Lv.1 ~ Lv.3</span></h2>
-      <table>
-        <thead>
-          <tr>
-            <th style="width:60px">WBS</th>
-            <th style="width:140px">작업명</th>
-            <th>세부 작업 (Lv.3)</th>
-            <th style="width:180px">산출물</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="level-1">
-            <td class="wbs-id">1</td>
-            <td class="task-name" colspan="3">기획 및 설계</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">1.1</td>
-            <td class="task-name">프로젝트 기획</td>
-            <td>
-              <ul class="subtasks">
-                <li>비전 및 문제 정의 문서화</li>
-                <li>핵심 시나리오 3개 및 MoSCoW 작성</li>
-                <li>AUTHORING 메타데이터 및 라이선스 정의</li>
-              </ul>
-            </td>
-            <td class="deliverable">00-vision.md<br>01-requirements.md</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">1.2</td>
-            <td class="task-name">시스템 설계</td>
-            <td>
-              <ul class="subtasks">
-                <li>Clean Architecture 레이어 구조 설계</li>
-                <li>Isar DB 스키마 설계</li>
-                <li>UI/UX 와이어프레임 및 화면 흐름도</li>
-                <li>Particle 시각화 컨셉 및 색상-데이터 매핑 규칙</li>
-              </ul>
-            </td>
-            <td class="deliverable">설계 문서</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">1.3</td>
-            <td class="task-name">개발 문서화</td>
-            <td>
-              <ul class="subtasks">
-                <li>WBS 작성</li>
-                <li>일정 및 리스크 문서화</li>
-                <li>설계 결정 문서(ADR) 초안</li>
-              </ul>
-            </td>
-            <td class="deliverable">02-wbs.md<br>04-schedule.md</td>
-          </tr>
+<h2>📋 Rhythm WBS &amp; Gantt Chart</h2>
 
-          <tr class="level-1">
-            <td class="wbs-id">2</td>
-            <td class="task-name" colspan="3">개발 환경 구축</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">2.1</td>
-            <td class="task-name">프로젝트 초기화</td>
-            <td>
-              <ul class="subtasks">
-                <li>Flutter 프로젝트 생성 및 폴더 구조 설정</li>
-                <li>필수 패키지 의존성 추가</li>
-                <li>.gitignore, analysis_options.yaml 설정</li>
-              </ul>
-            </td>
-            <td class="deliverable">프로젝트 템플릿</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">2.2</td>
-            <td class="task-name">아키텍처 기반 구축</td>
-            <td>
-              <ul class="subtasks">
-                <li>Clean Architecture 폴더 구조 구현</li>
-                <li>Riverpod Provider 구조 및 DI 설정</li>
-                <li>공통 유틸리티 및 확장 함수 정의</li>
-              </ul>
-            </td>
-            <td class="deliverable">lib/ 초기 구조</td>
-          </tr>
+<table class="wbs-table" id="wbsTable">
+  <thead>
+    <tr>
+      <th class="col-wbs">WBS</th>
+      <th class="col-task">Task</th>
+      <th class="col-owner">Owner</th>
+      <th class="col-status">Status</th>
+      <th class="col-start">Start Date</th>
+      <th class="col-finish">Finish Date</th>
+      <th class="col-w">W.</th>
+      <th class="col-pct">%</th>
+      <th class="col-gantt">
+        <div class="gantt-scale">
+          <span>10주</span><span>11주</span><span>12주</span><span>13주</span><span>14주</span><span>15주</span>
+        </div>
+        Gantt
+      </th>
+    </tr>
+  </thead>
+  <tbody id="wbsBody">
+    <!-- Generated by JS -->
+  </tbody>
+</table>
 
-          <tr class="level-1">
-            <td class="wbs-id">3</td>
-            <td class="task-name" colspan="3">도메인 및 데이터 레이어 개발</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">3.1</td>
-            <td class="task-name">도메인 레이어</td>
-            <td>
-              <ul class="subtasks">
-                <li>핵심 Entity 정의</li>
-                <li>Repository 인터페이스 정의</li>
-                <li>UseCase 구현</li>
-              </ul>
-            </td>
-            <td class="deliverable">domain/ 레이어</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">3.2</td>
-            <td class="task-name">데이터 레이어</td>
-            <td>
-              <ul class="subtasks">
-                <li>Isar DB 초기화 및 마이그레이션</li>
-                <li>Isar Collection 모델 정의</li>
-                <li>Repository 구현체 작성</li>
-                <li>예외 처리 및 트랜잭션 관리</li>
-              </ul>
-            </td>
-            <td class="deliverable">data/ 레이어</td>
-          </tr>
+<script>
+  // Project window
+  const PROJ_START = new Date('2026-05-12');
+  const PROJ_END   = new Date('2026-06-22');
+  const PROJ_DAYS  = (PROJ_END - PROJ_START) / (1000*60*60*24);
 
-          <tr class="level-1">
-            <td class="wbs-id">4</td>
-            <td class="task-name" colspan="3">프레젠테이션 레이어 개발</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">4.1</td>
-            <td class="task-name">공통 UI 인프라</td>
-            <td>
-              <ul class="subtasks">
-                <li>앱 테마 및 디자인 시스템</li>
-                <li>공통 위젯 라이브러리</li>
-                <li>앱 네비게이션 구조</li>
-              </ul>
-            </td>
-            <td class="deliverable">테마 / 공통 위젯</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">4.2</td>
-            <td class="task-name">홈 화면 (일일 입력)</td>
-            <td>
-              <ul class="subtasks">
-                <li>에너지 레벨 슬라이더</li>
-                <li>감정 키워드 다중 선택</li>
-                <li>활동 태그 다중 선택</li>
-                <li>짧은 메모 입력 필드</li>
-                <li>저장 액션 및 상태 피드백</li>
-                <li>Particle Canvas 실시간 연동</li>
-              </ul>
-            </td>
-            <td class="deliverable">홈 화면</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">4.3</td>
-            <td class="task-name">패턴 화면 (통계/분석)</td>
-            <td>
-              <ul class="subtasks">
-                <li>주간 리듬 뷰</li>
-                <li>월간 리듬 뷰</li>
-                <li>통계 카드 UI</li>
-                <li>Multi-Layer 블렌딩 뷰</li>
-                <li>"나의 관찰 노트" UI</li>
-              </ul>
-            </td>
-            <td class="deliverable">패턴 화면</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">4.4</td>
-            <td class="task-name">히스토리 화면</td>
-            <td>
-              <ul class="subtasks">
-                <li>캘린더 기반 기록 탐색</li>
-                <li>특정 날짜 상세 조회 및 수정/삭제</li>
-                <li>무한 스크롤 타임라인 뷰</li>
-              </ul>
-            </td>
-            <td class="deliverable">히스토리 화면</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">4.5</td>
-            <td class="task-name">설정 화면</td>
-            <td>
-              <ul class="subtasks">
-                <li>일일 리마인드 알림 시간 설정</li>
-                <li>데이터 익스포트(JSON/CSV)</li>
-                <li>테마/다크모드 토글</li>
-              </ul>
-            </td>
-            <td class="deliverable">설정 화면</td>
-          </tr>
+  const rows = [
+    // 1. 기획 및 설계
+    { wbs:'1',     task:'기획 및 설계',                 lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'1.1',   task:'프로젝트 기획',                lv:2, owner:'홍길동', status:'Completed',   start:'05-12', finish:'05-14', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.1.1', task:'비전 및 요구사항 정의',        lv:3, owner:'홍길동', status:'Completed',   start:'05-12', finish:'05-13', w:'2', pct:'100', bar:'full' },
+    { wbs:'1.1.2', task:'시나리오 및 MoSCoW 작성',       lv:3, owner:'홍길동', status:'Completed',   start:'05-13', finish:'05-14', w:'2', pct:'100', bar:'full' },
+    { wbs:'1.2',   task:'시스템 설계',                  lv:2, owner:'홍길동', status:'Completed',   start:'05-14', finish:'05-18', w:'5', pct:'100', bar:'full' },
+    { wbs:'1.2.1', task:'아키텍처 / DB 스키마 설계',      lv:3, owner:'홍길동', status:'Completed',   start:'05-14', finish:'05-16', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.2.2', task:'UI 와이어프레임 / Particle 컨셉',lv:3, owner:'홍길동', status:'Completed',   start:'05-16', finish:'05-18', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.3',   task:'개발 문서화',                  lv:2, owner:'홍길동', status:'Completed',   start:'05-18', finish:'05-20', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.3.1', task:'WBS / 일정 / ADR 초안',        lv:3, owner:'홍길동', status:'Completed',   start:'05-18', finish:'05-20', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.4',   task:'중간 점검 및 이슈 해결',        lv:2, owner:'홍길동', status:'Milestone',   start:'05-20', finish:'05-20', w:'1', pct:'0',   bar:'milestone' },
 
-          <tr class="level-1">
-            <td class="wbs-id">5</td>
-            <td class="task-name" colspan="3">Particle 시각화 시스템</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">5.1</td>
-            <td class="task-name">Particle 엔진</td>
-            <td>
-              <ul class="subtasks">
-                <li>CustomPainter 기반 캔버스</li>
-                <li>Particle 클래스 설계</li>
-                <li>프레임 루프(60fps 최적화)</li>
-                <li>터치/제스처 인터랙션</li>
-              </ul>
-            </td>
-            <td class="deliverable">Particle 엔진</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">5.2</td>
-            <td class="task-name">데이터-시각화 매핑</td>
-            <td>
-              <ul class="subtasks">
-                <li>감정 키워드 ↔ 색상/형태 매핑</li>
-                <li>에너지 레벨 ↔ 파동 강도 매핑</li>
-                <li>활동 태그 ↔ 궤적/클러스터 매핑</li>
-                <li>시간 흐름에 따른 상태 변화 로직</li>
-              </ul>
-            </td>
-            <td class="deliverable">매핑 규칙</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">5.3</td>
-            <td class="task-name">Multi-Layer 블렌딩</td>
-            <td>
-              <ul class="subtasks">
-                <li>개별 레이어 렌더링</li>
-                <li>BlendMode 기반 레이어 합성</li>
-                <li>레이어 투명도/가중치 조절</li>
-                <li>레이어별 독립 제어 및 최적화</li>
-              </ul>
-            </td>
-            <td class="deliverable">블렌딩 시스템</td>
-          </tr>
+    // 2. 개발 환경 구축
+    { wbs:'2',     task:'개발 환경 구축',               lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'2.1',   task:'프로젝트 초기화',              lv:2, owner:'홍길동', status:'In progress', start:'05-19', finish:'05-21', w:'3', pct:'60',  bar:'partial' },
+    { wbs:'2.1.1', task:'Flutter 프로젝트 생성',        lv:3, owner:'홍길동', status:'In progress', start:'05-19', finish:'05-20', w:'2', pct:'80',  bar:'partial' },
+    { wbs:'2.1.2', task:'패키지 의존성 / gitignore',     lv:3, owner:'홍길동', status:'Not Started', start:'05-20', finish:'05-21', w:'2', pct:'0',   bar:'grey' },
+    { wbs:'2.2',   task:'아키텍처 기반 구축',            lv:2, owner:'홍길동', status:'Not Started', start:'05-21', finish:'05-25', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'2.2.1', task:'Clean Architecture 폰더 구조', lv:3, owner:'홍길동', status:'Not Started', start:'05-21', finish:'05-23', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'2.2.2', task:'Riverpod DI / 공통 유틸',      lv:3, owner:'홍길동', status:'Not Started', start:'05-23', finish:'05-25', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'2.3',   task:'진행 업무 점검 및 이슈 해결',   lv:2, owner:'홍길동', status:'Milestone',   start:'05-25', finish:'05-25', w:'1', pct:'0',   bar:'milestone' },
 
-          <tr class="level-1">
-            <td class="wbs-id">6</td>
-            <td class="task-name" colspan="3">통계 및 패턴 분석</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">6.1</td>
-            <td class="task-name">기초 통계 엔진</td>
-            <td>
-              <ul class="subtasks">
-                <li>에너지 평균/표준편차/최빈값</li>
-                <li>감정 키워드 빈도 및 분포</li>
-                <li>활동 태그별 집계</li>
-              </ul>
-            </td>
-            <td class="deliverable">통계 로직</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">6.2</td>
-            <td class="task-name">상관관계 분석</td>
-            <td>
-              <ul class="subtasks">
-                <li>활동-감정 Pearson 상관계수</li>
-                <li>요일-에너지 상관관계</li>
-                <li>감정-에너지 공변 분석</li>
-              </ul>
-            </td>
-            <td class="deliverable">상관관계 로직</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">6.3</td>
-            <td class="task-name">패턴 검출 및 힌트</td>
-            <td>
-              <ul class="subtasks">
-                <li>주간 반복 패턴 탐지</li>
-                <li>감정/에너지 급변 시점 탐지</li>
-                <li>사용자 친화적 힌트 문구 생성</li>
-                <li>최소 데이터(2주) 기준 가드</li>
-              </ul>
-            </td>
-            <td class="deliverable">패턴 힌트 로직</td>
-          </tr>
+    // 3. 도메인 및 데이터 레이어
+    { wbs:'3',     task:'도메인 및 데이터 레이어',       lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'3.1',   task:'도메인 레이어',                lv:2, owner:'홍길동', status:'Not Started', start:'05-26', finish:'06-01', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'3.1.1', task:'Entity / Repository 인터페이스',lv:3, owner:'홍길동', status:'Not Started', start:'05-26', finish:'05-28', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'3.1.2', task:'UseCase 구현',                 lv:3, owner:'홍길동', status:'Not Started', start:'05-28', finish:'06-01', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'3.2',   task:'데이터 레이어',                lv:2, owner:'홍길동', status:'Not Started', start:'06-02', finish:'06-08', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'3.2.1', task:'Isar DB 초기화 / Collection',   lv:3, owner:'홍길동', status:'Not Started', start:'06-02', finish:'06-05', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'3.2.2', task:'Repository 구현 / 예외 처리',   lv:3, owner:'홍길동', status:'Not Started', start:'06-05', finish:'06-08', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'3.3',   task:'중간 점검 (12주차 발표 준비)',   lv:2, owner:'홍길동', status:'Milestone',   start:'06-01', finish:'06-01', w:'1', pct:'0',   bar:'milestone' },
 
-          <tr class="level-1">
-            <td class="wbs-id">7</td>
-            <td class="task-name" colspan="3">테스트 및 품질 보증</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">7.1</td>
-            <td class="task-name">단위 테스트</td>
-            <td>
-              <ul class="subtasks">
-                <li>Entity 및 Value Object 테스트</li>
-                <li>UseCase 비즈니스 로직 테스트</li>
-                <li>통계 분석 알고리즘 테스트</li>
-              </ul>
-            </td>
-            <td class="deliverable">테스트 코드</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">7.2</td>
-            <td class="task-name">위젯 테스트</td>
-            <td>
-              <ul class="subtasks">
-                <li>홈 화면 입력 흐름 테스트</li>
-                <li>패턴 화면 통계 카드 렌더링 테스트</li>
-                <li>Particle Canvas 기본 렌더링 테스트</li>
-              </ul>
-            </td>
-            <td class="deliverable">테스트 코드</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">7.3</td>
-            <td class="task-name">통합 테스트</td>
-            <td>
-              <ul class="subtasks">
-                <li>저장→조회→통계 E2E 흐름 테스트</li>
-                <li>DB 마이그레이션 호환성 테스트</li>
-              </ul>
-            </td>
-            <td class="deliverable">테스트 코드</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">7.4</td>
-            <td class="task-name">성능 및 안정성</td>
-            <td>
-              <ul class="subtasks">
-                <li>렌더링 16ms 이하(60fps) 벤치마크</li>
-                <li>Isar 복합 쿼리 100ms 이하 측정</li>
-                <li>오프라인 CRUD 동작 검증</li>
-                <li>메모리 누수 및 리소스 정리 검증</li>
-              </ul>
-            </td>
-            <td class="deliverable">성능 리포트</td>
-          </tr>
+    // 4. 프레젠테이션 레이어
+    { wbs:'4',     task:'프레젠테이션 레이어',           lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'4.1',   task:'공통 UI 인프라',               lv:2, owner:'홍길동', status:'Not Started', start:'06-02', finish:'06-04', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'4.2',   task:'홈 화면 (일일 입력)',           lv:2, owner:'홍길동', status:'Not Started', start:'06-04', finish:'06-10', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'4.2.1', task:'슬라이더 / 키워드 / 태그 선택',  lv:3, owner:'홍길동', status:'Not Started', start:'06-04', finish:'06-07', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'4.2.2', task:'저장 액션 / Particle 연동',      lv:3, owner:'홍길동', status:'Not Started', start:'06-07', finish:'06-10', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'4.3',   task:'패턴 화면 (통계/분석)',         lv:2, owner:'홍길동', status:'Not Started', start:'06-09', finish:'06-14', w:'6', pct:'0',   bar:'grey' },
+    { wbs:'4.4',   task:'히스토리 화면',                lv:2, owner:'홍길동', status:'Not Started', start:'06-11', finish:'06-14', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'4.5',   task:'설정 화면',                    lv:2, owner:'홍길동', status:'Not Started', start:'06-13', finish:'06-15', w:'3', pct:'0',   bar:'grey' },
 
-          <tr class="level-1">
-            <td class="wbs-id">8</td>
-            <td class="task-name" colspan="3">배포 및 릴리즈</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">8.1</td>
-            <td class="task-name">빌드 및 서명</td>
-            <td>
-              <ul class="subtasks">
-                <li>Android APK/AAB 빌드 및 서명</li>
-                <li>iOS Archive 빌드 및 서명</li>
-                <li>릴리즈 모드 최적화</li>
-              </ul>
-            </td>
-            <td class="deliverable">빌드 산출물</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">8.2</td>
-            <td class="task-name">스토어 배포 준비</td>
-            <td>
-              <ul class="subtasks">
-                <li>앱 아이콘, 스플래시, 스크린샷</li>
-                <li>스토어 메타데이터 작성</li>
-                <li>프라이버시 정책 및 라이선스 고지</li>
-              </ul>
-            </td>
-            <td class="deliverable">스토어 에셋</td>
-          </tr>
-          <tr>
-            <td class="wbs-id">8.3</td>
-            <td class="task-name">문서 및 발표</td>
-            <td>
-              <ul class="subtasks">
-                <li>중간 발표 자료 작성</li>
-                <li>최종 발표 자료 작성</li>
-                <li>사용자 가이드 및 개발자 문서 완성</li>
-              </ul>
-            </td>
-            <td class="deliverable">docs/presentation/</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    // 5. Particle 시각화
+    { wbs:'5',     task:'Particle 시각화 시스템',        lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'5.1',   task:'Particle 엔진',                lv:2, owner:'홍길동', status:'Not Started', start:'05-26', finish:'06-05', w:'11', pct:'0',  bar:'grey' },
+    { wbs:'5.1.1', task:'CustomPainter / 프레임 루프',    lv:3, owner:'홍길동', status:'Not Started', start:'05-26', finish:'06-01', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'5.1.2', task:'터치/제스처 인터랙션',           lv:3, owner:'홍길동', status:'Not Started', start:'06-01', finish:'06-05', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'5.2',   task:'데이터-시각화 매핑',            lv:2, owner:'홍길동', status:'Not Started', start:'06-05', finish:'06-10', w:'6', pct:'0',   bar:'grey' },
+    { wbs:'5.3',   task:'Multi-Layer 블렌딩',           lv:2, owner:'홍길동', status:'Not Started', start:'06-09', finish:'06-14', w:'6', pct:'0',   bar:'grey' },
 
-    <section>
-      <h2>📅 Gantt Chart <span class="badge">개략 일정</span></h2>
-      <div class="mermaid">
-gantt
-    title Rhythm 개발 일정 개략
-    dateFormat  YYYY-MM-DD
-    section 기획 및 설계
-    기획 및 설계           :done,    plan, 2026-05-12, 7d
-    section 개발 환경
-    개발 환경 구축         :active,  env,  after plan, 5d
-    section 도메인/데이터
-    도메인 및 데이터 레이어 :         domain, after env, 10d
-    section 프레젠테이션
-    공통 UI 및 홈 화면    :         ui1, after domain, 10d
-    패턴/히스토리/설정    :         ui2, after ui1, 7d
-    section 시각화
-    Particle 시각화 시스템 :         viz, after env, 14d
-    section 통계
-    통계 및 패턴 분석     :         stat, after domain, 10d
-    section 테스트
-    테스트 및 품질 보증   :         test, after ui2, 7d
-    section 배포
-    배포 및 릴리즈       :         deploy, after test, 5d
-      </div>
-    </section>
-  </main>
+    // 6. 통계 및 패턴 분석
+    { wbs:'6',     task:'통계 및 패턴 분석',             lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'6.1',   task:'기초 통계 엔진',               lv:2, owner:'홍길동', status:'Not Started', start:'06-08', finish:'06-11', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'6.2',   task:'상관관계 분석',                lv:2, owner:'홍길동', status:'Not Started', start:'06-10', finish:'06-13', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'6.3',   task:'패턴 검출 및 힌트',            lv:2, owner:'홍길동', status:'Not Started', start:'06-12', finish:'06-15', w:'4', pct:'0',   bar:'grey' },
 
-  <footer>
-    Rhythm Project · WBS v2.0 · 2026-05-12
-  </footer>
+    // 7. 테스트
+    { wbs:'7',     task:'테스트 및 품질 보증',           lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'7.1',   task:'단위 / 위젯 / 통합 테스트',      lv:2, owner:'홍길동', status:'Not Started', start:'06-13', finish:'06-17', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'7.2',   task:'성능 및 안정성 테스트',         lv:2, owner:'홍길동', status:'Not Started', start:'06-16', finish:'06-18', w:'3', pct:'0',   bar:'grey' },
+
+    // 8. 배포
+    { wbs:'8',     task:'배포 및 릴리즈',               lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
+    { wbs:'8.1',   task:'빌드 및 서명',                 lv:2, owner:'홍길동', status:'Not Started', start:'06-17', finish:'06-19', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'8.2',   task:'스토어 배포 준비',             lv:2, owner:'홍길동', status:'Not Started', start:'06-18', finish:'06-20', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'8.3',   task:'문서 및 발표 (최종)',           lv:2, owner:'홍길동', status:'Not Started', start:'06-19', finish:'06-22', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'8.4',   task:'최종 발표 (15주차)',           lv:2, owner:'홍길동', status:'Milestone',   start:'06-22', finish:'06-22', w:'1', pct:'0',   bar:'milestone' },
+  ];
+
+  function fmtDate(md) {
+    if (!md) return '';
+    const y = '2026';
+    return y + '-' + md;
+  }
+
+  function parseDate(md) {
+    if (!md) return null;
+    return new Date('2026-' + md);
+  }
+
+  function ganttHTML(row) {
+    const s = parseDate(row.start);
+    const f = parseDate(row.finish);
+    if (!s || !f || row.bar === 'none') return '<div class="gantt-track"></div>';
+
+    if (row.bar === 'milestone') {
+      const left = ((s - PROJ_START) / (1000*60*60*24) / PROJ_DAYS) * 100;
+      return `<div class="gantt-track"><div class="gantt-bar bar-milestone" style="left:${left}%"></div></div>`;
+    }
+
+    const startDay = (s - PROJ_START) / (1000*60*60*24);
+    const duration = (f - s) / (1000*60*60*24) + 1;
+    const leftPct  = (startDay / PROJ_DAYS) * 100;
+    const widthPct = (duration / PROJ_DAYS) * 100;
+
+    let cls = 'bar-notstart';
+    if (row.status === 'Completed') cls = 'bar-completed';
+    else if (row.status === 'In progress') cls = 'bar-progress';
+
+    if (row.bar === 'grey') cls = 'bar-notstart';
+    if (row.bar === 'full') cls = 'bar-completed';
+    if (row.bar === 'partial') cls = 'bar-progress';
+
+    return `<div class="gantt-track"><div class="gantt-bar ${cls}" style="left:${leftPct}%;width:${widthPct}%"></div></div>`;
+  }
+
+  function statusClass(st) {
+    if (st === 'Completed') return 'st-completed';
+    if (st === 'In progress') return 'st-progress';
+    if (st === 'Not Started') return 'st-notstart';
+    if (st === 'Milestone') return 'st-milestone';
+    return '';
+  }
+
+  const tbody = document.getElementById('wbsBody');
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = 'lv' + r.lv;
+    if (r.status === 'Milestone') tr.classList.add('st-milestone');
+
+    tr.innerHTML = `
+      <td class="col-wbs">${r.wbs}</td>
+      <td class="col-task">${r.task}</td>
+      <td class="col-owner">${r.owner}</td>
+      <td class="col-status ${statusClass(r.status)}">${r.status}</td>
+      <td class="col-start">${fmtDate(r.start)}</td>
+      <td class="col-finish">${fmtDate(r.finish)}</td>
+      <td class="col-w">${r.w}</td>
+      <td class="col-pct">${r.pct}</td>
+      <td class="col-gantt gantt-cell">${ganttHTML(r)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+</script>
 </body>
 </html>

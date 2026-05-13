@@ -1,24 +1,49 @@
 # AUTHORING.yseho031018.v0.1.0.md
 
-## Author
-- **Name:** yseho031018
+## 작성자 정보
+
+- **작성자:** 윤세호 (`yseho031018`)
 - **GitHub:** [@yseho031018](https://github.com/yseho031018)
-- **Project:** rhythm-archive
-- **Repository:** https://github.com/yseho031018/rhythm-archive.git
-- **Created:** 2026-05-12
+- **프로젝트:** rhythm-archive
+- **저장소:** https://github.com/yseho031018/rhythm-archive.git
+- **작성일:** 2026-05-12
 
-## License
-MIT License — See [LICENSE](./LICENSE) file for details.
+## 프로젝트 개요
 
-## Attribution & Tools
-- **Framework:** Flutter (Dart)
-- **State Management:** Riverpod
-- **Local Database:** Isar
-- **AI Assistance:** AI Agent (Claude Code / Cursor / GitHub Copilot) used for planning and code scaffolding. All generated outputs are reviewed and modified by the author.
-- **External Assets:** To be added as they are integrated.
+Rhythm은 사용자가 매일의 감정, 에너지, 활동을 짧게 기록하고 이를 Particle Canvas로 시각화하는 모바일 다이어리 앱이다. 기록을 단순한 텍스트 목록이 아니라 감정의 흐름과 생활 리듬을 볼 수 있는 시각적 경험으로 만드는 것을 목표로 한다.
 
-## Version History
+## 사용 기술
 
-| Version | Date | Description |
-|---------|------|-------------|
-| v0.1.0 | 2026-05-12 | Initial authoring metadata and project setup |
+- **프레임워크:** Flutter (Dart)
+- **상태 관리:** Riverpod
+- **로컬 데이터베이스:** Isar
+- **아키텍처:** Clean Architecture (Presentation / Domain / Data)
+- **시각화:** CustomPainter 기반 Particle Canvas
+
+## AI Agent 활용 방식
+
+이 프로젝트는 수업의 Vibe Coding 방향에 맞춰 AI Agent를 기획, 문서화, 일정 관리, 설계 보조 도구로 활용한다.
+
+- 비전, 요구사항, WBS, 일정, 위험 관리 문서 초안 생성
+- ADR 작성 및 기술 선택 근거 정리
+- 발표 Q&A에 대비한 설명 포인트 정리
+- 생성된 문서의 한국어 표현, 범위, 현실성 검토 및 수정
+
+AI Agent가 생성한 결과물은 그대로 제출하지 않고, 작성자가 직접 읽고 수정하며 이해한 내용만 반영한다.
+
+## 라이선스
+
+- 라이선스는 추후 `LICENSE` 파일로 명시할 예정이다.
+- 현재 단계에서는 기획 문서와 프로젝트 구조를 우선 정리한다.
+
+## 외부 자료 및 에셋
+
+- 외부 이미지, 아이콘, 폰트 등은 아직 사용하지 않았다.
+- 추후 외부 에셋을 사용할 경우 출처와 라이선스를 별도로 기록한다.
+
+## 버전 히스토리
+
+| 버전 | 날짜 | 변경 내용 |
+|------|------|-----------|
+| v0.1.0 | 2026-05-12 | 작성자 메타데이터와 프로젝트 기본 정보 작성 |
+| v0.2.0 | 2026-05-13 | 기획 문서 세트 완성: 위험 관리, 일정표, ADR, BONUS, WBS Owner 수정 |

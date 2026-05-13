@@ -156,71 +156,71 @@
   const rows = [
     // 1. 기획 및 설계
     { wbs:'1',     task:'기획 및 설계',                 lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'1.1',   task:'프로젝트 기획',                lv:2, owner:'홍길동', status:'Completed',   start:'05-12', finish:'05-14', w:'3', pct:'100', bar:'full' },
-    { wbs:'1.1.1', task:'비전 및 요구사항 정의',        lv:3, owner:'홍길동', status:'Completed',   start:'05-12', finish:'05-13', w:'2', pct:'100', bar:'full' },
-    { wbs:'1.1.2', task:'시나리오 및 MoSCoW 작성',       lv:3, owner:'홍길동', status:'Completed',   start:'05-13', finish:'05-14', w:'2', pct:'100', bar:'full' },
-    { wbs:'1.2',   task:'시스템 설계',                  lv:2, owner:'홍길동', status:'Completed',   start:'05-14', finish:'05-18', w:'5', pct:'100', bar:'full' },
-    { wbs:'1.2.1', task:'아키텍처 / DB 스키마 설계',      lv:3, owner:'홍길동', status:'Completed',   start:'05-14', finish:'05-16', w:'3', pct:'100', bar:'full' },
-    { wbs:'1.2.2', task:'UI 와이어프레임 / Particle 컨셉',lv:3, owner:'홍길동', status:'Completed',   start:'05-16', finish:'05-18', w:'3', pct:'100', bar:'full' },
-    { wbs:'1.3',   task:'개발 문서화',                  lv:2, owner:'홍길동', status:'Completed',   start:'05-18', finish:'05-20', w:'3', pct:'100', bar:'full' },
-    { wbs:'1.3.1', task:'WBS / 일정 / ADR 초안',        lv:3, owner:'홍길동', status:'Completed',   start:'05-18', finish:'05-20', w:'3', pct:'100', bar:'full' },
-    { wbs:'1.4',   task:'중간 점검 및 이슈 해결',        lv:2, owner:'홍길동', status:'Milestone',   start:'05-20', finish:'05-20', w:'1', pct:'0',   bar:'milestone' },
+    { wbs:'1.1',   task:'프로젝트 기획',                lv:2, owner:'윤세호', status:'Completed',   start:'05-12', finish:'05-14', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.1.1', task:'비전 및 요구사항 정의',        lv:3, owner:'윤세호', status:'Completed',   start:'05-12', finish:'05-13', w:'2', pct:'100', bar:'full' },
+    { wbs:'1.1.2', task:'시나리오 및 MoSCoW 작성',       lv:3, owner:'윤세호', status:'Completed',   start:'05-13', finish:'05-14', w:'2', pct:'100', bar:'full' },
+    { wbs:'1.2',   task:'시스템 설계',                  lv:2, owner:'윤세호', status:'Completed',   start:'05-14', finish:'05-18', w:'5', pct:'100', bar:'full' },
+    { wbs:'1.2.1', task:'아키텍처 / DB 스키마 설계',      lv:3, owner:'윤세호', status:'Completed',   start:'05-14', finish:'05-16', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.2.2', task:'UI 와이어프레임 / Particle 컨셉',lv:3, owner:'윤세호', status:'Completed',   start:'05-16', finish:'05-18', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.3',   task:'개발 문서화',                  lv:2, owner:'윤세호', status:'Completed',   start:'05-18', finish:'05-20', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.3.1', task:'WBS / 일정 / ADR 초안',        lv:3, owner:'윤세호', status:'Completed',   start:'05-18', finish:'05-20', w:'3', pct:'100', bar:'full' },
+    { wbs:'1.4',   task:'중간 점검 및 이슈 해결',        lv:2, owner:'윤세호', status:'Milestone',   start:'05-20', finish:'05-20', w:'1', pct:'0',   bar:'milestone' },
 
     // 2. 개발 환경 구축
     { wbs:'2',     task:'개발 환경 구축',               lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'2.1',   task:'프로젝트 초기화',              lv:2, owner:'홍길동', status:'In progress', start:'05-19', finish:'05-21', w:'3', pct:'60',  bar:'partial' },
-    { wbs:'2.1.1', task:'Flutter 프로젝트 생성',        lv:3, owner:'홍길동', status:'In progress', start:'05-19', finish:'05-20', w:'2', pct:'80',  bar:'partial' },
-    { wbs:'2.1.2', task:'패키지 의존성 / gitignore',     lv:3, owner:'홍길동', status:'Not Started', start:'05-20', finish:'05-21', w:'2', pct:'0',   bar:'grey' },
-    { wbs:'2.2',   task:'아키텍처 기반 구축',            lv:2, owner:'홍길동', status:'Not Started', start:'05-21', finish:'05-25', w:'5', pct:'0',   bar:'grey' },
-    { wbs:'2.2.1', task:'Clean Architecture 폰더 구조', lv:3, owner:'홍길동', status:'Not Started', start:'05-21', finish:'05-23', w:'3', pct:'0',   bar:'grey' },
-    { wbs:'2.2.2', task:'Riverpod DI / 공통 유틸',      lv:3, owner:'홍길동', status:'Not Started', start:'05-23', finish:'05-25', w:'3', pct:'0',   bar:'grey' },
-    { wbs:'2.3',   task:'진행 업무 점검 및 이슈 해결',   lv:2, owner:'홍길동', status:'Milestone',   start:'05-25', finish:'05-25', w:'1', pct:'0',   bar:'milestone' },
+    { wbs:'2.1',   task:'프로젝트 초기화',              lv:2, owner:'윤세호', status:'In progress', start:'05-19', finish:'05-21', w:'3', pct:'60',  bar:'partial' },
+    { wbs:'2.1.1', task:'Flutter 프로젝트 생성',        lv:3, owner:'윤세호', status:'In progress', start:'05-19', finish:'05-20', w:'2', pct:'80',  bar:'partial' },
+    { wbs:'2.1.2', task:'패키지 의존성 / gitignore',     lv:3, owner:'윤세호', status:'Not Started', start:'05-20', finish:'05-21', w:'2', pct:'0',   bar:'grey' },
+    { wbs:'2.2',   task:'아키텍처 기반 구축',            lv:2, owner:'윤세호', status:'Not Started', start:'05-21', finish:'05-25', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'2.2.1', task:'Clean Architecture 폰더 구조', lv:3, owner:'윤세호', status:'Not Started', start:'05-21', finish:'05-23', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'2.2.2', task:'Riverpod DI / 공통 유틸',      lv:3, owner:'윤세호', status:'Not Started', start:'05-23', finish:'05-25', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'2.3',   task:'진행 업무 점검 및 이슈 해결',   lv:2, owner:'윤세호', status:'Milestone',   start:'05-25', finish:'05-25', w:'1', pct:'0',   bar:'milestone' },
 
     // 3. 도메인 및 데이터 레이어
     { wbs:'3',     task:'도메인 및 데이터 레이어',       lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'3.1',   task:'도메인 레이어',                lv:2, owner:'홍길동', status:'Not Started', start:'05-26', finish:'06-01', w:'7', pct:'0',   bar:'grey' },
-    { wbs:'3.1.1', task:'Entity / Repository 인터페이스',lv:3, owner:'홍길동', status:'Not Started', start:'05-26', finish:'05-28', w:'3', pct:'0',   bar:'grey' },
-    { wbs:'3.1.2', task:'UseCase 구현',                 lv:3, owner:'홍길동', status:'Not Started', start:'05-28', finish:'06-01', w:'5', pct:'0',   bar:'grey' },
-    { wbs:'3.2',   task:'데이터 레이어',                lv:2, owner:'홍길동', status:'Not Started', start:'06-02', finish:'06-08', w:'7', pct:'0',   bar:'grey' },
-    { wbs:'3.2.1', task:'Isar DB 초기화 / Collection',   lv:3, owner:'홍길동', status:'Not Started', start:'06-02', finish:'06-05', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'3.2.2', task:'Repository 구현 / 예외 처리',   lv:3, owner:'홍길동', status:'Not Started', start:'06-05', finish:'06-08', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'3.3',   task:'중간 점검 (12주차 발표 준비)',   lv:2, owner:'홍길동', status:'Milestone',   start:'06-01', finish:'06-01', w:'1', pct:'0',   bar:'milestone' },
+    { wbs:'3.1',   task:'도메인 레이어',                lv:2, owner:'윤세호', status:'Not Started', start:'05-26', finish:'06-01', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'3.1.1', task:'Entity / Repository 인터페이스',lv:3, owner:'윤세호', status:'Not Started', start:'05-26', finish:'05-28', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'3.1.2', task:'UseCase 구현',                 lv:3, owner:'윤세호', status:'Not Started', start:'05-28', finish:'06-01', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'3.2',   task:'데이터 레이어',                lv:2, owner:'윤세호', status:'Not Started', start:'06-02', finish:'06-08', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'3.2.1', task:'Isar DB 초기화 / Collection',   lv:3, owner:'윤세호', status:'Not Started', start:'06-02', finish:'06-05', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'3.2.2', task:'Repository 구현 / 예외 처리',   lv:3, owner:'윤세호', status:'Not Started', start:'06-05', finish:'06-08', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'3.3',   task:'중간 점검 (12주차 발표 준비)',   lv:2, owner:'윤세호', status:'Milestone',   start:'06-01', finish:'06-01', w:'1', pct:'0',   bar:'milestone' },
 
     // 4. 프레젠테이션 레이어
     { wbs:'4',     task:'프레젠테이션 레이어',           lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'4.1',   task:'공통 UI 인프라',               lv:2, owner:'홍길동', status:'Not Started', start:'06-02', finish:'06-04', w:'3', pct:'0',   bar:'grey' },
-    { wbs:'4.2',   task:'홈 화면 (일일 입력)',           lv:2, owner:'홍길동', status:'Not Started', start:'06-04', finish:'06-10', w:'7', pct:'0',   bar:'grey' },
-    { wbs:'4.2.1', task:'슬라이더 / 키워드 / 태그 선택',  lv:3, owner:'홍길동', status:'Not Started', start:'06-04', finish:'06-07', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'4.2.2', task:'저장 액션 / Particle 연동',      lv:3, owner:'홍길동', status:'Not Started', start:'06-07', finish:'06-10', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'4.3',   task:'패턴 화면 (통계/분석)',         lv:2, owner:'홍길동', status:'Not Started', start:'06-09', finish:'06-14', w:'6', pct:'0',   bar:'grey' },
-    { wbs:'4.4',   task:'히스토리 화면',                lv:2, owner:'홍길동', status:'Not Started', start:'06-11', finish:'06-14', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'4.5',   task:'설정 화면',                    lv:2, owner:'홍길동', status:'Not Started', start:'06-13', finish:'06-15', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'4.1',   task:'공통 UI 인프라',               lv:2, owner:'윤세호', status:'Not Started', start:'06-02', finish:'06-04', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'4.2',   task:'홈 화면 (일일 입력)',           lv:2, owner:'윤세호', status:'Not Started', start:'06-04', finish:'06-10', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'4.2.1', task:'슬라이더 / 키워드 / 태그 선택',  lv:3, owner:'윤세호', status:'Not Started', start:'06-04', finish:'06-07', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'4.2.2', task:'저장 액션 / Particle 연동',      lv:3, owner:'윤세호', status:'Not Started', start:'06-07', finish:'06-10', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'4.3',   task:'패턴 화면 (통계/분석)',         lv:2, owner:'윤세호', status:'Not Started', start:'06-09', finish:'06-14', w:'6', pct:'0',   bar:'grey' },
+    { wbs:'4.4',   task:'히스토리 화면',                lv:2, owner:'윤세호', status:'Not Started', start:'06-11', finish:'06-14', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'4.5',   task:'설정 화면',                    lv:2, owner:'윤세호', status:'Not Started', start:'06-13', finish:'06-15', w:'3', pct:'0',   bar:'grey' },
 
     // 5. Particle 시각화
     { wbs:'5',     task:'Particle 시각화 시스템',        lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'5.1',   task:'Particle 엔진',                lv:2, owner:'홍길동', status:'Not Started', start:'05-26', finish:'06-05', w:'11', pct:'0',  bar:'grey' },
-    { wbs:'5.1.1', task:'CustomPainter / 프레임 루프',    lv:3, owner:'홍길동', status:'Not Started', start:'05-26', finish:'06-01', w:'7', pct:'0',   bar:'grey' },
-    { wbs:'5.1.2', task:'터치/제스처 인터랙션',           lv:3, owner:'홍길동', status:'Not Started', start:'06-01', finish:'06-05', w:'5', pct:'0',   bar:'grey' },
-    { wbs:'5.2',   task:'데이터-시각화 매핑',            lv:2, owner:'홍길동', status:'Not Started', start:'06-05', finish:'06-10', w:'6', pct:'0',   bar:'grey' },
-    { wbs:'5.3',   task:'Multi-Layer 블렌딩',           lv:2, owner:'홍길동', status:'Not Started', start:'06-09', finish:'06-14', w:'6', pct:'0',   bar:'grey' },
+    { wbs:'5.1',   task:'Particle 엔진',                lv:2, owner:'윤세호', status:'Not Started', start:'05-26', finish:'06-05', w:'11', pct:'0',  bar:'grey' },
+    { wbs:'5.1.1', task:'CustomPainter / 프레임 루프',    lv:3, owner:'윤세호', status:'Not Started', start:'05-26', finish:'06-01', w:'7', pct:'0',   bar:'grey' },
+    { wbs:'5.1.2', task:'터치/제스처 인터랙션',           lv:3, owner:'윤세호', status:'Not Started', start:'06-01', finish:'06-05', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'5.2',   task:'데이터-시각화 매핑',            lv:2, owner:'윤세호', status:'Not Started', start:'06-05', finish:'06-10', w:'6', pct:'0',   bar:'grey' },
+    { wbs:'5.3',   task:'Multi-Layer 블렌딩',           lv:2, owner:'윤세호', status:'Not Started', start:'06-09', finish:'06-14', w:'6', pct:'0',   bar:'grey' },
 
     // 6. 통계 및 패턴 분석
     { wbs:'6',     task:'통계 및 패턴 분석',             lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'6.1',   task:'기초 통계 엔진',               lv:2, owner:'홍길동', status:'Not Started', start:'06-08', finish:'06-11', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'6.2',   task:'상관관계 분석',                lv:2, owner:'홍길동', status:'Not Started', start:'06-10', finish:'06-13', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'6.3',   task:'패턴 검출 및 힌트',            lv:2, owner:'홍길동', status:'Not Started', start:'06-12', finish:'06-15', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'6.1',   task:'기초 통계 엔진',               lv:2, owner:'윤세호', status:'Not Started', start:'06-08', finish:'06-11', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'6.2',   task:'상관관계 분석',                lv:2, owner:'윤세호', status:'Not Started', start:'06-10', finish:'06-13', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'6.3',   task:'패턴 검출 및 힌트',            lv:2, owner:'윤세호', status:'Not Started', start:'06-12', finish:'06-15', w:'4', pct:'0',   bar:'grey' },
 
     // 7. 테스트
     { wbs:'7',     task:'테스트 및 품질 보증',           lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'7.1',   task:'단위 / 위젯 / 통합 테스트',      lv:2, owner:'홍길동', status:'Not Started', start:'06-13', finish:'06-17', w:'5', pct:'0',   bar:'grey' },
-    { wbs:'7.2',   task:'성능 및 안정성 테스트',         lv:2, owner:'홍길동', status:'Not Started', start:'06-16', finish:'06-18', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'7.1',   task:'단위 / 위젯 / 통합 테스트',      lv:2, owner:'윤세호', status:'Not Started', start:'06-13', finish:'06-17', w:'5', pct:'0',   bar:'grey' },
+    { wbs:'7.2',   task:'성능 및 안정성 테스트',         lv:2, owner:'윤세호', status:'Not Started', start:'06-16', finish:'06-18', w:'3', pct:'0',   bar:'grey' },
 
     // 8. 배포
     { wbs:'8',     task:'배포 및 릴리즈',               lv:1, owner:'-',      status:'-',          start:'',       finish:'',       w:'', pct:'',  bar:'none' },
-    { wbs:'8.1',   task:'빌드 및 서명',                 lv:2, owner:'홍길동', status:'Not Started', start:'06-17', finish:'06-19', w:'3', pct:'0',   bar:'grey' },
-    { wbs:'8.2',   task:'스토어 배포 준비',             lv:2, owner:'홍길동', status:'Not Started', start:'06-18', finish:'06-20', w:'3', pct:'0',   bar:'grey' },
-    { wbs:'8.3',   task:'문서 및 발표 (최종)',           lv:2, owner:'홍길동', status:'Not Started', start:'06-19', finish:'06-22', w:'4', pct:'0',   bar:'grey' },
-    { wbs:'8.4',   task:'최종 발표 (15주차)',           lv:2, owner:'홍길동', status:'Milestone',   start:'06-22', finish:'06-22', w:'1', pct:'0',   bar:'milestone' },
+    { wbs:'8.1',   task:'빌드 및 서명',                 lv:2, owner:'윤세호', status:'Not Started', start:'06-17', finish:'06-19', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'8.2',   task:'스토어 배포 준비',             lv:2, owner:'윤세호', status:'Not Started', start:'06-18', finish:'06-20', w:'3', pct:'0',   bar:'grey' },
+    { wbs:'8.3',   task:'문서 및 발표 (최종)',           lv:2, owner:'윤세호', status:'Not Started', start:'06-19', finish:'06-22', w:'4', pct:'0',   bar:'grey' },
+    { wbs:'8.4',   task:'최종 발표 (15주차)',           lv:2, owner:'윤세호', status:'Milestone',   start:'06-22', finish:'06-22', w:'1', pct:'0',   bar:'milestone' },
   ];
 
   function fmtDate(md) {
@@ -290,3 +290,4 @@
 </script>
 </body>
 </html>
+

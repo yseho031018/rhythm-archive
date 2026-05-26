@@ -1948,7 +1948,6 @@ class RhythmWavePainter extends CustomPainter {
       );
     }
 
-    _paintEnergyEnvelope(canvas, size, baseColor, energy);
     _paintTouchPulse(canvas, baseColor);
     _paintHeader(canvas, size, energy, emotions);
   }
@@ -2149,38 +2148,6 @@ class RhythmWavePainter extends CustomPainter {
     return (hash - hash.floorToDouble()) * 2 - 1;
   }
 
-  void _paintEnergyEnvelope(
-    Canvas canvas,
-    Size size,
-    Color baseColor,
-    int energy,
-  ) {
-    final envelopePaint = Paint()
-      ..color = AppColors.accent.withValues(alpha: 0.42)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-    final centerY = size.height * 0.52;
-    final height = 24.0 + energy * 10.0;
-    final rect = Rect.fromLTWH(
-      34,
-      centerY - height,
-      size.width - 68,
-      height * 2,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(100)),
-      envelopePaint,
-    );
-
-    final dotPaint = Paint()..color = baseColor.withValues(alpha: 0.9);
-    final dotX = 34 + (size.width - 68) * ((progress * 1.4) % 1.0);
-    canvas.drawCircle(
-      Offset(dotX, centerY - height * sin(progress * pi * 2).abs()),
-      4.5,
-      dotPaint,
-    );
-  }
-
   void _paintTouchPulse(Canvas canvas, Color baseColor) {
     final point = touchPoint;
     if (point == null) return;
@@ -2242,7 +2209,7 @@ class RhythmWavePainter extends CustomPainter {
   List<WaveConfig> _waveConfigsFor(List<String> emotions, int energy) {
     final source = emotions.isEmpty ? ['평온'] : emotions;
     final configs = <WaveConfig>[];
-    for (var i = 0; i < source.length.clamp(2, 4); i++) {
+    for (var i = 0; i < source.length.clamp(1, 4); i++) {
       configs.add(
         WaveBehavior.configFor(
           source[i % source.length],

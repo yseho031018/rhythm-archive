@@ -82,6 +82,153 @@ Color emotionColor(List<String> emotions) {
   return const Color(0xFF6EC99E); // Calm sage/mint green glow
 }
 
+enum EmotionType { calm, anxious, achievement, focused, tired, joyful }
+
+EmotionType resolveEmotionType(String keyword) {
+  switch (keyword) {
+    case '불안':
+      return EmotionType.anxious;
+    case '성취감':
+      return EmotionType.achievement;
+    case '집중':
+      return EmotionType.focused;
+    case '피곤':
+    case '무기력':
+      return EmotionType.tired;
+    case '기쁨':
+    case '설렘':
+      return EmotionType.joyful;
+    case '평온':
+    default:
+      return EmotionType.calm;
+  }
+}
+
+class WaveConfig {
+  const WaveConfig({
+    required this.type,
+    required this.label,
+    required this.amplitude,
+    required this.frequency,
+    required this.smoothness,
+    required this.chaos,
+    required this.speed,
+    required this.colors,
+    required this.blendMode,
+    this.rise = 0,
+  });
+
+  final EmotionType type;
+  final String label;
+  final double amplitude;
+  final double frequency;
+  final double smoothness;
+  final double chaos;
+  final double speed;
+  final List<Color> colors;
+  final BlendMode blendMode;
+  final double rise;
+
+  WaveConfig scaledByEnergy(int energy, int index) {
+    final energyFactor = (energy - 3) / 2;
+    return WaveConfig(
+      type: type,
+      label: label,
+      amplitude: amplitude + energyFactor * 8 + index * 4,
+      frequency: frequency + index * 0.18,
+      smoothness: smoothness,
+      chaos: chaos + max(0, energyFactor) * 0.08,
+      speed: speed + energy * 0.04 + index * 0.08,
+      colors: colors,
+      blendMode: blendMode,
+      rise: rise,
+    );
+  }
+}
+
+class WaveBehavior {
+  const WaveBehavior._();
+
+  static WaveConfig configFor(String keyword) {
+    switch (resolveEmotionType(keyword)) {
+      case EmotionType.anxious:
+        return const WaveConfig(
+          type: EmotionType.anxious,
+          label: '불규칙',
+          amplitude: 43,
+          frequency: 2.8,
+          smoothness: 0.18,
+          chaos: 0.72,
+          speed: 1.6,
+          colors: [Color(0xFFB58CFF), Color(0xFFFF7AC8), Color(0xFF7A5CFF)],
+          blendMode: BlendMode.screen,
+        );
+      case EmotionType.achievement:
+        return const WaveConfig(
+          type: EmotionType.achievement,
+          label: '상승',
+          amplitude: 52,
+          frequency: 1.28,
+          smoothness: 0.95,
+          chaos: 0.04,
+          speed: 1.22,
+          colors: [Color(0xFFFFD86B), Color(0xFFFFA94D), Color(0xFFFFFFFF)],
+          blendMode: BlendMode.plus,
+          rise: 52,
+        );
+      case EmotionType.focused:
+        return const WaveConfig(
+          type: EmotionType.focused,
+          label: '집중',
+          amplitude: 30,
+          frequency: 2.05,
+          smoothness: 0.88,
+          chaos: 0.04,
+          speed: 0.92,
+          colors: [Color(0xFF1BE0B5), Color(0xFF83F7D5), Color(0xFF3AA8FF)],
+          blendMode: BlendMode.screen,
+        );
+      case EmotionType.tired:
+        return const WaveConfig(
+          type: EmotionType.tired,
+          label: '저하',
+          amplitude: 20,
+          frequency: 0.95,
+          smoothness: 0.82,
+          chaos: 0.1,
+          speed: 0.48,
+          colors: [Color(0xFF758591), Color(0xFFAEB8BE), Color(0xFF55636A)],
+          blendMode: BlendMode.srcOver,
+          rise: -12,
+        );
+      case EmotionType.joyful:
+        return const WaveConfig(
+          type: EmotionType.joyful,
+          label: '활기',
+          amplitude: 38,
+          frequency: 2.35,
+          smoothness: 0.56,
+          chaos: 0.2,
+          speed: 1.35,
+          colors: [Color(0xFFFF8B9C), Color(0xFFFFD166), Color(0xFFFF6F91)],
+          blendMode: BlendMode.screen,
+        );
+      case EmotionType.calm:
+        return const WaveConfig(
+          type: EmotionType.calm,
+          label: '평온',
+          amplitude: 26,
+          frequency: 1.1,
+          smoothness: 0.96,
+          chaos: 0.03,
+          speed: 0.62,
+          colors: [Color(0xFF6EC99E), Color(0xFFA6E7C6), Color(0xFFEAC98C)],
+          blendMode: BlendMode.srcOver,
+        );
+    }
+  }
+}
+
 void main() {
   runApp(const RhythmApp());
 }
@@ -1717,29 +1864,24 @@ class RhythmWavePainter extends CustomPainter {
     final emotions = entry?.emotions ?? previewEmotions.toList();
     final baseColor = emotionColor(emotions);
     final energy = entry?.energy ?? previewEnergy;
-    final waveCount = emotions.isEmpty ? 3 : emotions.length.clamp(2, 4);
+    final configs = _waveConfigsFor(emotions, energy);
+    final waveCount = configs.length;
 
     _paintBackground(canvas, rect, baseColor);
     _paintGrid(canvas, size);
     _paintAxisLabels(canvas, size);
 
     for (var i = 0; i < waveCount; i++) {
-      final emotion = emotions.isEmpty ? '평온' : emotions[i % emotions.length];
-      final color = _waveColor(emotion, baseColor, i);
-      final amplitude = (18.0 + energy * 7.0 + i * 7.0).clamp(18.0, 66.0);
-      final frequency = 1.15 + i * 0.42 + energy * 0.06;
-      final speed = 0.75 + i * 0.23 + energy * 0.08;
+      final config = configs[i];
       final baseline =
           size.height * (0.34 + i * (0.34 / max(1, waveCount - 1)));
 
       _paintWave(
         canvas: canvas,
         size: size,
-        color: color,
+        config: config,
         baseline: baseline,
-        amplitude: amplitude,
-        frequency: frequency,
-        phase: progress * pi * 2 * speed + i * 0.85,
+        phase: progress * pi * 2 * config.speed + i * 0.85,
         glow: i == 0,
       );
     }
@@ -1820,24 +1962,26 @@ class RhythmWavePainter extends CustomPainter {
   void _paintWave({
     required Canvas canvas,
     required Size size,
-    required Color color,
+    required WaveConfig config,
     required double baseline,
-    required double amplitude,
-    required double frequency,
     required double phase,
     required bool glow,
   }) {
     final path = Path();
     final fillPath = Path()..moveTo(0, size.height);
+    final color = config.colors.first;
+    final amplitude = config.amplitude.clamp(14.0, 76.0);
 
     const step = 5.0;
     for (double x = 0; x <= size.width + step; x += step) {
       final normalized = x / size.width;
-      final primary = sin(normalized * pi * 2 * frequency + phase);
-      final secondary = sin(
-        normalized * pi * 2 * (frequency * 0.5) - phase * 0.7,
+      final y = _sampleEmotionWave(
+        normalized: normalized,
+        baseline: baseline,
+        amplitude: amplitude,
+        phase: phase,
+        config: config,
       );
-      final y = baseline + primary * amplitude + secondary * amplitude * 0.22;
       if (x == 0) {
         path.moveTo(x, y);
         fillPath.lineTo(x, y);
@@ -1871,12 +2015,76 @@ class RhythmWavePainter extends CustomPainter {
     }
 
     final linePaint = Paint()
-      ..color = color.withValues(alpha: 0.92)
+      ..shader = LinearGradient(
+        colors: config.colors.map((c) => c.withValues(alpha: 0.94)).toList(),
+      ).createShader(Offset.zero & size)
+      ..blendMode = config.blendMode
       ..style = PaintingStyle.stroke
       ..strokeWidth = glow ? 3.2 : 2.2
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     canvas.drawPath(path, linePaint);
+  }
+
+  double _sampleEmotionWave({
+    required double normalized,
+    required double baseline,
+    required double amplitude,
+    required double phase,
+    required WaveConfig config,
+  }) {
+    final sine = sin(normalized * pi * 2 * config.frequency + phase);
+    final overtone = sin(
+      normalized * pi * 2 * (config.frequency * 0.5) - phase * 0.7,
+    );
+    final noise = _valueNoise(normalized * 10 + phase * 0.23);
+    final jag =
+        (sin(normalized * pi * 2 * config.frequency * 3 + phase) >= 0
+            ? 1.0
+            : -1.0) *
+        (0.35 + noise.abs() * 0.65);
+
+    var shape = sine * config.smoothness + jag * (1 - config.smoothness);
+    shape += overtone * 0.22;
+    shape += noise * config.chaos;
+
+    switch (config.type) {
+      case EmotionType.anxious:
+        shape += _sharpSpike(normalized, phase) * config.chaos;
+      case EmotionType.achievement:
+        shape += normalized * 0.7 - 0.35;
+      case EmotionType.focused:
+        shape =
+            sin(normalized * pi * 2 * config.frequency + phase) * 0.78 +
+            sin(normalized * pi * 4 * config.frequency + phase * 0.5) * 0.12;
+      case EmotionType.calm:
+        shape = sine * 0.86 + overtone * 0.12;
+      case EmotionType.tired:
+        shape = sine * 0.52 + overtone * 0.08 - normalized * 0.18;
+      case EmotionType.joyful:
+        shape += sin(normalized * pi * 10 + phase * 1.8) * 0.13;
+    }
+
+    return baseline - config.rise * normalized + shape * amplitude;
+  }
+
+  double _sharpSpike(double normalized, double phase) {
+    final moving = (normalized * 5.0 + phase / (pi * 2)) % 1.0;
+    final spike = 1 - (moving - 0.5).abs() * 2;
+    return pow(max(0, spike), 6).toDouble() * 1.7;
+  }
+
+  double _valueNoise(double value) {
+    final left = value.floorToDouble();
+    final right = left + 1;
+    final t = value - left;
+    final smoothT = t * t * (3 - 2 * t);
+    return _hashNoise(left) * (1 - smoothT) + _hashNoise(right) * smoothT;
+  }
+
+  double _hashNoise(double value) {
+    final hash = sin(value * 127.1 + 311.7) * 43758.5453;
+    return (hash - hash.floorToDouble()) * 2 - 1;
   }
 
   void _paintEnergyEnvelope(
@@ -1969,14 +2177,17 @@ class RhythmWavePainter extends CustomPainter {
     caption.paint(canvas, const Offset(22, 45));
   }
 
-  Color _waveColor(String emotion, Color baseColor, int index) {
-    final palette = [
-      emotionColor([emotion]),
-      AppColors.accentLight,
-      const Color(0xFF6EC6FF),
-      const Color(0xFFFF7AE6),
-    ];
-    return Color.lerp(palette[index % palette.length], baseColor, 0.2)!;
+  List<WaveConfig> _waveConfigsFor(List<String> emotions, int energy) {
+    final source = emotions.isEmpty ? ['평온'] : emotions;
+    final configs = <WaveConfig>[];
+    for (var i = 0; i < source.length.clamp(2, 4); i++) {
+      configs.add(
+        WaveBehavior.configFor(
+          source[i % source.length],
+        ).scaledByEnergy(energy, i),
+      );
+    }
+    return configs;
   }
 
   @override

@@ -1926,27 +1926,19 @@ class RhythmWavePainter extends CustomPainter {
     final emotions = entry?.emotions ?? previewEmotions.toList();
     final baseColor = emotionColor(emotions);
     final energy = entry?.energy ?? previewEnergy;
-    final configs = _waveConfigsFor(emotions, energy);
-    final waveCount = configs.length;
+    final config = _fusedWaveConfigFor(emotions, energy);
 
     _paintBackground(canvas, rect, baseColor);
     _paintGrid(canvas, size);
-    _paintAxisLabels(canvas, size);
 
-    for (var i = 0; i < waveCount; i++) {
-      final config = configs[i];
-      final baseline =
-          size.height * (0.34 + i * (0.34 / max(1, waveCount - 1)));
-
-      _paintWave(
-        canvas: canvas,
-        size: size,
-        config: config,
-        baseline: baseline,
-        phase: progress * pi * 2 * config.speed + i * 0.85,
-        glow: i == 0,
-      );
-    }
+    _paintWave(
+      canvas: canvas,
+      size: size,
+      config: config,
+      baseline: size.height * 0.52,
+      phase: progress * pi * 2 * config.speed,
+      glow: true,
+    );
 
     _paintTouchPulse(canvas, baseColor);
     _paintHeader(canvas, size, energy, emotions);
@@ -1999,25 +1991,6 @@ class RhythmWavePainter extends CustomPainter {
 
     final mid = size.height * 0.52;
     canvas.drawLine(Offset(20, mid), Offset(size.width - 18, mid), strongPaint);
-  }
-
-  void _paintAxisLabels(Canvas canvas, Size size) {
-    final labels = ['차분', '흐름', '고조'];
-    for (var i = 0; i < labels.length; i++) {
-      final y = size.height * (0.74 - i * 0.24);
-      final painter = TextPainter(
-        text: TextSpan(
-          text: labels[i],
-          style: TextStyle(
-            color: AppColors.textMuted.withValues(alpha: 0.7),
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      painter.paint(canvas, Offset(20, y));
-    }
   }
 
   void _paintWave({
@@ -2206,17 +2179,44 @@ class RhythmWavePainter extends CustomPainter {
     caption.paint(canvas, const Offset(22, 45));
   }
 
-  List<WaveConfig> _waveConfigsFor(List<String> emotions, int energy) {
+  WaveConfig _fusedWaveConfigFor(List<String> emotions, int energy) {
     final source = emotions.isEmpty ? ['평온'] : emotions;
-    final configs = <WaveConfig>[];
-    for (var i = 0; i < source.length.clamp(1, 4); i++) {
-      configs.add(
-        WaveBehavior.configFor(
-          source[i % source.length],
-        ).scaledByEnergy(energy, i),
-      );
+    final configs = source
+        .take(4)
+        .map(
+          (emotion) =>
+              WaveBehavior.configFor(emotion).scaledByEnergy(energy, 0),
+        )
+        .toList();
+    final count = configs.length;
+
+    double average(double Function(WaveConfig config) pick) {
+      return configs.map(pick).reduce((a, b) => a + b) / count;
     }
-    return configs;
+
+    final dominantType =
+        configs.any((config) => config.type == EmotionType.anxious)
+        ? EmotionType.anxious
+        : configs.any((config) => config.type == EmotionType.achievement)
+        ? EmotionType.achievement
+        : configs.any((config) => config.type == EmotionType.focused)
+        ? EmotionType.focused
+        : configs.first.type;
+
+    return WaveConfig(
+      type: dominantType,
+      label: configs.map((config) => config.label).join('+'),
+      amplitude: average((config) => config.amplitude),
+      frequency: average((config) => config.frequency),
+      smoothness: average((config) => config.smoothness),
+      chaos: average((config) => config.chaos),
+      speed: average((config) => config.speed),
+      colors: configs.expand((config) => config.colors).take(5).toList(),
+      blendMode: configs.any((config) => config.blendMode != BlendMode.srcOver)
+          ? BlendMode.screen
+          : BlendMode.srcOver,
+      rise: average((config) => config.rise),
+    );
   }
 
   @override

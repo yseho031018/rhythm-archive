@@ -25,5 +25,6 @@ void main() {
     expect(find.text('오늘'), findsOneWidget);
     expect(find.text('히스토리'), findsOneWidget);
     expect(find.text('패턴'), findsOneWidget);
+    expect(find.text('감정 키워드를 선택해주세요'), findsOneWidget);
   });
 }

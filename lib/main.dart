@@ -380,7 +380,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
 
   int _tabIndex = 0;
   int _energy = 3;
-  final Set<String> _selectedEmotions = {'평온'};
+  final Set<String> _selectedEmotions = {};
   final Set<String> _selectedActivities = {'공부'};
   List<RhythmEntry> _entries = [];
   bool _loaded = false;
@@ -425,6 +425,16 @@ class _RhythmHomePageState extends State<RhythmHomePage>
   }
 
   Future<void> _addTodayEntry() async {
+    if (_selectedEmotions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('감정 키워드를 하나 이상 선택해주세요.'),
+          backgroundColor: AppColors.primaryLight,
+        ),
+      );
+      return;
+    }
+
     final entry = RhythmEntry(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       createdAt: DateTime.now(),
@@ -451,9 +461,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
     setState(() {
       _entries = _sampleEntries();
       _energy = 3;
-      _selectedEmotions
-        ..clear()
-        ..add('평온');
+      _selectedEmotions.clear();
       _selectedActivities
         ..clear()
         ..add('공부');
@@ -501,7 +509,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
   }
 
   RhythmEntry? get _previewEntry {
-    if (_entries.isNotEmpty) return _entries.first;
+    if (_selectedEmotions.isEmpty) return null;
     return RhythmEntry(
       id: 'preview',
       createdAt: DateTime.now(),
@@ -563,7 +571,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
   void _toggleEmotion(String emotion) {
     setState(() {
       if (_selectedEmotions.contains(emotion)) {
-        if (_selectedEmotions.length > 1) _selectedEmotions.remove(emotion);
+        _selectedEmotions.remove(emotion);
       } else if (_selectedEmotions.length < 3) {
         _selectedEmotions.add(emotion);
       }
@@ -1309,6 +1317,7 @@ class _HomeTab extends StatelessWidget {
           ),
         );
 
+        final hasWavePreview = selectedEmotions.isNotEmpty;
         final canvas = _Panel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1326,27 +1335,31 @@ class _HomeTab extends StatelessWidget {
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: _WaveCanvas(
-                    energy: energy,
-                    emotions: selectedEmotions,
-                    entry: previewEntry,
-                    animation: animation,
-                  ),
+                  child: hasWavePreview
+                      ? _WaveCanvas(
+                          energy: energy,
+                          emotions: selectedEmotions,
+                          entry: previewEntry,
+                          animation: animation,
+                        )
+                      : const _EmptyWavePlaceholder(),
                 ),
               ),
               const SizedBox(height: 12),
-              const Row(
+              Row(
                 children: [
-                  Icon(
-                    Icons.touch_app_outlined,
+                  const Icon(
+                    Icons.auto_awesome_motion_outlined,
                     size: 14,
                     color: AppColors.textMuted,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '감정과 에너지에 따라 움직이는 파동 그래프입니다. 터치하면 파동이 한 번 더 번집니다.',
-                      style: TextStyle(
+                      hasWavePreview
+                          ? '감정과 에너지에 따라 움직이는 파동 그래프입니다. 터치하면 파동이 한 번 더 번집니다.'
+                          : '감정 키워드를 선택하면 파동 그래프가 생성됩니다.',
+                      style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,
                         fontStyle: FontStyle.italic,
@@ -1378,6 +1391,55 @@ class _HomeTab extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _EmptyWavePlaceholder extends StatelessWidget {
+  const _EmptyWavePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.background.withValues(alpha: 0.92),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.waves_outlined,
+                size: 34,
+                color: AppColors.textMuted.withValues(alpha: 0.65),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                '감정 키워드를 선택해주세요',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                '선택된 감정이 없으면 파동 그래프를 표시하지 않습니다.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

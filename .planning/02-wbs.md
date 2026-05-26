@@ -52,7 +52,7 @@ gantt
     section 설계 결정/발표 준비
     ADR 및 중간 발표 자료   :done,    adr, 2026-05-19, 8d
     section 데모 선행 개발
-    Flutter Web 데모        :done,    demo, 2026-05-26, 1d
+    Flutter Web 데모        :done,    demo, 2026-05-23, 4d
     section 아키텍처 정리
     레이어 분리 및 Riverpod :active,  refactor, 2026-05-27, 8d
     section 도메인/데이터

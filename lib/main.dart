@@ -1,101 +1,99 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui'; // Premium filters and BackdropFilter
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ============================================================
-// Premium Design System — Calm Luxury for Rhythm
+// Premium Obsidian Dark Luxury Design System for Rhythm
 // ============================================================
 
 class AppColors {
-  // Warm ivory / linen background (quiet luxury feel)
-  static const ivory = Color(0xFFF8F5EF);
-  static const surface = Color(0xFFFEFCF7);
-  static const surfaceAlt = Color(0xFFFAF7F1);
+  // Deep obsidian luxury dark backgrounds
+  static const background = Color(0xFF070B0C);
+  static const surface = Color(0xFF0F1618);
+  static const surfaceAlt = Color(0xFF172023);
 
-  // Elegant warm borders
-  static const border = Color(0xFFEDE6DB);
-  static const borderStrong = Color(0xFFE0D6C7);
+  // Elegant metallic borders (satin slate / platinum and soft gold)
+  static const border = Color(0xFF1F2D30);
+  static const borderStrong = Color(0xFF2E4145);
+  static const borderGold = Color(0x3DC5A880);
 
-  // Sophisticated deep teal-green (primary brand)
-  static const primary = Color(0xFF2B4F4E);
-  static const primaryDark = Color(0xFF1F3837);
-  static const primaryLight = Color(0xFF3D6362);
+  // Sophisticated deep forest brand teal-green
+  static const primary = Color(0xFF143031);
+  static const primaryDark = Color(0xFF0B1B1C);
+  static const primaryLight = Color(0xFF224E50);
 
-  // Warm bronze / gold accent for premium touches
-  static const accent = Color(0xFF9C7C5B);
-  static const accentLight = Color(0xFFB89A75);
+  // Radiant premium gold and warm champagne accents
+  static const accent = Color(0xFFD4AF37); // Warm polished gold
+  static const accentLight = Color(0xFFEAC98C); // Champagne sparkle
+  static const accentBronze = Color(0xFFC5A880); // Satin warm bronze
 
-  // Rich text hierarchy
-  static const textPrimary = Color(0xFF2C2C2C);
-  static const textSecondary = Color(0xFF6B665E);
-  static const textMuted = Color(0xFF8C8579);
+  // Elegant silk off-white & silver text hierarchy
+  static const textPrimary = Color(0xFFE6ECEF);
+  static const textSecondary = Color(0xFF9CA9AD);
+  static const textMuted = Color(0xFF67777A);
+  static const textGold = Color(0xFFC5A880);
 
-  // Subtle overlays
-  static const overlay = Color(0x0A000000);
+  // Translucent overlays
+  static const overlay = Color(0x13FFFFFF);
+  static const glassBackground = Color(0x1F0B1112);
 }
 
 class AppRadii {
-  static const card = 18.0;
-  static const chip = 22.0;
-  static const button = 14.0;
-  static const energyDot = 28.0;
+  static const card = 20.0;
+  static const chip = 16.0;
+  static const button = 16.0;
+  static const energyDot = 32.0;
 }
 
 class AppShadows {
   static const card = [
     BoxShadow(
-      color: Color(0x12000000),
-      blurRadius: 28,
-      offset: Offset(0, 14),
-      spreadRadius: -2,
+      color: Color(0x1F000000),
+      blurRadius: 36,
+      offset: Offset(0, 16),
+      spreadRadius: -4,
     ),
-    BoxShadow(color: Color(0x06000000), blurRadius: 6, offset: Offset(0, 2)),
   ];
 
   static const subtle = [
-    BoxShadow(color: Color(0x08000000), blurRadius: 16, offset: Offset(0, 6)),
+    BoxShadow(
+      color: Color(0x12000000),
+      blurRadius: 16,
+      offset: Offset(0, 6),
+    ),
   ];
 }
 
 Color emotionColor(List<String> emotions) {
   if (emotions.contains('불안')) {
-    return const Color(0xFF6B5B9A); // deep elegant violet
+    return const Color(0xFF9E86E5); // Bright amethyst violet glow
   }
   if (emotions.contains('피곤')) {
-    return const Color(0xFF6B7278); // muted slate
+    return const Color(0xFF758591); // Sleek charcoal-steel grey
   }
   if (emotions.contains('성취감')) {
-    return const Color(0xFFBF8A4A); // warm amber-bronze
+    return const Color(0xFFF9C851); // Radiant amber/yellow-gold
   }
   if (emotions.contains('기쁨') || emotions.contains('설렘')) {
-    return const Color(0xFFC46B7A); // refined rose
+    return const Color(0xFFFF8B9C); // Lighter hot rose-coral glow
   }
   if (emotions.contains('집중')) {
-    return AppColors.primary;
+    return const Color(0xFF1BE0B5); // Electric aqua/emerald teal
   }
-  return const Color(0xFF5B7A6F); // calm sage
+  return const Color(0xFF6EC99E); // Calm sage/mint green glow
 }
 
 // ============================================================
 // Particle System — emotional motion driven by energy + keywords
 // ============================================================
 
-/// Movement archetype derived from `(energy, emotions)`. Each mode tunes
-/// attraction, noise amplitude, damping, and orbital pull independently.
 enum BehaviorMode {
-  /// Low velocity, soft drift, generous damping. (피곤 / 무기력 / 낮은 에너지)
   calm,
-
-  /// Wide oscillation, bright halos, lively orbit. (기쁨 / 설렘 + 높은 에너지)
   vibrant,
-
-  /// Heavy noise, weak attractor, scattered trajectories. (불안)
   chaotic,
-
-  /// Tight orbit around the attractor, narrow scatter, strong glow.
-  /// (집중 / 성취감)
   focused,
 }
 
@@ -116,9 +114,6 @@ BehaviorMode resolveBehaviorMode(int energy, List<String> emotions) {
   return BehaviorMode.vibrant;
 }
 
-/// 2D value-noise with smoothstep interpolation. Returns `[-1, 1]`.
-/// Cheap enough to call twice per particle per frame; gives organic wiggle
-/// without the cost of a full Perlin gradient table.
 double perlinNoise(double x, double y) {
   double hash(int xi, int yi) {
     final s = sin(xi * 127.1 + yi * 311.7) * 43758.5453;
@@ -141,9 +136,6 @@ double perlinNoise(double x, double y) {
   return mix(mix(n00, n10, u), mix(n01, n11, u), v);
 }
 
-/// Per-frame context shared with every particle. Named `ParticleContext` to
-/// avoid colliding with Flutter's built-in `PaintingContext` from
-/// `flutter/rendering.dart`.
 class ParticleContext {
   const ParticleContext({
     required this.size,
@@ -156,16 +148,14 @@ class ParticleContext {
   });
 
   final Size size;
-  final double dt; // seconds since the previous tick (clamped)
-  final double time; // monotonic seconds since field creation
-  final Offset attractor; // point particles are pulled toward
+  final double dt;
+  final double time;
+  final Offset attractor;
   final BehaviorMode mode;
-  final double energy; // 1.0 .. 5.0
-  final Color baseColor; // dominant emotion color
+  final double energy;
+  final Color baseColor;
 }
 
-/// Single luminous particle. Owns its kinematic state and renders itself
-/// with a 3-layer halo → mid-glow → core for a premium soft-glow look.
 class Particle {
   Particle({
     required this.position,
@@ -193,7 +183,6 @@ class Particle {
   void update(ParticleContext ctx) {
     final dt = ctx.dt;
 
-    // ── 1. Wiggle vector from 2D noise (decoupled X / Y channels) ─────
     final nx = perlinNoise(
       noiseOffset + position.dx * 0.005,
       ctx.time * 0.25,
@@ -203,13 +192,11 @@ class Particle {
       noiseOffset + position.dy * 0.005,
     );
 
-    // ── 2. Vector toward attractor (normalized) ───────────────────────
     final toAttractor = ctx.attractor - position;
     final dist = toAttractor.distance.clamp(1.0, 2000.0);
     final pullDir = toAttractor / dist;
-    final tangent = Offset(-pullDir.dy, pullDir.dx); // 90° rotated
+    final tangent = Offset(-pullDir.dy, pullDir.dx);
 
-    // ── 3. Mode-specific tuning ───────────────────────────────────────
     late final double pullStrength;
     late final double noiseStrength;
     late final double orbitStrength;
@@ -241,14 +228,11 @@ class Particle {
         tangent * orbitStrength +
         Offset(nx, ny) * noiseStrength;
 
-    // Semi-implicit Euler with velocity damping for stable motion.
     velocity = (velocity + acceleration * dt) * damping;
     position += velocity * dt;
 
-    // ── 4. Life + fade envelope ───────────────────────────────────────
     life -= dt;
     final lifeT = (life / maxLife).clamp(0.0, 1.0);
-    // Fade in over first 20% of life, fade out over last 60%.
     final fadeIn = ((1 - lifeT) / 0.2).clamp(0.0, 1.0);
     final fadeOut = (lifeT / 0.6).clamp(0.0, 1.0);
     opacity = (fadeIn * fadeOut).clamp(0.0, 1.0);
@@ -257,46 +241,81 @@ class Particle {
   void draw(ParticleContext ctx, Canvas canvas) {
     if (opacity <= 0.01) return;
 
-    // Outer halo — large soft blur, low alpha. The "premium" glow comes
-    // from this layer being noticeably bigger than the core.
+    // Soft outer luxurious glow
     final haloPaint = Paint()
-      ..color = color.withValues(alpha: opacity * 0.32)
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, size * 1.6);
-    canvas.drawCircle(position, size * 2.1, haloPaint);
+      ..color = color.withValues(alpha: opacity * 0.38)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, size * 1.8);
+    canvas.drawCircle(position, size * 2.3, haloPaint);
 
-    // Mid-glow — a softer wash that bridges halo and core.
     if (size >= 4) {
       final glowPaint = Paint()
-        ..color = color.withValues(alpha: opacity * 0.55)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, size * 0.6);
-      canvas.drawCircle(position, size * 1.15, glowPaint);
+        ..color = color.withValues(alpha: opacity * 0.6)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, size * 0.75);
+      canvas.drawCircle(position, size * 1.2, glowPaint);
     }
 
-    // Crisp core.
+    // High-crisp diamond core
     final corePaint = Paint()..color = color.withValues(alpha: opacity);
     canvas.drawCircle(position, size, corePaint);
 
-    // Specular highlight for active modes — adds that "jewel" sheen.
     if (ctx.mode == BehaviorMode.focused ||
         ctx.mode == BehaviorMode.vibrant) {
       final spec = Paint()
-        ..color = Colors.white.withValues(alpha: opacity * 0.85);
+        ..color = Colors.white.withValues(alpha: opacity * 0.9);
       canvas.drawCircle(
         position - Offset(size * 0.3, size * 0.3),
-        size * 0.32,
+        size * 0.35,
         spec,
       );
     }
   }
 }
 
-/// Owns a pool of particles, advances them each frame, and replenishes
-/// the population to keep density proportional to current energy.
+// ============================================================
+// Interactive Ripples on Canvas
+// ============================================================
+
+class CanvasRipple {
+  CanvasRipple({
+    required this.position,
+    required this.color,
+    this.maxRadius = 160.0,
+    this.duration = 1.2,
+  }) : age = 0;
+
+  final Offset position;
+  final Color color;
+  final double maxRadius;
+  final double duration;
+  double age;
+
+  bool get isDead => age >= duration;
+
+  void update(double dt) {
+    age += dt;
+  }
+
+  void draw(Canvas canvas) {
+    final t = (age / duration).clamp(0.0, 1.0);
+    final radius = t * maxRadius;
+    final opacity = (1.0 - t).clamp(0.0, 1.0);
+
+    final paint = Paint()
+      ..color = color.withValues(alpha: opacity * 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5 * (1.0 - t)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
+
+    canvas.drawCircle(position, radius, paint);
+  }
+}
+
 class ParticleField {
-  ParticleField({this.maxParticles = 90});
+  ParticleField({this.maxParticles = 100});
 
   final int maxParticles;
   final List<Particle> _particles = [];
+  final List<CanvasRipple> _ripples = [];
   final Random _rng = Random();
   final Stopwatch _clock = Stopwatch()..start();
   double _lastTime = 0;
@@ -304,9 +323,6 @@ class ParticleField {
 
   int get count => _particles.length;
 
-  /// Advance one frame. `dt` is auto-computed from an internal stopwatch
-  /// and clamped so that a paused window doesn't catapult particles off
-  /// screen on resume.
   void update({
     required Size size,
     required double energy,
@@ -335,12 +351,15 @@ class ParticleField {
     }
     _particles.removeWhere((p) => p.isDead);
 
-    // Density target scales with energy: 40 (e=1) → 80 (e=5).
-    final target = (40 + energy * 10).toInt().clamp(20, maxParticles);
+    for (final r in _ripples) {
+      r.update(dt);
+    }
+    _ripples.removeWhere((r) => r.isDead);
+
+    final target = (45 + energy * 11).toInt().clamp(25, maxParticles);
     final deficit = target - _particles.length;
     if (deficit > 0) {
-      // Spawn gradually to avoid pop-in flashes.
-      final spawn = (deficit * 0.12).ceil().clamp(0, 5);
+      final spawn = (deficit * 0.15).ceil().clamp(0, 6);
       for (var i = 0; i < spawn; i++) {
         _particles.add(_spawn(ctx));
       }
@@ -352,32 +371,32 @@ class ParticleField {
   void draw(Canvas canvas) {
     final ctx = _lastCtx;
     if (ctx == null) return;
+    
     for (final p in _particles) {
       p.draw(ctx, canvas);
+    }
+
+    for (final r in _ripples) {
+      r.draw(canvas);
     }
   }
 
   Particle _spawn(ParticleContext ctx) {
-    // Spawn on a ring around the attractor, with radius widening for
-    // higher energy. Initial velocity is tangential for orbital feel.
     final angle = _rng.nextDouble() * pi * 2;
-    final radius = 70 + _rng.nextDouble() * (80 + ctx.energy * 20);
+    final radius = 70 + _rng.nextDouble() * (85 + ctx.energy * 20);
     final position =
         ctx.attractor + Offset(cos(angle), sin(angle)) * radius;
     final tangent = Offset(-sin(angle), cos(angle));
-    final speed = 8 + _rng.nextDouble() * (10 + ctx.energy * 4);
+    final speed = 8 + _rng.nextDouble() * (12 + ctx.energy * 4);
     final velocity = tangent * speed;
 
-    // Size: 3..14px, mapped from energy (1..5) with per-particle jitter.
-    final base = 3 + (ctx.energy - 1) * 2.75; // 3..14
+    final base = 3 + (ctx.energy - 1) * 2.85;
     final size =
-        (base * (0.55 + _rng.nextDouble() * 0.75)).clamp(3.0, 14.0);
+        (base * (0.55 + _rng.nextDouble() * 0.75)).clamp(3.0, 15.0);
 
-    // Color: blend the dominant emotion color toward white or a warm
-    // bronze accent for variety. Keeps the palette cohesive.
     final accent = _rng.nextBool()
         ? Colors.white
-        : const Color(0xFFEAC98C); // warm bronze sparkle
+        : const Color(0xFFF7DCA7); // Warm sparkling champagne
     final color = Color.lerp(
       ctx.baseColor,
       accent,
@@ -392,6 +411,54 @@ class ParticleField {
       maxLife: 3.5 + _rng.nextDouble() * 4.5,
       noiseOffset: _rng.nextDouble() * 100,
     );
+  }
+
+  // Interactive spark spawn burst when tapped
+  void spawnTouchBurst(Offset offset, Color baseColor, double energy) {
+    for (var i = 0; i < 20; i++) {
+      final angle = _rng.nextDouble() * pi * 2;
+      final speed = 40.0 + _rng.nextDouble() * 125.0;
+      final velocity = Offset(cos(angle), sin(angle)) * speed;
+      
+      final size = 2.0 + _rng.nextDouble() * 4.5;
+      final color = Color.lerp(
+        baseColor,
+        Colors.white,
+        0.3 + _rng.nextDouble() * 0.55,
+      )!;
+
+      _particles.add(Particle(
+        position: offset,
+        velocity: velocity,
+        color: color,
+        size: size,
+        maxLife: 0.8 + _rng.nextDouble() * 1.3,
+        noiseOffset: _rng.nextDouble() * 100.0,
+      ));
+    }
+  }
+
+  // Interactive drag sparks
+  void spawnDragSpark(Offset offset, Color baseColor) {
+    final angle = _rng.nextDouble() * pi * 2;
+    final speed = 15.0 + _rng.nextDouble() * 35.0;
+    final velocity = Offset(cos(angle), sin(angle)) * speed;
+    
+    _particles.add(Particle(
+      position: offset,
+      velocity: velocity,
+      color: Color.lerp(baseColor, Colors.white, 0.45)!,
+      size: 2.2 + _rng.nextDouble() * 3.0,
+      maxLife: 0.6 + _rng.nextDouble() * 0.6,
+      noiseOffset: _rng.nextDouble() * 100.0,
+    ));
+  }
+
+  void addRipple(Offset position, Color color) {
+    _ripples.add(CanvasRipple(
+      position: position,
+      color: color,
+    ));
   }
 }
 
@@ -409,24 +476,23 @@ class RhythmApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: AppColors.ivory,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: AppColors.background,
         fontFamily: 'Segoe UI',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          brightness: Brightness.light,
+        colorScheme: const ColorScheme.dark(
           surface: AppColors.surface,
           onSurface: AppColors.textPrimary,
-          primary: AppColors.primary,
-          onPrimary: Colors.white,
-          secondary: AppColors.accent,
+          primary: AppColors.accent,
+          onPrimary: AppColors.background,
+          secondary: AppColors.accentBronze,
+          outline: AppColors.border,
         ),
-        // Premium typography scale
         textTheme: const TextTheme(
           displayLarge: TextStyle(
             fontSize: 32,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w900,
             height: 1.1,
-            letterSpacing: -0.4,
+            letterSpacing: -0.5,
             color: AppColors.textPrimary,
           ),
           headlineMedium: TextStyle(
@@ -438,7 +504,7 @@ class RhythmApp extends StatelessWidget {
           ),
           titleLarge: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             height: 1.3,
             color: AppColors.textPrimary,
           ),
@@ -462,71 +528,9 @@ class RhythmApp extends StatelessWidget {
           ),
           labelLarge: TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             letterSpacing: 0.1,
             color: AppColors.textPrimary,
-          ),
-        ),
-        // Elegant card / surface defaults
-        cardTheme: CardThemeData(
-          color: AppColors.surface,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.card),
-            side: const BorderSide(color: AppColors.border, width: 1),
-          ),
-          margin: EdgeInsets.zero,
-        ),
-        // Refined input / chip styles
-        chipTheme: ChipThemeData(
-          backgroundColor: AppColors.surfaceAlt,
-          selectedColor: AppColors.primary,
-          disabledColor: AppColors.border,
-          labelStyle: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
-          ),
-          secondaryLabelStyle: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-          side: const BorderSide(color: AppColors.border, width: 1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.chip),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        ),
-        // Premium slider (still used as fallback)
-        sliderTheme: SliderThemeData(
-          activeTrackColor: AppColors.primary,
-          inactiveTrackColor: AppColors.borderStrong,
-          thumbColor: AppColors.primary,
-          overlayColor: AppColors.primary.withAlpha(30),
-          trackHeight: 3.5,
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
-        ),
-        // Button styles
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadii.button),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-            elevation: 0,
-          ),
-        ),
-        iconButtonTheme: IconButtonThemeData(
-          style: IconButton.styleFrom(
-            foregroundColor: AppColors.textSecondary,
-            hoverColor: AppColors.overlay,
           ),
         ),
       ),
@@ -670,7 +674,10 @@ class _RhythmHomePageState extends State<RhythmHomePage>
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('오늘의 리듬을 저장했습니다.')));
+    ).showSnackBar(const SnackBar(
+      content: Text('오늘의 리듬을 성공적으로 기록했습니다.'),
+      backgroundColor: AppColors.primaryLight,
+    ));
   }
 
   Future<void> _resetDemoData() async {
@@ -697,7 +704,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
         energy: 4,
         emotions: const ['성취감', '집중'],
         activities: const ['공부', '운동'],
-        note: '발표 준비를 많이 진행했다.',
+        note: '발표 준비를 많이 진행했다. 나만의 예술적 리듬을 시각적으로 보는 경험이 매우 매력적이다.',
       ),
       RhythmEntry(
         id: 'sample-2',
@@ -705,7 +712,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
         energy: 2,
         emotions: const ['피곤', '불안'],
         activities: const ['업무', '휴식'],
-        note: '일정이 겹쳐서 에너지가 낮았다.',
+        note: '일정이 겹쳐서 에너지가 다소 낮았다. 충분한 수면이 필요한 날이다.',
       ),
       RhythmEntry(
         id: 'sample-3',
@@ -713,7 +720,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
         energy: 5,
         emotions: const ['기쁨', '설렘'],
         activities: const ['친구', '산책'],
-        note: '밖에서 걸으니 기분이 좋아졌다.',
+        note: '밖에서 걸으며 가볍게 이야기하니 에너지가 솟았다. 초록빛 파장이 너무 신선하게 드러난다.',
       ),
       RhythmEntry(
         id: 'sample-4',
@@ -721,7 +728,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
         energy: 3,
         emotions: const ['평온'],
         activities: const ['독서', '휴식'],
-        note: '차분하게 보낸 하루.',
+        note: '조용하고 안락하게 흘러간 날. 복잡한 생각 정리도 조금 했다.',
       ),
     ];
   }
@@ -767,7 +774,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 980),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     child: Column(
                       children: [
                         _Header(onReset: _resetDemoData),
@@ -779,26 +786,9 @@ class _RhythmHomePageState extends State<RhythmHomePage>
                 ),
               ),
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: _FloatingNavBar(
         selectedIndex: _tabIndex,
         onDestinationSelected: (index) => setState(() => _tabIndex = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.auto_awesome_outlined),
-            selectedIcon: Icon(Icons.auto_awesome),
-            label: '오늘',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: '히스토리',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(Icons.insights),
-            label: '패턴',
-          ),
-        ],
       ),
     );
   }
@@ -824,6 +814,10 @@ class _RhythmHomePageState extends State<RhythmHomePage>
   }
 }
 
+// ============================================================
+// Premium Header Component
+// ============================================================
+
 class _Header extends StatelessWidget {
   const _Header({required this.onReset});
 
@@ -833,7 +827,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Elegant premium brand mark
+        // Brand symbol with luxurious metallic frame
         Container(
           width: 52,
           height: 52,
@@ -841,19 +835,19 @@ class _Header extends StatelessWidget {
             color: AppColors.primary,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.primaryDark.withAlpha(140),
+              color: AppColors.accent.withValues(alpha: 0.35),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withAlpha(45),
+                color: AppColors.primary.withValues(alpha: 0.28),
                 blurRadius: 18,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
           child: const Center(
-            child: Icon(Icons.waves_rounded, color: Colors.white, size: 26),
+            child: Icon(Icons.waves_rounded, color: AppColors.accentLight, size: 28),
           ),
         ),
         const SizedBox(width: 16),
@@ -861,36 +855,59 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Rhythm',
-                style: TextStyle(
-                  fontSize: 29,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.6,
-                  height: 1.05,
-                ),
+              const Row(
+                children: [
+                  Text(
+                    'Rhythm',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                      height: 1.05,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    '•',
+                    style: TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 20,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'v0.1.0 데모',
+                    style: TextStyle(
+                      color: AppColors.accentBronze,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 2),
               Text(
-                '매일 30초, 감정의 파도를 기록합니다.',
+                '매일 30초, 감정의 파도를 예술로 기록합니다.',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
                   letterSpacing: 0.1,
                 ),
               ),
             ],
           ),
         ),
-        // Refined reset action
         IconButton(
           tooltip: '데모 데이터 초기화',
           onPressed: onReset,
           icon: const Icon(Icons.refresh_rounded, size: 20),
           style: IconButton.styleFrom(
             foregroundColor: AppColors.textMuted,
-            backgroundColor: AppColors.surfaceAlt,
+            backgroundColor: AppColors.surfaceAlt.withValues(alpha: 0.55),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.border),
             ),
             padding: const EdgeInsets.all(10),
           ),
@@ -901,8 +918,132 @@ class _Header extends StatelessWidget {
 }
 
 // ============================================================
-// Premium Energy Selector — elegant dot-based control
+// Premium Floating Navigation Bar
 // ============================================================
+
+class _FloatingNavBar extends StatelessWidget {
+  const _FloatingNavBar({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      (Icons.auto_awesome_outlined, Icons.auto_awesome, '오늘'),
+      (Icons.calendar_month_outlined, Icons.calendar_month, '히스토리'),
+      (Icons.insights_outlined, Icons.insights, '패턴'),
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+      height: 72,
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border, width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x24000000),
+            blurRadius: 32,
+            offset: Offset(0, 12),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Stack(
+              children: [
+                AnimatedAlign(
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeOutBack,
+                  alignment: Alignment(
+                    -1.0 + (selectedIndex * 1.0),
+                    0.0,
+                  ),
+                  child: FractionallySizedBox(
+                    widthFactor: 0.3,
+                    heightFactor: 0.72,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.accent.withValues(alpha: 0.16),
+                            AppColors.accentLight.withValues(alpha: 0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(items.length, (index) {
+                    final isSelected = selectedIndex == index;
+                    final item = items[index];
+                    return Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => onDestinationSelected(index),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedScale(
+                              scale: isSelected ? 1.15 : 1.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(
+                                isSelected ? item.$2 : item.$1,
+                                color: isSelected
+                                    ? AppColors.accentLight
+                                    : AppColors.textSecondary,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              item.$3,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? AppColors.textPrimary
+                                    : AppColors.textMuted,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// Premium Energy Selector — Animated Glassmorphic Cards
+// ============================================================
+
 class _EnergySelector extends StatelessWidget {
   const _EnergySelector({required this.value, required this.onChanged});
 
@@ -910,6 +1051,13 @@ class _EnergySelector extends StatelessWidget {
   final ValueChanged<int> onChanged;
 
   static const _labels = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
+  static const _descriptions = [
+    '충분한 수면과 휴식이 필요한 상태',
+    '차분하고 정돈된 상태',
+    '안정적이고 균형 잡힌 에너지',
+    '활기차고 긍정적인 집중력',
+    '강한 의욕과 최고의 몰입 상태'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -918,26 +1066,32 @@ class _EnergySelector extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
+            const Text(
               '에너지 레벨',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontSize: 16),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(width: 10),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(18),
+                color: AppColors.accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.accent.withValues(alpha: 0.28),
+                  width: 0.8,
+                ),
               ),
               child: Text(
                 '$value / 5',
                 style: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                  letterSpacing: 0.3,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.accentLight,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
@@ -949,74 +1103,283 @@ class _EnergySelector extends StatelessWidget {
           children: List.generate(5, (index) {
             final level = index + 1;
             final isSelected = level == value;
-            final color = isSelected
-                ? AppColors.primary
-                : AppColors.borderStrong;
+            
+            final Color activeGlowColor;
+            if (level <= 2) {
+              activeGlowColor = const Color(0xFF758591);
+            } else if (level == 3) {
+              activeGlowColor = AppColors.accentBronze;
+            } else {
+              activeGlowColor = AppColors.accent;
+            }
 
-            return GestureDetector(
-              onTap: () => onChanged(level),
-              behavior: HitTestBehavior.opaque,
-              child: Column(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    curve: Curves.easeOutCubic,
-                    width: AppRadii.energyDot,
-                    height: AppRadii.energyDot,
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => onChanged(level),
+                child: AnimatedScale(
+                  scale: isSelected ? 1.03 : 0.95,
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeOutBack,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 240),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : AppColors.surface,
-                      shape: BoxShape.circle,
+                      color: isSelected
+                          ? AppColors.surfaceAlt.withValues(alpha: 0.8)
+                          : AppColors.surface.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: color,
-                        width: isSelected ? 2.5 : 1.5,
+                        color: isSelected
+                            ? activeGlowColor.withValues(alpha: 0.7)
+                            : AppColors.border,
+                        width: isSelected ? 1.5 : 1.0,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: AppColors.primary.withAlpha(38),
-                                blurRadius: 14,
-                                offset: const Offset(0, 4),
+                                color: activeGlowColor.withValues(alpha: 0.2),
+                                blurRadius: 18,
+                                offset: const Offset(0, 6),
                               ),
                             ]
                           : null,
                     ),
-                    child: Center(
-                      child: Text(
-                        '$level',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected
-                              ? Colors.white
-                              : AppColors.textSecondary,
-                          height: 1,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 240),
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? activeGlowColor
+                                : AppColors.surfaceAlt,
+                            shape: BoxShape.circle,
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: activeGlowColor.withValues(alpha: 0.35),
+                                      blurRadius: 8,
+                                    )
+                                  ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$level',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: isSelected ? AppColors.background : AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        Text(
+                          _labels[index],
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 7),
-                  Text(
-                    _labels[index],
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textMuted,
-                      letterSpacing: 0.1,
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
           }),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOutCubic,
+          child: Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border, width: 0.8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 16,
+                  color: AppColors.accentLight.withValues(alpha: 0.8),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '에너지 레벨 $value: ${_descriptions[value - 1]}',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 }
+
+// ============================================================
+// Premium Chip Component
+// ============================================================
+
+class _PremiumChip extends StatelessWidget {
+  const _PremiumChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.activeColor,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Color? activeColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final defaultActiveColor = activeColor ?? AppColors.accent;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedScale(
+        scale: isSelected ? 1.04 : 1.0,
+        duration: const Duration(milliseconds: 180),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? defaultActiveColor.withValues(alpha: 0.18)
+                : AppColors.surfaceAlt.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? defaultActiveColor.withValues(alpha: 0.85)
+                  : AppColors.border,
+              width: isSelected ? 1.5 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: defaultActiveColor.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isSelected) ...[
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: defaultActiveColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChipSection extends StatelessWidget {
+  const _ChipSection({
+    required this.title,
+    required this.subtitle,
+    required this.options,
+    required this.selected,
+    required this.onToggle,
+    this.isEmotion = false,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<String> options;
+  final Set<String> selected;
+  final ValueChanged<String> onToggle;
+  final bool isEmotion;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((option) {
+            final active = selected.contains(option);
+            final color = isEmotion ? emotionColor([option]) : AppColors.accentLight;
+            return _PremiumChip(
+              label: option,
+              isSelected: active,
+              onTap: () => onToggle(option),
+              activeColor: color,
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+// ============================================================
+// Home Tab Components — Panel, Canvas, and Input UI
+// ============================================================
 
 class _HomeTab extends StatelessWidget {
   const _HomeTab({
@@ -1054,13 +1417,15 @@ class _HomeTab extends StatelessWidget {
         final wide = constraints.maxWidth >= 760;
         final input = _Panel(
           child: ListView(
+            physics: const BouncingScrollPhysics(),
             children: [
               const Text(
-                '오늘의 리듬',
+                '오늘의 리듬 기록',
                 style: TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w900,
                   letterSpacing: -0.2,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 18),
@@ -1068,54 +1433,109 @@ class _HomeTab extends StatelessWidget {
                 value: energy,
                 onChanged: (v) => onEnergyChanged(v.toDouble()),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 18),
               _ChipSection(
                 title: '감정 키워드',
-                subtitle: '최대 3개',
+                subtitle: '최대 3개 선택',
                 options: emotionOptions,
                 selected: selectedEmotions,
                 onToggle: onEmotionToggle,
+                isEmotion: true,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
               _ChipSection(
                 title: '주요 활동',
-                subtitle: '최대 3개',
+                subtitle: '최대 3개 선택',
                 options: activityOptions,
                 selected: selectedActivities,
                 onToggle: onActivityToggle,
+                isEmotion: false,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 18),
               TextField(
                 controller: noteController,
                 minLines: 2,
                 maxLines: 4,
-                decoration: const InputDecoration(
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                decoration: InputDecoration(
                   labelText: '짧은 메모',
-                  hintText: '오늘의 리듬을 한 문장으로 남겨보세요.',
-                  border: OutlineInputBorder(),
+                  labelStyle: const TextStyle(color: AppColors.accentBronze, fontWeight: FontWeight.w600),
+                  hintText: '오늘의 리듬을 한 문장으로 기록해 보세요.',
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  filled: true,
+                  fillColor: AppColors.surfaceAlt.withValues(alpha: 0.35),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppColors.accent),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: onSave,
-                icon: const Icon(Icons.save),
-                label: const Text('오늘의 리듬 저장'),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: onSave,
+                child: Container(
+                  width: double.infinity,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        AppColors.accentBronze,
+                        AppColors.accent,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.accent.withValues(alpha: 0.28),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.auto_awesome, color: AppColors.background, size: 20),
+                      SizedBox(width: 10),
+                      Text(
+                        '오늘의 리듬 기록하기',
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.background,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
         );
+        
         final canvas = _Panel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Particle Canvas',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.3),
+                'Particle Canvas (예술 시각화)',
+                style: TextStyle(
+                  fontSize: 15, 
+                  fontWeight: FontWeight.w700, 
+                  color: AppColors.textSecondary, 
+                  letterSpacing: 0.3,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(16),
                   child: _ParticleCanvas(
                     energy: energy,
                     emotions: selectedEmotions,
@@ -1124,13 +1544,22 @@ class _HomeTab extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                '입력값이 색상, 파동, 입자의 흐름으로 표현됩니다.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textMuted,
-                  fontStyle: FontStyle.italic,
-                ),
+              const SizedBox(height: 12),
+              const Row(
+                children: [
+                  Icon(Icons.touch_app_outlined, size: 14, color: AppColors.textMuted),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '캔버스를 터치하거나 드래그하여 감정의 파동과 스파클을 일으켜 보세요.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1140,16 +1569,18 @@ class _HomeTab extends StatelessWidget {
           return Row(
             children: [
               Expanded(flex: 4, child: input),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Expanded(flex: 5, child: canvas),
             ],
           );
         }
         return ListView(
+          physics: const BouncingScrollPhysics(),
           children: [
-            SizedBox(height: 480, child: input),
-            const SizedBox(height: 14),
-            SizedBox(height: 420, child: canvas),
+            SizedBox(height: 490, child: input),
+            const SizedBox(height: 16),
+            SizedBox(height: 440, child: canvas),
+            const SizedBox(height: 24),
           ],
         );
       },
@@ -1157,9 +1588,6 @@ class _HomeTab extends StatelessWidget {
   }
 }
 
-/// Hosts the long-lived `ParticleField` and drives it from the parent
-/// `AnimationController`. The painter is recreated every tick, but the
-/// field — and therefore particle state — survives across rebuilds.
 class _ParticleCanvas extends StatefulWidget {
   const _ParticleCanvas({
     required this.energy,
@@ -1182,68 +1610,53 @@ class _ParticleCanvasState extends State<_ParticleCanvas> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: widget.animation,
-      builder: (context, _) {
-        return CustomPaint(
-          painter: RhythmParticlePainter(
-            progress: widget.animation.value,
-            entry: widget.entry,
-            previewEnergy: widget.energy,
-            previewEmotions: widget.emotions,
-            field: _field,
-          ),
-          child: const SizedBox.expand(),
-        );
+    return GestureDetector(
+      onTapDown: (details) {
+        final box = context.findRenderObject() as RenderBox?;
+        if (box == null) return;
+        final localPos = box.globalToLocal(details.globalPosition);
+
+        final emotions = widget.entry?.emotions ?? widget.emotions.toList();
+        final baseColor = emotionColor(emotions);
+        final energy = widget.entry?.energy ?? widget.energy;
+
+        _field.addRipple(localPos, baseColor);
+        _field.spawnTouchBurst(localPos, baseColor, energy.toDouble());
       },
+      onPanUpdate: (details) {
+        final box = context.findRenderObject() as RenderBox?;
+        if (box == null) return;
+        final localPos = box.globalToLocal(details.globalPosition);
+
+        final emotions = widget.entry?.emotions ?? widget.emotions.toList();
+        final baseColor = emotionColor(emotions);
+
+        if (Random().nextDouble() < 0.4) {
+          _field.spawnDragSpark(localPos, baseColor);
+        }
+      },
+      child: AnimatedBuilder(
+        animation: widget.animation,
+        builder: (context, _) {
+          return CustomPaint(
+            painter: RhythmParticlePainter(
+              progress: widget.animation.value,
+              entry: widget.entry,
+              previewEnergy: widget.energy,
+              previewEmotions: widget.emotions,
+              field: _field,
+            ),
+            child: const SizedBox.expand(),
+          );
+        },
+      ),
     );
   }
 }
 
-class _ChipSection extends StatelessWidget {
-  const _ChipSection({
-    required this.title,
-    required this.subtitle,
-    required this.options,
-    required this.selected,
-    required this.onToggle,
-  });
-
-  final String title;
-  final String subtitle;
-  final List<String> options;
-  final Set<String> selected;
-  final ValueChanged<String> onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(width: 8),
-            Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: options.map((option) {
-            final active = selected.contains(option);
-            return FilterChip(
-              label: Text(option),
-              selected: active,
-              onSelected: (_) => onToggle(option),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-}
+// ============================================================
+// History Tab Component
+// ============================================================
 
 class _HistoryTab extends StatelessWidget {
   const _HistoryTab({required this.entries});
@@ -1258,125 +1671,166 @@ class _HistoryTab extends StatelessWidget {
         children: [
           const Text(
             '히스토리',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
+            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Expanded(
-            child: ListView.separated(
-              itemCount: entries.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final entry = entries[index];
-                final eColor = emotionColor(entry.emotions);
-                final dateStr =
-                    '${entry.createdAt.month}월 ${entry.createdAt.day}일';
+            child: entries.isEmpty
+                ? const Center(
+                    child: Text(
+                      '아직 등록된 기록이 없습니다.',
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: entries.length,
+                    physics: const BouncingScrollPhysics(),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final entry = entries[index];
+                      final eColor = emotionColor(entry.emotions);
+                      final dateStr =
+                          '${entry.createdAt.month}월 ${entry.createdAt.day}일';
 
-                return Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Elegant energy badge
-                      Container(
-                        width: 42,
-                        height: 42,
+                      return Container(
                         decoration: BoxDecoration(
-                          color: eColor.withAlpha(22),
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(
-                            color: eColor.withAlpha(70),
-                            width: 1.5,
-                          ),
+                          color: AppColors.surfaceAlt.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
                         ),
-                        child: Center(
-                          child: Text(
-                            '${entry.energy}',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: eColor,
-                              height: 1,
-                            ),
-                          ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 16,
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Date + emotions
-                            Row(
-                              children: [
-                                Text(
-                                  dateStr,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textSecondary,
+                            // Elegant glowing energy badge
+                            Container(
+                              width: 46,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                color: eColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: eColor.withValues(alpha: 0.75),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: eColor.withValues(alpha: 0.1),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${entry.energy}',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    color: eColor,
+                                    height: 1,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    entry.emotions.join('  ·  '),
-                                    style: TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: eColor,
-                                      height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Date + emotions
+                                  Row(
+                                    children: [
+                                      Text(
+                                        dateStr,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          entry.emotions.join('  ·  '),
+                                          style: TextStyle(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: eColor,
+                                            height: 1.2,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Activities as custom chips
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
+                                    children: entry.activities.map((act) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.surface.withValues(alpha: 0.8),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: AppColors.border, width: 0.6),
+                                        ),
+                                        child: Text(
+                                          act,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                  // Optional notes inside luxury block
+                                  if (entry.note.isNotEmpty) ...[
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surface.withValues(alpha: 0.45),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: AppColors.border, width: 0.6),
+                                      ),
+                                      child: Text(
+                                        entry.note,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: AppColors.textPrimary,
+                                          height: 1.45,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            // Activities
-                            Text(
-                              entry.activities.join('  ·  '),
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                color: AppColors.textMuted,
-                                height: 1.35,
+                                  ],
+                                ],
                               ),
                             ),
-                            // Optional note
-                            if (entry.note.isNotEmpty) ...[
-                              const SizedBox(height: 7),
-                              Text(
-                                entry.note,
-                                style: const TextStyle(
-                                  fontSize: 13.2,
-                                  color: AppColors.textPrimary,
-                                  height: 1.35,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
                           ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
     );
   }
 }
+
+// ============================================================
+// Pattern Tab Component
+// ============================================================
 
 class _PatternTab extends StatelessWidget {
   const _PatternTab({required this.entries});
@@ -1402,17 +1856,19 @@ class _PatternTab extends StatelessWidget {
     final topActivity = topKey(activityCounts) ?? '데이터 없음';
 
     return ListView(
+      physics: const BouncingScrollPhysics(),
       children: [
         _Panel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                '패턴 카드',
+                '나의 리듬 패턴 카드',
                 style: TextStyle(
                   fontSize: 22,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w900,
                   letterSpacing: -0.2,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -1421,51 +1877,60 @@ class _PatternTab extends StatelessWidget {
                 runSpacing: 12,
                 children: [
                   _MetricCard(
-                    icon: Icons.battery_charging_full,
+                    icon: Icons.battery_charging_full_rounded,
                     label: '평균 에너지',
                     value: averageEnergy.toStringAsFixed(1),
                   ),
                   _MetricCard(
                     icon: Icons.palette_outlined,
-                    label: '자주 나온 감정',
+                    label: '지배적인 감정',
                     value: topEmotion,
                   ),
                   _MetricCard(
-                    icon: Icons.directions_run,
-                    label: '자주 한 활동',
+                    icon: Icons.directions_run_rounded,
+                    label: '가장 잦은 활동',
                     value: topActivity,
                   ),
                 ],
               ),
               const SizedBox(height: 18),
-              Text(
-                _insightText(averageEnergy, topEmotion, topActivity),
-                style: const TextStyle(
-                  fontSize: 16.5,
-                  height: 1.55,
-                  color: AppColors.textPrimary,
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Text(
+                  _insightText(averageEnergy, topEmotion, topActivity),
+                  style: const TextStyle(
+                    fontSize: 15.5,
+                    height: 1.55,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         _Panel(
           padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                '최근 7일 에너지 흐름',
+                '최근 7일간 에너지 흐름 (Bézier Spline)',
                 style: TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               SizedBox(
-                height: 168,
+                height: 172,
                 child: CustomPaint(
                   painter: WeeklyRhythmPainter(entries: entries),
                   child: const SizedBox.expand(),
@@ -1474,18 +1939,19 @@ class _PatternTab extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 24),
       ],
     );
   }
 
   String _insightText(double averageEnergy, String emotion, String activity) {
     if (entries.length < 3) {
-      return '아직 기록이 적습니다. 3일 이상 쌓이면 간단한 패턴 힌트를 보여줍니다.';
+      return '아직 기록이 부족합니다. 3일 이상 성실히 기록하시면 캔버스 데이터 기반의 분석을 개시합니다.';
     }
-    final tone = averageEnergy >= 3.5 ? '높은 편' : '낮은 편';
-    return '최근 ${entries.length}개의 기록에서 평균 에너지는 $tone입니다. '
-        '$emotion 감정과 $activity 활동이 자주 나타났습니다. '
-        '최종 버전에서는 1주 단위 힌트와 관찰 노트로 확장할 예정입니다.';
+    final tone = averageEnergy >= 3.5 ? '풍부하고 활기찬 편' : '차분하고 정적인 편';
+    return '최근 ${entries.length}개의 리듬 기록에서 평균 에너지는 $tone입니다. '
+        '주로 「$emotion」 감정을 느꼈으며, 「$activity」 활동과 강한 관계를 맺고 있습니다. '
+        '이 파동들은 삶의 균형 상태를 나타내는 지표가 됩니다.';
   }
 }
 
@@ -1505,40 +1971,45 @@ class _MetricCard extends StatelessWidget {
     return Container(
       width: 210,
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.surfaceAlt.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppShadows.subtle,
       ),
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 17),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(7),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withAlpha(15),
-              borderRadius: BorderRadius.circular(9),
+              color: AppColors.accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: AppColors.accent.withValues(alpha: 0.25),
+                width: 0.8,
+              ),
             ),
-            child: Icon(icon, size: 19, color: AppColors.primary),
+            child: Icon(icon, size: 20, color: AppColors.accentLight),
           ),
-          const SizedBox(height: 13),
+          const SizedBox(height: 14),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
               color: AppColors.textMuted,
-              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w800,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
               color: AppColors.textPrimary,
               letterSpacing: -0.3,
-              height: 1.05,
+              height: 1.1,
             ),
           ),
         ],
@@ -1557,15 +2028,19 @@ class _Panel extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surface.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(AppRadii.card),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: AppColors.border, width: 1.2),
         boxShadow: AppShadows.card,
       ),
       child: Padding(padding: padding, child: child),
     );
   }
 }
+
+// ============================================================
+// Rhythm Particle Visualizer — Beautiful Dynamic custom painter
+// ============================================================
 
 class RhythmParticlePainter extends CustomPainter {
   RhythmParticlePainter({
@@ -1590,39 +2065,54 @@ class RhythmParticlePainter extends CustomPainter {
     final energy = entry?.energy ?? previewEnergy;
     final mode = resolveBehaviorMode(energy, emotions);
 
-    // Rich atmospheric premium gradient (deep, emotional, luxurious)
+    // Dynamic, deep cosmic dark gradient
     final background = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          const Color(0xFF0F1F22),
-          Color.lerp(baseColor, const Color(0xFF0A1416), 0.55)!,
-          Color.lerp(baseColor, const Color(0xFF1A2528), 0.35)!,
-          const Color(0xFFEDE4D5),
+          const Color(0xFF040708),
+          Color.lerp(baseColor, const Color(0xFF071214), 0.78)!,
+          Color.lerp(baseColor, const Color(0xFF0B191B), 0.64)!,
+          const Color(0xFF06090A),
         ],
-        stops: const [0.0, 0.38, 0.62, 1.0],
+        stops: const [0.0, 0.35, 0.7, 1.0],
       ).createShader(rect);
     canvas.drawRect(rect, background);
 
-    // Very subtle vignette for depth
+    // Subtle vignette for cinematic depth
     final vignette = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(0.1, -0.2),
-        radius: 1.15,
-        colors: [Colors.transparent, Colors.black.withAlpha(45)],
-        stops: const [0.6, 1.0],
+        center: const Alignment(0.0, 0.0),
+        radius: 1.2,
+        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
+        stops: const [0.5, 1.0],
       ).createShader(rect);
     canvas.drawRect(rect, vignette);
 
-    final center = Offset(size.width * 0.5, size.height * 0.51);
-
-    // Elegant concentric waves — more refined and emotional
-    final wavePaint = Paint()
-      ..color = Colors.white.withAlpha(92)
+    // Delicate golden framing border
+    final borderPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          AppColors.accent.withValues(alpha: 0.28),
+          Colors.transparent,
+          AppColors.border.withValues(alpha: 0.4),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(rect)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 1.6;
+    canvas.drawRect(rect, borderPaint);
+
+    final center = Offset(size.width * 0.5, size.height * 0.5);
+
+    // Concentric light waves
+    final wavePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1);
 
     for (var ring = 0; ring < 5; ring++) {
       final phase = progress * pi * 2 + ring * 0.7;
@@ -1630,14 +2120,13 @@ class RhythmParticlePainter extends CustomPainter {
       canvas.drawCircle(center, radius + energy * 2.2, wavePaint);
     }
 
-    // Soft central emotional glow
+    // Soft central mood glow
     final glowPaint = Paint()
-      ..color = baseColor.withAlpha(26 + (energy * 4))
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 32);
-    canvas.drawCircle(center, 48 + energy * 4, glowPaint);
+      ..color = baseColor.withValues(alpha: 0.16 + (energy * 0.03))
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 38);
+    canvas.drawCircle(center, 56 + energy * 4, glowPaint);
 
-    // Premium particle field — fully owned by `Particle` objects.
-    // The field advances physics here; the painter just commands draw.
+    // Update & Renders particle field
     field.update(
       size: size,
       energy: energy.toDouble(),
@@ -1647,16 +2136,22 @@ class RhythmParticlePainter extends CustomPainter {
     );
     field.draw(canvas);
 
-    // Elegant status typography
+    // Floating text label displaying current stats
     final textPainter = TextPainter(
       text: TextSpan(
         text: 'Energy $energy  ·  ${emotions.join('  /  ')}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16.5,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.4,
-          shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -1666,11 +2161,13 @@ class RhythmParticlePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant RhythmParticlePainter oldDelegate) {
-    // The field mutates internally every frame, so we always repaint.
-    // (The parent `AnimationController` is what gates the framerate.)
     return true;
   }
 }
+
+// ============================================================
+// Weekly Spline Chart Painter (Bézier Splines + Gradient Fill)
+// ============================================================
 
 class WeeklyRhythmPainter extends CustomPainter {
   WeeklyRhythmPainter({required this.entries});
@@ -1680,54 +2177,97 @@ class WeeklyRhythmPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final axisPaint = Paint()
-      ..color = AppColors.borderStrong
+      ..color = AppColors.border
       ..strokeWidth = 1.0;
 
-    final linePaint = Paint()
-      ..color = AppColors.primary
-      ..strokeWidth = 2.8
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final dotPaint = Paint()..style = PaintingStyle.fill;
-    final dotStroke = Paint()
-      ..color = AppColors.surface
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-
-    // Subtle elegant baseline
     canvas.drawLine(
-      Offset(18, size.height - 26),
-      Offset(size.width - 18, size.height - 26),
+      Offset(24, size.height - 32),
+      Offset(size.width - 24, size.height - 32),
       axisPaint,
     );
 
     if (entries.isEmpty) return;
 
     final recent = entries.take(7).toList().reversed.toList();
-    final path = Path();
+    final List<Offset> points = [];
 
     for (var i = 0; i < recent.length; i++) {
       final x = recent.length == 1
           ? size.width / 2
-          : 18 + i * ((size.width - 36) / (recent.length - 1));
-      final y = size.height - 26 - (recent[i].energy / 5) * (size.height - 52);
+          : 24 + i * ((size.width - 48) / (recent.length - 1));
+      final y = size.height - 32 - (recent[i].energy / 5.2) * (size.height - 64);
+      points.add(Offset(x, y));
+    }
 
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
+    if (points.isNotEmpty) {
+      final path = Path();
+      final fillPath = Path();
+
+      path.moveTo(points[0].dx, points[0].dy);
+      fillPath.moveTo(points[0].dx, size.height - 32);
+      fillPath.lineTo(points[0].dx, points[0].dy);
+
+      for (var i = 0; i < points.length - 1; i++) {
+        final p0 = points[i];
+        final p1 = points[i + 1];
+        final controlX1 = p0.dx + (p1.dx - p0.dx) / 2;
+        final controlY1 = p0.dy;
+        final controlX2 = p0.dx + (p1.dx - p0.dx) / 2;
+        final controlY2 = p1.dy;
+
+        path.cubicTo(controlX1, controlY1, controlX2, controlY2, p1.dx, p1.dy);
+        fillPath.cubicTo(controlX1, controlY1, controlX2, controlY2, p1.dx, p1.dy);
       }
 
-      final eColor = emotionColor(recent[i].emotions);
+      fillPath.lineTo(points.last.dx, size.height - 32);
+      fillPath.close();
 
-      // Premium dot with white ring
-      dotPaint.color = eColor;
-      canvas.drawCircle(Offset(x, y), 7.5, dotPaint);
-      canvas.drawCircle(Offset(x, y), 7.5, dotStroke);
+      // Curved gradient fill
+      final fillGradient = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          AppColors.accent.withValues(alpha: 0.28),
+          AppColors.accent.withValues(alpha: 0.0),
+        ],
+      ).createShader(Offset.zero & size);
+
+      final fillPaint = Paint()
+        ..shader = fillGradient
+        ..style = PaintingStyle.fill;
+
+      canvas.drawPath(fillPath, fillPaint);
+
+      // Main curved spline path
+      final linePaint = Paint()
+        ..color = AppColors.accentLight
+        ..strokeWidth = 3.2
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawPath(path, linePaint);
+
+      // Render nodes with customized colors and shadow glow
+      final dotPaint = Paint()..style = PaintingStyle.fill;
+      final dotStroke = Paint()
+        ..color = AppColors.surfaceAlt
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+
+      for (var i = 0; i < points.length; i++) {
+        final p = points[i];
+        final eColor = emotionColor(recent[i].emotions);
+
+        final glowPaint = Paint()
+          ..color = eColor.withValues(alpha: 0.45)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+        canvas.drawCircle(p, 8.5, glowPaint);
+
+        dotPaint.color = eColor;
+        canvas.drawCircle(p, 5.5, dotPaint);
+        canvas.drawCircle(p, 5.5, dotStroke);
+      }
     }
-    canvas.drawPath(path, linePaint);
   }
 
   @override

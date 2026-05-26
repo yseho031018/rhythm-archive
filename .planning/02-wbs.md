@@ -1,6 +1,7 @@
 # Rhythm — Work Breakdown Structure (WBS)
 
-> `.planning/00-vision.md` 및 `.planning/01-requirements.md`를 기반으로 작성
+> 현재 프로젝트 진행 흐름을 반영한 작업 분해 구조.  
+> 중간 발표 준비를 위해 일부 구현 순서를 조정했으며, Flutter Web 데모를 먼저 만든 뒤 아키텍처 분리와 Isar 연동을 진행한다.
 
 ---
 
@@ -8,39 +9,35 @@
 
 | WBS | 작업명 (Lv.2) | 세부 작업 (Lv.3) | 산출물 |
 |:---:|---|---|---|
-| **1** | **기획 및 설계** | | |
-| 1.1 | 프로젝트 기획 | • 비전 및 문제 정의 문서화<br>• 핵심 시나리오 3개 및 MoSCoW 작성<br>• AUTHORING 메타데이터 및 라이선스 정의 | `00-vision.md`<br>`01-requirements.md` |
-| 1.2 | 시스템 설계 | • Clean Architecture 레이어 구조 설계<br>• Isar DB 스키마 설계<br>• UI/UX 와이어프레임 및 화면 흐름도<br>• Particle 시각화 컨셉 및 색상-데이터 매핑 규칙 정의 | 설계 문서 |
-| 1.3 | 개발 문서화 | • WBS 작성<br>• 일정 및 리스크 문서화<br>• 설계 결정 문서(ADR) 초안 작성 | `02-wbs.md`<br>`04-schedule.md` |
-| **2** | **개발 환경 구축** | | |
-| 2.1 | 프로젝트 초기화 | • Flutter 프로젝트 생성 및 폰더 구조 설정<br>• 필수 패키지 의존성 추가<br>• `.gitignore`, `analysis_options.yaml` 설정 | 프로젝트 템플릿 |
-| 2.2 | 아키텍처 기반 구축 | • Clean Architecture 폰더 구조 구현<br>• Riverpod Provider 구조 및 DI 설정<br>• 공통 유틸리티 및 확장 함수 정의 | `lib/` 초기 구조 |
-| **3** | **도메인 및 데이터 레이어 개발** | | |
-| 3.1 | 도메인 레이어 | • 핵심 Entity 정의<br>• Repository 인터페이스 정의<br>• UseCase 구현 | `domain/` 레이어 |
-| 3.2 | 데이터 레이어 | • Isar DB 초기화 및 마이그레이션<br>• Isar Collection 모델 정의<br>• Repository 구현체 작성<br>• 예외 처리 및 트랜잭션 관리 | `data/` 레이어 |
-| **4** | **프레젠테이션 레이어 개발** | | |
-| 4.1 | 공통 UI 인프라 | • 앱 테마 및 디자인 시스템 (옵시디언 다크 럭셔리 구현 완료)<br>• 공통 위젯 라이브러리 (글래스모피즘 패널)<br>• 앱 네비게이션 구조 (플로팅 글래스 네비바 구현 완료) | 테마 / 공통 위젯 |
-| 4.2 | 홈 화면 (일일 입력) | • 에너지 레벨 선택 (입체 Glass 카드 선택기 구현 완료)<br>• 감정 키워드 다중 선택 (반응형 글래스 칩 구현 완료)<br>• 활동 태그 다중 선택 (반응형 글래스 칩 구현 완료)<br>• 짧은 메모 입력 필드 및 그라데이션 저장 액션<br>• Particle Canvas 실시간 연동 및 터치 피드백 | 홈 화면 |
-| 4.3 | 패턴 화면 (통계/분석) | • 주간 리듬 뷰 (3차 Bézier spline 곡선 및 그라데이션 필 구현 완료)<br>• 월간 리듬 뷰<br>• 통계 카드 UI (옵시디언 럭셔리 카드)<br>• Multi-Layer 블렌딩 뷰<br>• "나의 관찰 노트" UI | 패턴 화면 |
-| 4.4 | 히스토리 화면 | • 캘린더 기반 기록 탐색<br>• 특정 날짜 상세 조회 및 수정/삭제<br>• 무한 스크롤 타임라인 뷰 (글로잉 이정표 및 노트 블록 완료) | 히스토리 화면 |
-| 4.5 | 설정 화면 | • 일일 리마인드 알림 시간 설정<br>• 데이터 내보내기(JSON/CSV)<br>• 테마/다크모드 토글 | 설정 화면 |
-| **5** | **Particle 시각화 시스템** | | |
-| 5.1 | Particle 엔진 | • CustomPainter 기반 캔버스 및 우주적인 그라데이션<br>• Particle 클래스 설계 및 에셋 연동<br>• 프레임 루프(60fps 최적화)<br>• 터치/제스처 인터랙션 (탭 리플 물결 및 드래그 스파클 트레일 구현 완료) | Particle 엔진 |
-| 5.2 | 데이터-시각화 매핑 | • 감정 키워드 ↔ 색상/형태 매핑 (반응형 감정 오라 구현 완료)<br>• 에너지 레벨 ↔ 파동 강도 매핑<br>• 활동 태그 ↔ 궤적/클러스터 매핑<br>• 시간 흐름에 따른 상태 변화 로직 | 매핑 규칙 |
-| 5.3 | Multi-Layer 블렌딩 | • 개별 레이어 렌더링<br>• BlendMode 기반 레이어 합성<br>• 레이어 투명도/가중치 조절<br>• 레이어별 독립 제어 및 최적화 | 블렌딩 시스템 |
-| **6** | **통계 및 패턴 분석** | | |
-| 6.1 | 기초 통계 엔진 | • 에너지 평균/표준편차/최빈값<br>• 감정 키워드 빈도 및 분포<br>• 활동 태그별 집계 | 통계 로직 |
-| 6.2 | 상관관계 분석 | • 활동-감정 Pearson 상관계수<br>• 요일-에너지 상관관계<br>• 감정-에너지 공변 분석 | 상관관계 로직 |
-| 6.3 | 패턴 검출 및 힌트 | • 주간 반복 패턴 탐지<br>• 감정/에너지 급변 시점 탐지<br>• 사용자 친화적 힌트 문구 생성<br>• 최소 데이터(2주) 기준 가드 | 패턴 힌트 로직 |
+| **1** | **기획 및 요구사항** | | |
+| 1.1 | 프로젝트 기획 | • 비전 및 문제 정의 문서화<br>• 핵심 사용자 시나리오 3개 작성<br>• MoSCoW 요구사항 분류 | `00-vision.md`<br>`01-requirements.md` |
+| 1.2 | 일정 및 위험 관리 | • WBS 작성<br>• 10~15주차 일정 정리<br>• 위험 식별 및 대응 방안 작성 | `02-wbs.md`<br>`03-risk.md`<br>`04-schedule.md` |
+| 1.3 | 작성자/가산점 문서 | • AUTHORING 문서 작성<br>• BONUS 가산점 트래킹 문서 작성 | `AUTHORING...md`<br>`BONUS.md` |
+| **2** | **설계 결정 및 발표 준비** | | |
+| 2.1 | ADR 작성 | • Flutter 선택 이유<br>• Layered Architecture 선택 이유<br>• Isar 기반 로컬 우선 저장 선택 이유 | `ADR-0001~0003` |
+| 2.2 | 중간 발표 자료 | • 중간 발표 Marp 슬라이드 작성<br>• 발표자료 HTML 변환<br>• Q&A 대비용 기술 선택 근거 정리 | `docs/presentation/interim.md`<br>`presentation.html` |
+| 2.3 | GitHub Pages 공개 | • WBS/Gantt 페이지 루트 배치<br>• 발표자료 URL 공개<br>• Flutter Web 데모 URL 공개 | `wbs-gantt.html`<br>`index.html` |
+| **3** | **중간 발표용 Flutter Web 데모 선행 개발** | | |
+| 3.1 | Flutter 프로젝트 초기화 | • Flutter 프로젝트 생성<br>• Web/Windows 플랫폼 구성<br>• 기본 테스트 및 분석 환경 구성 | `pubspec.yaml`<br>`lib/main.dart`<br>`test/widget_test.dart` |
+| 3.2 | 일일 입력 데모 | • 에너지 레벨 입력<br>• 감정 키워드 선택<br>• 활동 태그 선택<br>• 짧은 메모 저장 | 오늘 탭 |
+| 3.3 | 시각화 데모 | • CustomPainter 기반 Particle Canvas<br>• 감정/에너지 기반 색상과 파동 표현<br>• 더미 데이터 기반 즉시 시연 | Particle Canvas |
+| 3.4 | 히스토리/패턴 데모 | • 저장된 기록 목록 표시<br>• 평균 에너지 카드<br>• 자주 나온 감정/활동 카드<br>• 최근 흐름 그래프 | 히스토리 탭<br>패턴 탭 |
+| **4** | **아키텍처 정리 및 리팩토링** | | |
+| 4.1 | 레이어 구조 분리 | • 현재 단일 파일 데모를 Presentation/Application/Domain/Data로 분리<br>• 화면, Painter, Entity, Repository 책임 분리 | `lib/` 레이어 구조 |
+| 4.2 | 상태 관리 정리 | • Riverpod 도입<br>• 입력 상태와 기록 목록 상태 분리<br>• ViewModel/Notifier 작성 | Application 레이어 |
+| **5** | **도메인 및 데이터 레이어 개발** | | |
+| 5.1 | 도메인 레이어 | • `RhythmEntry` Entity 분리<br>• Repository 인터페이스 정의<br>• 저장/조회 UseCase 구현 | `domain/` 레이어 |
+| 5.2 | 데이터 레이어 | • Isar DB 초기화<br>• Isar Collection 모델 작성<br>• Repository 구현체 작성<br>• 임시 저장을 Isar로 교체 | `data/` 레이어 |
+| **6** | **기능 고도화** | | |
+| 6.1 | 히스토리 고도화 | • 날짜별 기록 조회<br>• 기록 수정/삭제<br>• 메모 표시 개선 | 히스토리 화면 |
+| 6.2 | 패턴 분석 고도화 | • 에너지 평균/빈도 계산<br>• 감정/활동별 힌트 문구<br>• 최소 데이터 기준 가드 | 패턴 화면 |
+| 6.3 | 선택 기능 | • 데이터 내보내기(JSON/CSV)<br>• 리마인드 알림<br>• Multi-Layer 블렌딩은 시간 여유 시 진행 | 설정/고급 시각화 |
 | **7** | **테스트 및 품질 보증** | | |
-| 7.1 | 단위 테스트 | • Entity 및 Value Object 테스트<br>• UseCase 비즈니스 로직 테스트<br>• 통계 분석 알고리즘 테스트 | 테스트 코드 |
-| 7.2 | 위젯 테스트 | • 홈 화면 입력 흐름 테스트<br>• 패턴 화면 통계 카드 렌더링 테스트<br>• Particle Canvas 기본 렌더링 테스트 | 테스트 코드 |
-| 7.3 | 통합 테스트 | • 저장→조회→통계 E2E 흐름 테스트<br>• DB 마이그레이션 호환성 테스트 | 테스트 코드 |
-| 7.4 | 성능 및 안정성 | • 렌더링 16ms 이하(60fps) 벤치마크<br>• Isar 복합 쿼리 100ms 이하 측정<br>• 오프라인 CRUD 동작 검증<br>• 메모리 누수 및 리소스 정리 검증 | 성능 리포트 |
-| **8** | **배포 및 릴리즈** | | |
-| 8.1 | 빌드 및 서명 | • Android APK/AAB 빌드 및 서명<br>• iOS Archive 빌드 및 서명<br>• 릴리즈 모드 최적화 | 빌드 산출물 |
-| 8.2 | 스토어 배포 준비 | • 앱 아이콘, 스플래시, 스크린샷<br>• 스토어 메타데이터 작성<br>• 프라이버시 정책 및 라이선스 고지 | 스토어 에셋 |
-| 8.3 | 문서 및 발표 | • 중간 발표 자료 작성<br>• 최종 발표 자료 작성<br>• 사용자 가이드 및 개발자 문서 완성 | `docs/presentation/` |
+| 7.1 | 테스트 | • 위젯 테스트<br>• 저장→조회 수동 검증<br>• Web 빌드 검증 | `flutter test`<br>`flutter build web` |
+| 7.2 | 발표 검증 | • 데모 URL 접속 확인<br>• 발표자료 URL 접속 확인<br>• Q&A 예상 질문 점검 | 발표 체크리스트 |
+| **8** | **최종 발표 준비** | | |
+| 8.1 | 문서화 | • README 보강<br>• setup/architecture 문서 최신화<br>• 회고 및 Q&A 로그 작성 | `README.md`<br>`docs/` |
+| 8.2 | 최종 발표 | • 최종 발표자료 작성<br>• 데모 안정화<br>• 남은 기능 범위 정리 | 최종 발표 자료 |
 
 ---
 
@@ -50,28 +47,42 @@
 gantt
     title Rhythm 개발 일정 개략
     dateFormat  YYYY-MM-DD
-    section 기획 및 설계
-    기획 및 설계           :done,    plan, 2026-05-12, 7d
-    section 개발 환경
-    개발 환경 구축         :active,  env,  after plan, 5d
+    section 기획 및 요구사항
+    기획 문서 세트          :done,    plan, 2026-05-12, 7d
+    section 설계 결정/발표 준비
+    ADR 및 중간 발표 자료   :done,    adr, 2026-05-19, 8d
+    section 데모 선행 개발
+    Flutter Web 데모        :done,    demo, 2026-05-26, 1d
+    section 아키텍처 정리
+    레이어 분리 및 Riverpod :active,  refactor, 2026-05-27, 8d
     section 도메인/데이터
-    도메인 및 데이터 레이어 :         domain, after env, 10d
-    section 프레젠테이션
-    공통 UI 및 홈 화면    :         ui1, after domain, 10d
-    패턴/히스토리/설정    :         ui2, after ui1, 7d
-    section 시각화
-    Particle 시각화 시스템 :         viz, after env, 14d
-    section 통계
-    통계 및 패턴 분석     :         stat, after domain, 10d
+    도메인 및 Isar 연동     :         domain, 2026-06-03, 7d
+    section 기능 고도화
+    히스토리/패턴/설정      :         feature, 2026-06-09, 7d
     section 테스트
-    테스트 및 품질 보증   :         test, after ui2, 7d
-    section 배포
-    배포 및 릴리즈       :         deploy, after test, 5d
+    테스트 및 품질 보증     :         test, 2026-06-13, 6d
+    section 최종 발표
+    최종 문서/발표 준비     :         final, 2026-06-18, 5d
 ```
-
-> **참고:** 상세 일정(주차별 목표, 산출물, 검증 방법)은 `.planning/04-schedule.md`에서 다룹니다.
 
 ---
 
-*문서 버전: 2.0*  
-*작성일: 2026-05-12*
+## 일정 변경 메모
+
+초기 계획은 도메인/데이터 레이어를 먼저 구현한 뒤 화면을 붙이는 흐름이었다.  
+하지만 12주차 중간 발표에서 **간단한 URL로 바로 열 수 있는 발표자료와 앱 데모**가 필요해져, Flutter Web 데모와 GitHub Pages 배포를 먼저 진행했다.
+
+따라서 현재 실제 흐름은 다음과 같다.
+
+1. 기획/요구사항/WBS/위험/일정 문서 완료
+2. ADR 3개 작성
+3. 중간 발표자료와 WBS/Gantt URL 공개
+4. Flutter Web 데모 선행 구현
+5. 이후 Riverpod, Isar, 레이어 분리를 진행
+
+이 변경은 중간 발표 대응을 위한 우선순위 조정이며, 최종 구조 목표는 여전히 Layered Architecture + Isar 로컬 우선 저장이다.
+
+---
+
+*문서 버전: 2.1*  
+*수정일: 2026-05-26*

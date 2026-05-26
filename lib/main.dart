@@ -59,11 +59,7 @@ class AppShadows {
   ];
 
   static const subtle = [
-    BoxShadow(
-      color: Color(0x12000000),
-      blurRadius: 16,
-      offset: Offset(0, 6),
-    ),
+    BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6)),
   ];
 }
 
@@ -84,382 +80,6 @@ Color emotionColor(List<String> emotions) {
     return const Color(0xFF1BE0B5); // Electric aqua/emerald teal
   }
   return const Color(0xFF6EC99E); // Calm sage/mint green glow
-}
-
-// ============================================================
-// Particle System — emotional motion driven by energy + keywords
-// ============================================================
-
-enum BehaviorMode {
-  calm,
-  vibrant,
-  chaotic,
-  focused,
-}
-
-BehaviorMode resolveBehaviorMode(int energy, List<String> emotions) {
-  if (emotions.contains('불안')) return BehaviorMode.chaotic;
-  if (emotions.contains('집중') || emotions.contains('성취감')) {
-    return BehaviorMode.focused;
-  }
-  if (energy >= 4 &&
-      (emotions.contains('기쁨') || emotions.contains('설렘'))) {
-    return BehaviorMode.vibrant;
-  }
-  if (energy <= 2 ||
-      emotions.contains('피곤') ||
-      emotions.contains('무기력')) {
-    return BehaviorMode.calm;
-  }
-  return BehaviorMode.vibrant;
-}
-
-double perlinNoise(double x, double y) {
-  double hash(int xi, int yi) {
-    final s = sin(xi * 127.1 + yi * 311.7) * 43758.5453;
-    return (s - s.floorToDouble()) * 2.0 - 1.0;
-  }
-
-  double smooth(double t) => t * t * (3 - 2 * t);
-  double mix(double a, double b, double t) => a + (b - a) * t;
-
-  final xi = x.floor();
-  final yi = y.floor();
-  final xf = x - xi;
-  final yf = y - yi;
-  final u = smooth(xf);
-  final v = smooth(yf);
-  final n00 = hash(xi, yi);
-  final n10 = hash(xi + 1, yi);
-  final n01 = hash(xi, yi + 1);
-  final n11 = hash(xi + 1, yi + 1);
-  return mix(mix(n00, n10, u), mix(n01, n11, u), v);
-}
-
-class ParticleContext {
-  const ParticleContext({
-    required this.size,
-    required this.dt,
-    required this.time,
-    required this.attractor,
-    required this.mode,
-    required this.energy,
-    required this.baseColor,
-  });
-
-  final Size size;
-  final double dt;
-  final double time;
-  final Offset attractor;
-  final BehaviorMode mode;
-  final double energy;
-  final Color baseColor;
-}
-
-class Particle {
-  Particle({
-    required this.position,
-    required this.velocity,
-    required this.color,
-    required this.size,
-    required this.maxLife,
-    required this.noiseOffset,
-    this.acceleration = Offset.zero,
-  })  : life = maxLife,
-        opacity = 0.0;
-
-  Offset position;
-  Offset velocity;
-  Offset acceleration;
-  double size;
-  double opacity;
-  double life;
-  final double maxLife;
-  Color color;
-  final double noiseOffset;
-
-  bool get isDead => life <= 0;
-
-  void update(ParticleContext ctx) {
-    final dt = ctx.dt;
-
-    final nx = perlinNoise(
-      noiseOffset + position.dx * 0.005,
-      ctx.time * 0.25,
-    );
-    final ny = perlinNoise(
-      ctx.time * 0.25 + 17.3,
-      noiseOffset + position.dy * 0.005,
-    );
-
-    final toAttractor = ctx.attractor - position;
-    final dist = toAttractor.distance.clamp(1.0, 2000.0);
-    final pullDir = toAttractor / dist;
-    final tangent = Offset(-pullDir.dy, pullDir.dx);
-
-    late final double pullStrength;
-    late final double noiseStrength;
-    late final double orbitStrength;
-    late final double damping;
-    switch (ctx.mode) {
-      case BehaviorMode.calm:
-        pullStrength = 6.0;
-        noiseStrength = 14.0;
-        orbitStrength = 12.0;
-        damping = 0.94;
-      case BehaviorMode.vibrant:
-        pullStrength = 24.0;
-        noiseStrength = 52.0;
-        orbitStrength = 42.0;
-        damping = 0.93;
-      case BehaviorMode.chaotic:
-        pullStrength = 5.0;
-        noiseStrength = 130.0;
-        orbitStrength = 18.0;
-        damping = 0.88;
-      case BehaviorMode.focused:
-        pullStrength = 70.0;
-        noiseStrength = 16.0;
-        orbitStrength = 58.0;
-        damping = 0.90;
-    }
-
-    acceleration = pullDir * pullStrength +
-        tangent * orbitStrength +
-        Offset(nx, ny) * noiseStrength;
-
-    velocity = (velocity + acceleration * dt) * damping;
-    position += velocity * dt;
-
-    life -= dt;
-    final lifeT = (life / maxLife).clamp(0.0, 1.0);
-    final fadeIn = ((1 - lifeT) / 0.2).clamp(0.0, 1.0);
-    final fadeOut = (lifeT / 0.6).clamp(0.0, 1.0);
-    opacity = (fadeIn * fadeOut).clamp(0.0, 1.0);
-  }
-
-  void draw(ParticleContext ctx, Canvas canvas) {
-    if (opacity <= 0.01) return;
-
-    // Soft outer luxurious glow
-    final haloPaint = Paint()
-      ..color = color.withValues(alpha: opacity * 0.38)
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, size * 1.8);
-    canvas.drawCircle(position, size * 2.3, haloPaint);
-
-    if (size >= 4) {
-      final glowPaint = Paint()
-        ..color = color.withValues(alpha: opacity * 0.6)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, size * 0.75);
-      canvas.drawCircle(position, size * 1.2, glowPaint);
-    }
-
-    // High-crisp diamond core
-    final corePaint = Paint()..color = color.withValues(alpha: opacity);
-    canvas.drawCircle(position, size, corePaint);
-
-    if (ctx.mode == BehaviorMode.focused ||
-        ctx.mode == BehaviorMode.vibrant) {
-      final spec = Paint()
-        ..color = Colors.white.withValues(alpha: opacity * 0.9);
-      canvas.drawCircle(
-        position - Offset(size * 0.3, size * 0.3),
-        size * 0.35,
-        spec,
-      );
-    }
-  }
-}
-
-// ============================================================
-// Interactive Ripples on Canvas
-// ============================================================
-
-class CanvasRipple {
-  CanvasRipple({
-    required this.position,
-    required this.color,
-    this.maxRadius = 160.0,
-    this.duration = 1.2,
-  }) : age = 0;
-
-  final Offset position;
-  final Color color;
-  final double maxRadius;
-  final double duration;
-  double age;
-
-  bool get isDead => age >= duration;
-
-  void update(double dt) {
-    age += dt;
-  }
-
-  void draw(Canvas canvas) {
-    final t = (age / duration).clamp(0.0, 1.0);
-    final radius = t * maxRadius;
-    final opacity = (1.0 - t).clamp(0.0, 1.0);
-
-    final paint = Paint()
-      ..color = color.withValues(alpha: opacity * 0.45)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5 * (1.0 - t)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
-
-    canvas.drawCircle(position, radius, paint);
-  }
-}
-
-class ParticleField {
-  ParticleField({this.maxParticles = 100});
-
-  final int maxParticles;
-  final List<Particle> _particles = [];
-  final List<CanvasRipple> _ripples = [];
-  final Random _rng = Random();
-  final Stopwatch _clock = Stopwatch()..start();
-  double _lastTime = 0;
-  ParticleContext? _lastCtx;
-
-  int get count => _particles.length;
-
-  void update({
-    required Size size,
-    required double energy,
-    required Color baseColor,
-    required Offset attractor,
-    required BehaviorMode mode,
-  }) {
-    final now = _clock.elapsedMicroseconds / 1e6;
-    final dt = _lastTime == 0
-        ? 1 / 60
-        : (now - _lastTime).clamp(0.001, 0.05);
-    _lastTime = now;
-
-    final ctx = ParticleContext(
-      size: size,
-      dt: dt,
-      time: now,
-      attractor: attractor,
-      mode: mode,
-      energy: energy,
-      baseColor: baseColor,
-    );
-
-    for (final p in _particles) {
-      p.update(ctx);
-    }
-    _particles.removeWhere((p) => p.isDead);
-
-    for (final r in _ripples) {
-      r.update(dt);
-    }
-    _ripples.removeWhere((r) => r.isDead);
-
-    final target = (45 + energy * 11).toInt().clamp(25, maxParticles);
-    final deficit = target - _particles.length;
-    if (deficit > 0) {
-      final spawn = (deficit * 0.15).ceil().clamp(0, 6);
-      for (var i = 0; i < spawn; i++) {
-        _particles.add(_spawn(ctx));
-      }
-    }
-
-    _lastCtx = ctx;
-  }
-
-  void draw(Canvas canvas) {
-    final ctx = _lastCtx;
-    if (ctx == null) return;
-    
-    for (final p in _particles) {
-      p.draw(ctx, canvas);
-    }
-
-    for (final r in _ripples) {
-      r.draw(canvas);
-    }
-  }
-
-  Particle _spawn(ParticleContext ctx) {
-    final angle = _rng.nextDouble() * pi * 2;
-    final radius = 70 + _rng.nextDouble() * (85 + ctx.energy * 20);
-    final position =
-        ctx.attractor + Offset(cos(angle), sin(angle)) * radius;
-    final tangent = Offset(-sin(angle), cos(angle));
-    final speed = 8 + _rng.nextDouble() * (12 + ctx.energy * 4);
-    final velocity = tangent * speed;
-
-    final base = 3 + (ctx.energy - 1) * 2.85;
-    final size =
-        (base * (0.55 + _rng.nextDouble() * 0.75)).clamp(3.0, 15.0);
-
-    final accent = _rng.nextBool()
-        ? Colors.white
-        : const Color(0xFFF7DCA7); // Warm sparkling champagne
-    final color = Color.lerp(
-      ctx.baseColor,
-      accent,
-      _rng.nextDouble() * 0.55,
-    )!;
-
-    return Particle(
-      position: position,
-      velocity: velocity,
-      color: color,
-      size: size,
-      maxLife: 3.5 + _rng.nextDouble() * 4.5,
-      noiseOffset: _rng.nextDouble() * 100,
-    );
-  }
-
-  // Interactive spark spawn burst when tapped
-  void spawnTouchBurst(Offset offset, Color baseColor, double energy) {
-    for (var i = 0; i < 20; i++) {
-      final angle = _rng.nextDouble() * pi * 2;
-      final speed = 40.0 + _rng.nextDouble() * 125.0;
-      final velocity = Offset(cos(angle), sin(angle)) * speed;
-      
-      final size = 2.0 + _rng.nextDouble() * 4.5;
-      final color = Color.lerp(
-        baseColor,
-        Colors.white,
-        0.3 + _rng.nextDouble() * 0.55,
-      )!;
-
-      _particles.add(Particle(
-        position: offset,
-        velocity: velocity,
-        color: color,
-        size: size,
-        maxLife: 0.8 + _rng.nextDouble() * 1.3,
-        noiseOffset: _rng.nextDouble() * 100.0,
-      ));
-    }
-  }
-
-  // Interactive drag sparks
-  void spawnDragSpark(Offset offset, Color baseColor) {
-    final angle = _rng.nextDouble() * pi * 2;
-    final speed = 15.0 + _rng.nextDouble() * 35.0;
-    final velocity = Offset(cos(angle), sin(angle)) * speed;
-    
-    _particles.add(Particle(
-      position: offset,
-      velocity: velocity,
-      color: Color.lerp(baseColor, Colors.white, 0.45)!,
-      size: 2.2 + _rng.nextDouble() * 3.0,
-      maxLife: 0.6 + _rng.nextDouble() * 0.6,
-      noiseOffset: _rng.nextDouble() * 100.0,
-    ));
-  }
-
-  void addRipple(Offset position, Color color) {
-    _ripples.add(CanvasRipple(
-      position: position,
-      color: color,
-    ));
-  }
 }
 
 void main() {
@@ -672,12 +292,12 @@ class _RhythmHomePageState extends State<RhythmHomePage>
     });
     await _saveEntries();
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(
-      content: Text('오늘의 리듬을 성공적으로 기록했습니다.'),
-      backgroundColor: AppColors.primaryLight,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('오늘의 리듬을 성공적으로 기록했습니다.'),
+        backgroundColor: AppColors.primaryLight,
+      ),
+    );
   }
 
   Future<void> _resetDemoData() async {
@@ -847,7 +467,11 @@ class _Header extends StatelessWidget {
             ],
           ),
           child: const Center(
-            child: Icon(Icons.waves_rounded, color: AppColors.accentLight, size: 28),
+            child: Icon(
+              Icons.waves_rounded,
+              color: AppColors.accentLight,
+              size: 28,
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -870,10 +494,7 @@ class _Header extends StatelessWidget {
                   SizedBox(width: 8),
                   Text(
                     '•',
-                    style: TextStyle(
-                      color: AppColors.accent,
-                      fontSize: 20,
-                    ),
+                    style: TextStyle(color: AppColors.accent, fontSize: 20),
                   ),
                   SizedBox(width: 8),
                   Text(
@@ -964,10 +585,7 @@ class _FloatingNavBar extends StatelessWidget {
                 AnimatedAlign(
                   duration: const Duration(milliseconds: 280),
                   curve: Curves.easeOutBack,
-                  alignment: Alignment(
-                    -1.0 + (selectedIndex * 1.0),
-                    0.0,
-                  ),
+                  alignment: Alignment(-1.0 + (selectedIndex * 1.0), 0.0),
                   child: FractionallySizedBox(
                     widthFactor: 0.3,
                     heightFactor: 0.72,
@@ -1056,7 +674,7 @@ class _EnergySelector extends StatelessWidget {
     '차분하고 정돈된 상태',
     '안정적이고 균형 잡힌 에너지',
     '활기차고 긍정적인 집중력',
-    '강한 의욕과 최고의 몰입 상태'
+    '강한 의욕과 최고의 몰입 상태',
   ];
 
   @override
@@ -1103,7 +721,7 @@ class _EnergySelector extends StatelessWidget {
           children: List.generate(5, (index) {
             final level = index + 1;
             final isSelected = level == value;
-            
+
             final Color activeGlowColor;
             if (level <= 2) {
               activeGlowColor = const Color(0xFF758591);
@@ -1123,7 +741,10 @@ class _EnergySelector extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 240),
                     margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.surfaceAlt.withValues(alpha: 0.8)
@@ -1160,9 +781,11 @@ class _EnergySelector extends StatelessWidget {
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: activeGlowColor.withValues(alpha: 0.35),
+                                      color: activeGlowColor.withValues(
+                                        alpha: 0.35,
+                                      ),
                                       blurRadius: 8,
-                                    )
+                                    ),
                                   ]
                                 : null,
                           ),
@@ -1172,7 +795,9 @@ class _EnergySelector extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
-                                color: isSelected ? AppColors.background : AppColors.textSecondary,
+                                color: isSelected
+                                    ? AppColors.background
+                                    : AppColors.textSecondary,
                               ),
                             ),
                           ),
@@ -1182,8 +807,12 @@ class _EnergySelector extends StatelessWidget {
                           _labels[index],
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -1303,7 +932,9 @@ class _PremiumChip extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                  color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
                 ),
               ),
             ],
@@ -1363,7 +994,9 @@ class _ChipSection extends StatelessWidget {
           runSpacing: 8,
           children: options.map((option) {
             final active = selected.contains(option);
-            final color = isEmotion ? emotionColor([option]) : AppColors.accentLight;
+            final color = isEmotion
+                ? emotionColor([option])
+                : AppColors.accentLight;
             return _PremiumChip(
               label: option,
               isSelected: active,
@@ -1456,15 +1089,24 @@ class _HomeTab extends StatelessWidget {
                 controller: noteController,
                 minLines: 2,
                 maxLines: 4,
-                style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
                 decoration: InputDecoration(
                   labelText: '짧은 메모',
-                  labelStyle: const TextStyle(color: AppColors.accentBronze, fontWeight: FontWeight.w600),
+                  labelStyle: const TextStyle(
+                    color: AppColors.accentBronze,
+                    fontWeight: FontWeight.w600,
+                  ),
                   hintText: '오늘의 리듬을 한 문장으로 기록해 보세요.',
                   hintStyle: const TextStyle(color: AppColors.textMuted),
                   filled: true,
                   fillColor: AppColors.surfaceAlt.withValues(alpha: 0.35),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -1483,10 +1125,7 @@ class _HomeTab extends StatelessWidget {
                   height: 54,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [
-                        AppColors.accentBronze,
-                        AppColors.accent,
-                      ],
+                      colors: [AppColors.accentBronze, AppColors.accent],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
@@ -1500,7 +1139,11 @@ class _HomeTab extends StatelessWidget {
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.auto_awesome, color: AppColors.background, size: 20),
+                      Icon(
+                        Icons.auto_awesome,
+                        color: AppColors.background,
+                        size: 20,
+                      ),
                       SizedBox(width: 10),
                       Text(
                         '오늘의 리듬 기록하기',
@@ -1518,17 +1161,17 @@ class _HomeTab extends StatelessWidget {
             ],
           ),
         );
-        
+
         final canvas = _Panel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Particle Canvas (예술 시각화)',
+                'Wave Graph (움직이는 리듬 파동)',
                 style: TextStyle(
-                  fontSize: 15, 
-                  fontWeight: FontWeight.w700, 
-                  color: AppColors.textSecondary, 
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textSecondary,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -1536,7 +1179,7 @@ class _HomeTab extends StatelessWidget {
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: _ParticleCanvas(
+                  child: _WaveCanvas(
                     energy: energy,
                     emotions: selectedEmotions,
                     entry: previewEntry,
@@ -1547,11 +1190,15 @@ class _HomeTab extends StatelessWidget {
               const SizedBox(height: 12),
               const Row(
                 children: [
-                  Icon(Icons.touch_app_outlined, size: 14, color: AppColors.textMuted),
+                  Icon(
+                    Icons.touch_app_outlined,
+                    size: 14,
+                    color: AppColors.textMuted,
+                  ),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '캔버스를 터치하거나 드래그하여 감정의 파동과 스파클을 일으켜 보세요.',
+                      '감정과 에너지에 따라 움직이는 파동 그래프입니다. 터치하면 파동이 한 번 더 번집니다.',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,
@@ -1588,8 +1235,8 @@ class _HomeTab extends StatelessWidget {
   }
 }
 
-class _ParticleCanvas extends StatefulWidget {
-  const _ParticleCanvas({
+class _WaveCanvas extends StatefulWidget {
+  const _WaveCanvas({
     required this.energy,
     required this.emotions,
     required this.entry,
@@ -1602,11 +1249,12 @@ class _ParticleCanvas extends StatefulWidget {
   final Animation<double> animation;
 
   @override
-  State<_ParticleCanvas> createState() => _ParticleCanvasState();
+  State<_WaveCanvas> createState() => _WaveCanvasState();
 }
 
-class _ParticleCanvasState extends State<_ParticleCanvas> {
-  late final ParticleField _field = ParticleField();
+class _WaveCanvasState extends State<_WaveCanvas> {
+  Offset? _touchPoint;
+  double _touchStart = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -1614,37 +1262,22 @@ class _ParticleCanvasState extends State<_ParticleCanvas> {
       onTapDown: (details) {
         final box = context.findRenderObject() as RenderBox?;
         if (box == null) return;
-        final localPos = box.globalToLocal(details.globalPosition);
-
-        final emotions = widget.entry?.emotions ?? widget.emotions.toList();
-        final baseColor = emotionColor(emotions);
-        final energy = widget.entry?.energy ?? widget.energy;
-
-        _field.addRipple(localPos, baseColor);
-        _field.spawnTouchBurst(localPos, baseColor, energy.toDouble());
-      },
-      onPanUpdate: (details) {
-        final box = context.findRenderObject() as RenderBox?;
-        if (box == null) return;
-        final localPos = box.globalToLocal(details.globalPosition);
-
-        final emotions = widget.entry?.emotions ?? widget.emotions.toList();
-        final baseColor = emotionColor(emotions);
-
-        if (Random().nextDouble() < 0.4) {
-          _field.spawnDragSpark(localPos, baseColor);
-        }
+        setState(() {
+          _touchPoint = box.globalToLocal(details.globalPosition);
+          _touchStart = widget.animation.value;
+        });
       },
       child: AnimatedBuilder(
         animation: widget.animation,
         builder: (context, _) {
           return CustomPaint(
-            painter: RhythmParticlePainter(
+            painter: RhythmWavePainter(
               progress: widget.animation.value,
               entry: widget.entry,
               previewEnergy: widget.energy,
               previewEmotions: widget.emotions,
-              field: _field,
+              touchPoint: _touchPoint,
+              touchStart: _touchStart,
             ),
             child: const SizedBox.expand(),
           );
@@ -1671,7 +1304,11 @@ class _HistoryTab extends StatelessWidget {
         children: [
           const Text(
             '히스토리',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 23,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 12),
           Expanded(
@@ -1773,11 +1410,21 @@ class _HistoryTab extends StatelessWidget {
                                     runSpacing: 4,
                                     children: entry.activities.map((act) {
                                       return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 9,
+                                          vertical: 3.5,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: AppColors.surface.withValues(alpha: 0.8),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: AppColors.border, width: 0.6),
+                                          color: AppColors.surface.withValues(
+                                            alpha: 0.8,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.border,
+                                            width: 0.6,
+                                          ),
                                         ),
                                         child: Text(
                                           act,
@@ -1797,9 +1444,14 @@ class _HistoryTab extends StatelessWidget {
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: AppColors.surface.withValues(alpha: 0.45),
+                                        color: AppColors.surface.withValues(
+                                          alpha: 0.45,
+                                        ),
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: AppColors.border, width: 0.6),
+                                        border: Border.all(
+                                          color: AppColors.border,
+                                          width: 0.6,
+                                        ),
                                       ),
                                       child: Text(
                                         entry.note,
@@ -2039,23 +1691,25 @@ class _Panel extends StatelessWidget {
 }
 
 // ============================================================
-// Rhythm Particle Visualizer — Beautiful Dynamic custom painter
+// Rhythm Wave Visualizer — Moving emotional sine wave graph
 // ============================================================
 
-class RhythmParticlePainter extends CustomPainter {
-  RhythmParticlePainter({
+class RhythmWavePainter extends CustomPainter {
+  RhythmWavePainter({
     required this.progress,
     required this.entry,
     required this.previewEnergy,
     required this.previewEmotions,
-    required this.field,
+    required this.touchPoint,
+    required this.touchStart,
   });
 
   final double progress;
   final RhythmEntry? entry;
   final int previewEnergy;
   final Set<String> previewEmotions;
-  final ParticleField field;
+  final Offset? touchPoint;
+  final double touchStart;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -2063,91 +1717,233 @@ class RhythmParticlePainter extends CustomPainter {
     final emotions = entry?.emotions ?? previewEmotions.toList();
     final baseColor = emotionColor(emotions);
     final energy = entry?.energy ?? previewEnergy;
-    final mode = resolveBehaviorMode(energy, emotions);
+    final waveCount = emotions.isEmpty ? 3 : emotions.length.clamp(2, 4);
 
-    // Dynamic, deep cosmic dark gradient
+    _paintBackground(canvas, rect, baseColor);
+    _paintGrid(canvas, size);
+    _paintAxisLabels(canvas, size);
+
+    for (var i = 0; i < waveCount; i++) {
+      final emotion = emotions.isEmpty ? '평온' : emotions[i % emotions.length];
+      final color = _waveColor(emotion, baseColor, i);
+      final amplitude = (18.0 + energy * 7.0 + i * 7.0).clamp(18.0, 66.0);
+      final frequency = 1.15 + i * 0.42 + energy * 0.06;
+      final speed = 0.75 + i * 0.23 + energy * 0.08;
+      final baseline =
+          size.height * (0.34 + i * (0.34 / max(1, waveCount - 1)));
+
+      _paintWave(
+        canvas: canvas,
+        size: size,
+        color: color,
+        baseline: baseline,
+        amplitude: amplitude,
+        frequency: frequency,
+        phase: progress * pi * 2 * speed + i * 0.85,
+        glow: i == 0,
+      );
+    }
+
+    _paintEnergyEnvelope(canvas, size, baseColor, energy);
+    _paintTouchPulse(canvas, baseColor);
+    _paintHeader(canvas, size, energy, emotions);
+  }
+
+  void _paintBackground(Canvas canvas, Rect rect, Color baseColor) {
     final background = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          const Color(0xFF040708),
-          Color.lerp(baseColor, const Color(0xFF071214), 0.78)!,
-          Color.lerp(baseColor, const Color(0xFF0B191B), 0.64)!,
-          const Color(0xFF06090A),
+          const Color(0xFF030607),
+          Color.lerp(baseColor, const Color(0xFF061113), 0.82)!,
+          const Color(0xFF080B0C),
         ],
-        stops: const [0.0, 0.35, 0.7, 1.0],
+        stops: const [0.0, 0.55, 1.0],
       ).createShader(rect);
     canvas.drawRect(rect, background);
 
-    // Subtle vignette for cinematic depth
-    final vignette = Paint()
+    final glow = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(0.0, 0.0),
-        radius: 1.2,
-        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
-        stops: const [0.5, 1.0],
-      ).createShader(rect);
-    canvas.drawRect(rect, vignette);
-
-    // Delicate golden framing border
-    final borderPaint = Paint()
-      ..shader = LinearGradient(
+        center: const Alignment(-0.2, -0.15),
+        radius: 0.95,
         colors: [
-          AppColors.accent.withValues(alpha: 0.28),
+          baseColor.withValues(alpha: 0.28),
+          AppColors.accent.withValues(alpha: 0.08),
           Colors.transparent,
-          AppColors.border.withValues(alpha: 0.4),
         ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ).createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-    canvas.drawRect(rect, borderPaint);
+        stops: const [0.0, 0.42, 1.0],
+      ).createShader(rect);
+    canvas.drawRect(rect, glow);
+  }
 
-    final center = Offset(size.width * 0.5, size.height * 0.5);
+  void _paintGrid(Canvas canvas, Size size) {
+    final gridPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.07)
+      ..strokeWidth = 1;
+    final strongPaint = Paint()
+      ..color = AppColors.accent.withValues(alpha: 0.16)
+      ..strokeWidth = 1.2;
 
-    // Concentric light waves
-    final wavePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1);
-
-    for (var ring = 0; ring < 5; ring++) {
-      final phase = progress * pi * 2 + ring * 0.7;
-      final radius = 38.0 + ring * 38 + sin(phase) * (7 + energy * 0.8);
-      canvas.drawCircle(center, radius + energy * 2.2, wavePaint);
+    for (var i = 1; i < 6; i++) {
+      final y = size.height * i / 6;
+      canvas.drawLine(Offset(22, y), Offset(size.width - 18, y), gridPaint);
+    }
+    for (var i = 1; i < 7; i++) {
+      final x = size.width * i / 7;
+      canvas.drawLine(Offset(x, 56), Offset(x, size.height - 28), gridPaint);
     }
 
-    // Soft central mood glow
-    final glowPaint = Paint()
-      ..color = baseColor.withValues(alpha: 0.16 + (energy * 0.03))
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 38);
-    canvas.drawCircle(center, 56 + energy * 4, glowPaint);
+    final mid = size.height * 0.52;
+    canvas.drawLine(Offset(20, mid), Offset(size.width - 18, mid), strongPaint);
+  }
 
-    // Update & Renders particle field
-    field.update(
-      size: size,
-      energy: energy.toDouble(),
-      baseColor: baseColor,
-      attractor: center,
-      mode: mode,
+  void _paintAxisLabels(Canvas canvas, Size size) {
+    final labels = ['차분', '흐름', '고조'];
+    for (var i = 0; i < labels.length; i++) {
+      final y = size.height * (0.74 - i * 0.24);
+      final painter = TextPainter(
+        text: TextSpan(
+          text: labels[i],
+          style: TextStyle(
+            color: AppColors.textMuted.withValues(alpha: 0.7),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(canvas, Offset(20, y));
+    }
+  }
+
+  void _paintWave({
+    required Canvas canvas,
+    required Size size,
+    required Color color,
+    required double baseline,
+    required double amplitude,
+    required double frequency,
+    required double phase,
+    required bool glow,
+  }) {
+    final path = Path();
+    final fillPath = Path()..moveTo(0, size.height);
+
+    const step = 5.0;
+    for (double x = 0; x <= size.width + step; x += step) {
+      final normalized = x / size.width;
+      final primary = sin(normalized * pi * 2 * frequency + phase);
+      final secondary = sin(
+        normalized * pi * 2 * (frequency * 0.5) - phase * 0.7,
+      );
+      final y = baseline + primary * amplitude + secondary * amplitude * 0.22;
+      if (x == 0) {
+        path.moveTo(x, y);
+        fillPath.lineTo(x, y);
+      } else {
+        path.lineTo(x, y);
+        fillPath.lineTo(x, y);
+      }
+    }
+    fillPath
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    if (glow) {
+      final fillPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [color.withValues(alpha: 0.20), Colors.transparent],
+        ).createShader(Offset.zero & size);
+      canvas.drawPath(fillPath, fillPaint);
+    }
+
+    if (glow) {
+      final glowPaint = Paint()
+        ..color = color.withValues(alpha: 0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 8
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
+      canvas.drawPath(path, glowPaint);
+    }
+
+    final linePaint = Paint()
+      ..color = color.withValues(alpha: 0.92)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = glow ? 3.2 : 2.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    canvas.drawPath(path, linePaint);
+  }
+
+  void _paintEnergyEnvelope(
+    Canvas canvas,
+    Size size,
+    Color baseColor,
+    int energy,
+  ) {
+    final envelopePaint = Paint()
+      ..color = AppColors.accent.withValues(alpha: 0.42)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    final centerY = size.height * 0.52;
+    final height = 24.0 + energy * 10.0;
+    final rect = Rect.fromLTWH(
+      34,
+      centerY - height,
+      size.width - 68,
+      height * 2,
     );
-    field.draw(canvas);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(100)),
+      envelopePaint,
+    );
 
-    // Floating text label displaying current stats
-    final textPainter = TextPainter(
+    final dotPaint = Paint()..color = baseColor.withValues(alpha: 0.9);
+    final dotX = 34 + (size.width - 68) * ((progress * 1.4) % 1.0);
+    canvas.drawCircle(
+      Offset(dotX, centerY - height * sin(progress * pi * 2).abs()),
+      4.5,
+      dotPaint,
+    );
+  }
+
+  void _paintTouchPulse(Canvas canvas, Color baseColor) {
+    final point = touchPoint;
+    if (point == null) return;
+    final rawAge = progress - touchStart;
+    final age = rawAge < 0 ? rawAge + 1 : rawAge;
+    if (age > 0.45) return;
+
+    final t = (age / 0.45).clamp(0.0, 1.0);
+    final paint = Paint()
+      ..color = baseColor.withValues(alpha: (1 - t) * 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5 * (1 - t)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawCircle(point, 28 + 130 * t, paint);
+  }
+
+  void _paintHeader(
+    Canvas canvas,
+    Size size,
+    int energy,
+    List<String> emotions,
+  ) {
+    final title = TextPainter(
       text: TextSpan(
         text: 'Energy $energy  ·  ${emotions.join('  /  ')}',
         style: TextStyle(
           color: AppColors.textPrimary,
           fontSize: 15,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.2,
           shadows: [
             Shadow(
-              color: Colors.black.withValues(alpha: 0.55),
+              color: Colors.black.withValues(alpha: 0.65),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -2156,11 +1952,35 @@ class RhythmParticlePainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: size.width - 48);
-    textPainter.paint(canvas, const Offset(22, 22));
+    title.paint(canvas, const Offset(22, 22));
+
+    final caption = TextPainter(
+      text: TextSpan(
+        text: '감정 파동 그래프',
+        style: TextStyle(
+          color: AppColors.textGold.withValues(alpha: 0.82),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.3,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: size.width - 48);
+    caption.paint(canvas, const Offset(22, 45));
+  }
+
+  Color _waveColor(String emotion, Color baseColor, int index) {
+    final palette = [
+      emotionColor([emotion]),
+      AppColors.accentLight,
+      const Color(0xFF6EC6FF),
+      const Color(0xFFFF7AE6),
+    ];
+    return Color.lerp(palette[index % palette.length], baseColor, 0.2)!;
   }
 
   @override
-  bool shouldRepaint(covariant RhythmParticlePainter oldDelegate) {
+  bool shouldRepaint(covariant RhythmWavePainter oldDelegate) {
     return true;
   }
 }
@@ -2195,7 +2015,8 @@ class WeeklyRhythmPainter extends CustomPainter {
       final x = recent.length == 1
           ? size.width / 2
           : 24 + i * ((size.width - 48) / (recent.length - 1));
-      final y = size.height - 32 - (recent[i].energy / 5.2) * (size.height - 64);
+      final y =
+          size.height - 32 - (recent[i].energy / 5.2) * (size.height - 64);
       points.add(Offset(x, y));
     }
 
@@ -2216,7 +2037,14 @@ class WeeklyRhythmPainter extends CustomPainter {
         final controlY2 = p1.dy;
 
         path.cubicTo(controlX1, controlY1, controlX2, controlY2, p1.dx, p1.dy);
-        fillPath.cubicTo(controlX1, controlY1, controlX2, controlY2, p1.dx, p1.dy);
+        fillPath.cubicTo(
+          controlX1,
+          controlY1,
+          controlX2,
+          controlY2,
+          p1.dx,
+          p1.dy,
+        );
       }
 
       fillPath.lineTo(points.last.dx, size.height - 32);

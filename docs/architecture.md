@@ -6,7 +6,7 @@
 
 ## 1. 아키텍처 목표
 
-Rhythm은 감정, 에너지, 활동 기록을 기반으로 사용자의 하루를 Particle Canvas로 표현하는 모바일 앱이다.  
+Rhythm은 감정, 에너지, 활동 기록을 기반으로 사용자의 하루를 Wave Graph로 표현하는 모바일 앱이다.  
 앱의 핵심은 단순 UI가 아니라 **기록 데이터 → 감정/활동 해석 → 시각화**로 이어지는 흐름이다.
 
 따라서 최종 구조는 `Presentation`, `Application`, `Domain`, `Data` 레이어를 나누는 Layered Architecture를 목표로 한다.
@@ -39,7 +39,7 @@ docs/
 | 입력 화면 | `_HomeTab` |
 | 히스토리 화면 | `_HistoryTab` |
 | 패턴 화면 | `_PatternTab` |
-| 시각화 | `RhythmParticlePainter`, `WeeklyRhythmPainter` |
+| 시각화 | `RhythmWavePainter`, `WeeklyRhythmPainter` |
 | 데모 저장 | `shared_preferences` |
 
 ---
@@ -60,7 +60,7 @@ flowchart LR
 
 ### Presentation Layer
 
-- 화면, 위젯, Particle Canvas를 담당한다.
+- 화면, 위젯, Wave Graph를 담당한다.
 - 사용자의 입력을 받고 ViewModel에 전달한다.
 - 예: 일일 입력 화면, 히스토리 화면, 패턴 화면
 
@@ -123,7 +123,7 @@ sequenceDiagram
 - [ ] 저장 흐름을 `RhythmRepository` Interface로 분리
 - [ ] 화면 상태를 Riverpod Notifier로 이동
 - [ ] `shared_preferences` 데모 저장을 Isar 구현체로 교체
-- [ ] Particle Painter를 `lib/presentation/widgets/`로 분리
+- [ ] Wave Painter를 `lib/presentation/widgets/`로 분리
 
 ---
 

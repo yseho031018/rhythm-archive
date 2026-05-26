@@ -30,7 +30,7 @@ style: |
 
 기존 다이어리 앱은 기록이 길고 무겁거나, 쌓인 기록을 리스트와 숫자로만 보여주는 경우가 많다.
 
-Rhythm은 매일 30초 안에 감정, 에너지, 활동을 기록하고 이를 Particle Canvas로 표현해 사용자가 자신의 생활 리듬을 직관적으로 돌아보게 하는 앱이다.
+Rhythm은 매일 30초 안에 감정, 에너지, 활동을 기록하고 이를 Wave Graph로 표현해 사용자가 자신의 생활 리듬을 직관적으로 돌아보게 하는 앱이다.
 
 > 한 줄 가치 제안:  
 > **매일 30초, 감정을 톡톡 찍으면 내 감정의 파도가 보이는 다이어리 앱**
@@ -44,7 +44,7 @@ Rhythm은 매일 30초 안에 감정, 에너지, 활동을 기록하고 이를 P
 1. 밤에 앱을 열고 오늘의 에너지 레벨을 선택한다.
 2. 감정 키워드 3개와 주요 활동 태그를 고른다.
 3. 저장하면 오늘의 기록이 로컬 DB에 저장된다.
-4. Particle Canvas가 입력값을 색, 파동, 입자로 표현한다.
+4. Wave Graph가 입력값을 색과 파동 그래프로 표현한다.
 5. 이후 히스토리에서 날짜별 기록과 주간 패턴을 다시 확인한다.
 
 **목표:** 입력부터 시각화 확인까지 1분 이내
@@ -56,7 +56,7 @@ Rhythm은 매일 30초 안에 감정, 에너지, 활동을 기록하고 이를 P
 | ID | 기능 | 중간 발표 기준 |
 |----|------|----------------|
 | M1 | 일일 리듬 입력 | 에너지, 감정, 활동 입력 흐름 설계 완료 |
-| M2 | Particle 일일 시각화 | CustomPainter 기반 구현 예정 |
+| M2 | Wave Graph 일일 시각화 | CustomPainter 기반 데모 구현 |
 | M3 | 히스토리 조회 | 날짜별 기록 조회 구조 설계 |
 | M4 | 패턴 분석 | 평균, 빈도 기반 힌트로 범위 축소 |
 | M5 | 오프라인 지원 | Isar 기반 로컬 우선 구조 결정 |
@@ -85,7 +85,7 @@ Rhythm은 매일 30초 안에 감정, 에너지, 활동을 기록하고 이를 P
 
 ```mermaid
 flowchart LR
-  UI["Presentation\nScreens / Widgets / Particle Canvas"]
+  UI["Presentation\nScreens / Widgets / Wave Graph"]
   APP["Application\nViewModel / UseCase"]
   DOMAIN["Domain\nEntity / Rule / Repository Interface"]
   DATA["Data\nIsar / Repository Implementation"]
@@ -96,7 +96,7 @@ flowchart LR
 ```
 
 핵심 원칙:  
-**Particle Canvas와 감정 파동 계산 로직을 분리한다.**
+**Wave Graph와 감정 파동 계산 로직을 분리한다.**
 
 ---
 
@@ -109,7 +109,7 @@ flowchart LR
 | 기술 결정 | 완료 | ADR 3개 |
 | 시각 자료 | 완료 | WBS Gantt HTML |
 | 앱 구조 | 진행 중 | Flutter Web 데모 프로젝트 |
-| 구현 데모 | 진행 중 | 입력, Particle Canvas, 히스토리, 패턴 카드 |
+| 구현 데모 | 진행 중 | 입력, Wave Graph, 히스토리, 패턴 카드 |
 
 현재는 기획과 설계 산출물을 정리한 뒤, Flutter Web 기반 중간 발표용 데모를 구현했다.
 
@@ -133,7 +133,7 @@ https://yseho031018.github.io/rhythm-archive/wbs-gantt.html
 데모 시나리오:
 
 1. 오늘 탭에서 에너지, 감정, 활동을 입력한다.
-2. 저장 후 Particle Canvas가 바뀌는지 확인한다.
+2. 저장 후 Wave Graph가 바뀌는지 확인한다.
 3. 히스토리 탭에서 저장된 기록을 확인한다.
 4. 패턴 탭에서 평균 에너지와 자주 나온 감정/활동을 확인한다.
 
@@ -154,7 +154,7 @@ https://yseho031018.github.io/rhythm-archive/wbs-gantt.html
 
 ## 9. 현재 어려운 점
 
-- Particle Canvas는 앱의 차별점이지만 성능과 구현 난도가 있다.
+- Wave Graph는 앱의 차별점이지만 성능과 구현 난도가 있다.
 - Flutter, Riverpod, Isar를 함께 쓰는 구조를 직접 설명할 수 있어야 한다.
 - 7주 개인 프로젝트 범위에서 Should/Could 기능을 과하게 넣지 않아야 한다.
 
@@ -172,7 +172,7 @@ https://yseho031018.github.io/rhythm-archive/wbs-gantt.html
 
 1. 왜 Flutter를 선택했나요?
 2. 왜 백엔드 없이 로컬 DB를 선택했나요?
-3. Particle Canvas 데이터는 어디서 오나요?
+3. Wave Graph 데이터는 어디서 오나요?
 4. 현재 가장 큰 위험은 무엇인가요?
 5. AI Agent는 어디까지 활용했나요?
 

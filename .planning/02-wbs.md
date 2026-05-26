@@ -20,7 +20,7 @@
 | **3** | **중간 발표용 Flutter Web 데모 선행 개발** | | |
 | 3.1 | Flutter 프로젝트 초기화 | • Flutter 프로젝트 생성<br>• Web/Windows 플랫폼 구성<br>• 기본 테스트 및 분석 환경 구성 | `pubspec.yaml`<br>`lib/main.dart`<br>`test/widget_test.dart` |
 | 3.2 | 일일 입력 데모 | • 에너지 레벨 입력<br>• 감정 키워드 선택<br>• 활동 태그 선택<br>• 짧은 메모 저장 | 오늘 탭 |
-| 3.3 | 시각화 데모 | • CustomPainter 기반 Particle Canvas<br>• 감정/에너지 기반 색상과 파동 표현<br>• 더미 데이터 기반 즉시 시연 | Particle Canvas |
+| 3.3 | 시각화 데모 | • CustomPainter 기반 Wave Graph<br>• 감정/에너지 기반 색상과 파동 표현<br>• 더미 데이터 기반 즉시 시연 | Wave Graph |
 | 3.4 | 히스토리/패턴 데모 | • 저장된 기록 목록 표시<br>• 평균 에너지 카드<br>• 자주 나온 감정/활동 카드<br>• 최근 흐름 그래프 | 히스토리 탭<br>패턴 탭 |
 | **4** | **아키텍처 정리 및 리팩토링** | | |
 | 4.1 | 레이어 구조 분리 | • 현재 단일 파일 데모를 Presentation/Application/Domain/Data로 분리<br>• 화면, Painter, Entity, Repository 책임 분리 | `lib/` 레이어 구조 |

@@ -43,7 +43,7 @@
 
 - 중간 발표자료를 `presentation.html`로 변환한다.
 - Flutter 프로젝트를 생성하고 Web 데모를 구현한다.
-- 오늘 입력, Particle Canvas, 히스토리, 패턴 카드 흐름을 먼저 시연 가능하게 만든다.
+- 오늘 입력, Wave Graph, 히스토리, 패턴 카드 흐름을 먼저 시연 가능하게 만든다.
 - GitHub Pages 루트에서 앱 데모가 바로 열리도록 배포한다.
 - `docs/setup.md`, `docs/architecture.md`를 작성한다.
 
@@ -93,7 +93,7 @@ https://yseho031018.github.io/rhythm-archive/wbs-gantt.html
 |------|----------------|
 | 기록 | 에너지, 감정, 활동, 메모를 입력하고 저장할 수 있다. |
 | 조회 | 저장된 기록을 히스토리에서 다시 볼 수 있다. |
-| 시각화 | 입력한 기록이 Particle Canvas에 기본 형태로 반영된다. |
+| 시각화 | 입력한 기록이 Wave Graph에 기본 형태로 반영된다. |
 | 분석 | 1주 단위의 간단한 통계 힌트를 제공한다. |
 | 오프라인 | 로컬 저장 기반으로 네트워크 없이 핵심 흐름이 동작한다. |
 | 문서 | 기획, WBS, 일정, 위험, ADR, README, setup, architecture를 갖춘다. |

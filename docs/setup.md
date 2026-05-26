@@ -86,7 +86,7 @@ flutter build web
 - 감정 키워드 선택
 - 활동 태그 선택
 - 짧은 메모 저장
-- Particle Canvas 시각화
+- Wave Graph 시각화
 - 히스토리 조회
 - 기본 패턴 카드 확인
 

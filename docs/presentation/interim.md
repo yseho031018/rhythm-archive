@@ -16,12 +16,31 @@ style: |
   table { font-size: 21px; line-height: 1.25; }
   code { font-size: 0.9em; }
   .small { font-size: 0.78em; }
+  .cover-grid {
+    display: grid;
+    grid-template-columns: 1fr 0.95fr;
+    gap: 48px;
+    align-items: center;
+    min-height: 430px;
+  }
+  .cover-copy h1 {
+    margin: 0 0 0.8em;
+    font-size: 2em;
+  }
+  .cover-copy h2 {
+    margin: 0 0 1.2em;
+    font-size: 1.35em;
+  }
+  .cover-meta {
+    font-size: 0.86em;
+    line-height: 1.35;
+  }
   .hero-preview {
     display: block;
-    width: 46%;
-    max-height: 300px;
+    width: 100%;
+    max-height: 315px;
     object-fit: contain;
-    margin: 20px 0 0 auto;
+    margin: 0;
     border-radius: 18px;
   }
   .compact { font-size: 0.78em; line-height: 1.25; }
@@ -60,13 +79,14 @@ style: |
   }
 ---
 
-# Rhythm
-## 감정의 파도를 시각화하는 다이어리 앱
-
-윤세호  
-중간 발표 · 2026-05-26
-
-<img class="hero-preview" src="docs/presentation/assets/rhythm-wave-preview.svg" alt="Rhythm app preview">
+<div class="cover-grid">
+  <div class="cover-copy">
+    <h1>Rhythm</h1>
+    <h2>감정의 파도를 시각화하는 다이어리 앱</h2>
+    <div class="cover-meta">윤세호<br>중간 발표 · 2026-05-26</div>
+  </div>
+  <img class="hero-preview" src="docs/presentation/assets/rhythm-wave-preview.svg" alt="Rhythm app preview">
+</div>
 
 ---
 

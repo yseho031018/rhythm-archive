@@ -40,7 +40,7 @@ class RhythmWavePainter extends CustomPainter {
       size: size,
       config: config,
       baseline: size.height * 0.52,
-      phase: progress * pi * 2 * config.speed,
+      phase: progress * pi * 2 * (config.speed / 7.0),
       glow: true,
     );
 
@@ -228,8 +228,7 @@ class RhythmWavePainter extends CustomPainter {
   void _paintTouchPulse(Canvas canvas, Color baseColor) {
     final point = touchPoint;
     if (point == null) return;
-    final rawAge = progress - touchStart;
-    final age = rawAge < 0 ? rawAge + 1 : rawAge;
+    final age = progress - touchStart;
     if (age > 0.45) return;
 
     final t = (age / 0.45).clamp(0.0, 1.0);

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/app_styles.dart';
@@ -125,7 +126,8 @@ class _RhythmHomePageState extends State<RhythmHomePage>
     '여행',
   ];
 
-  late final AnimationController _controller;
+  late final Ticker _ticker;
+  final ValueNotifier<double> _waveTime = ValueNotifier<double>(0);
   final TextEditingController _noteController = TextEditingController();
 
   int _tabIndex = 0;
@@ -138,16 +140,16 @@ class _RhythmHomePageState extends State<RhythmHomePage>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 7),
-    )..repeat();
+    _ticker = createTicker((elapsed) {
+      _waveTime.value = elapsed.inMicroseconds / Duration.microsecondsPerSecond;
+    })..start();
     _loadEntries();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ticker.dispose();
+    _waveTime.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -333,7 +335,7 @@ class _RhythmHomePageState extends State<RhythmHomePage>
         emotionOptions: _emotionOptions,
         activityOptions: _activityOptions,
         noteController: _noteController,
-        animation: _controller,
+        animation: _waveTime,
         previewEntry: _previewEntry,
         onEnergyChanged: (value) => setState(() => _energy = value.round()),
         onEmotionToggle: _toggleEmotion,

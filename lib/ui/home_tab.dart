@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/app_styles.dart';
 import '../models/rhythm_entry.dart';
@@ -30,7 +31,7 @@ class HomeTab extends StatelessWidget {
   final List<String> emotionOptions;
   final List<String> activityOptions;
   final TextEditingController noteController;
-  final Animation<double> animation;
+  final ValueListenable<double> animation;
   final RhythmEntry? previewEntry;
   final ValueChanged<double> onEnergyChanged;
   final ValueChanged<String> onEmotionToggle;
@@ -362,7 +363,7 @@ class WaveCanvas extends StatefulWidget {
   final int energy;
   final Set<String> emotions;
   final RhythmEntry? entry;
-  final Animation<double> animation;
+  final ValueListenable<double> animation;
 
   @override
   State<WaveCanvas> createState() => _WaveCanvasState();

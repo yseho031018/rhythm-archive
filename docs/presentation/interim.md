@@ -18,8 +18,11 @@ style: |
   .small { font-size: 0.78em; }
   .hero-preview {
     display: block;
-    width: 48%;
-    margin: 18px auto 0;
+    width: 58%;
+    max-height: 300px;
+    object-fit: contain;
+    margin: 20px auto 0;
+    border-radius: 18px;
   }
   .compact { font-size: 0.78em; line-height: 1.25; }
   .demo-grid {
@@ -63,7 +66,7 @@ style: |
 윤세호  
 중간 발표 · 2026-05-26
 
-![Rhythm app preview](docs/presentation/assets/rhythm-wave-preview.svg){.hero-preview}
+<img class="hero-preview" src="docs/presentation/assets/rhythm-wave-preview.svg" alt="Rhythm app preview">
 
 ---
 

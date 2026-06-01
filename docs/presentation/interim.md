@@ -21,6 +21,40 @@ style: |
     width: 48%;
     margin: 18px auto 0;
   }
+  .compact { font-size: 0.78em; line-height: 1.25; }
+  .demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.08fr;
+    gap: 22px;
+    align-items: start;
+    margin-top: 8px;
+  }
+  .demo-box {
+    border: 1px solid #d9dfe7;
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: #f8fafc;
+  }
+  .demo-box h3 {
+    font-size: 1em;
+    margin: 0 0 0.4em;
+  }
+  .demo-box ul,
+  .demo-box ol {
+    margin: 0;
+    padding-left: 1.15em;
+  }
+  .demo-box li { margin: 0.16em 0; }
+  .url-line {
+    margin-top: 12px;
+    padding: 9px 10px;
+    border: 1px solid #d9dfe7;
+    border-radius: 8px;
+    background: #ffffff;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.68em;
+    white-space: nowrap;
+  }
 ---
 
 # Rhythm
@@ -124,25 +158,27 @@ flowchart LR
 
 ## 7. 데모 / 시각 자료
 
-현재 발표에서 보여줄 수 있는 산출물:
-
-- GitHub 저장소의 기획 문서 세트
-- WBS/Gantt 페이지
-- ADR 3개
-- Flutter Web 데모 앱
-
-WBS/Gantt 페이지:
-
-```text
-https://yseho031018.github.io/rhythm-archive/wbs-gantt.html
-```
-
-데모 시나리오:
-
-1. 오늘 탭에서 에너지, 감정, 활동을 입력한다.
-2. 저장 후 Wave Graph가 바뀌는지 확인한다.
-3. 히스토리 탭에서 저장된 기록을 확인한다.
-4. 패턴 탭에서 평균 에너지와 자주 나온 감정/활동을 확인한다.
+<div class="demo-grid compact">
+  <div class="demo-box">
+    <h3>발표 산출물</h3>
+    <ul>
+      <li>GitHub 저장소의 기획 문서 세트</li>
+      <li>WBS/Gantt 페이지</li>
+      <li>ADR 3개</li>
+      <li>Flutter Web 데모 앱</li>
+    </ul>
+    <div class="url-line">https://yseho031018.github.io/rhythm-archive/wbs-gantt.html</div>
+  </div>
+  <div class="demo-box">
+    <h3>데모 시나리오</h3>
+    <ol>
+      <li>오늘 탭에서 에너지, 감정, 활동을 입력한다.</li>
+      <li>저장 후 Wave Graph가 바뀌는지 확인한다.</li>
+      <li>히스토리 탭에서 저장된 기록을 확인한다.</li>
+      <li>패턴 탭에서 평균 에너지와 자주 나온 감정/활동을 확인한다.</li>
+    </ol>
+  </div>
+</div>
 
 ---
 

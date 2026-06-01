@@ -43,76 +43,100 @@ class RhythmNavBar extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Stack(
-              children: [
-                AnimatedAlign(
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeOutBack,
-                  alignment: Alignment(-1.0 + (selectedIndex * 1.0), 0.0),
-                  child: FractionallySizedBox(
-                    widthFactor: 0.3,
-                    heightFactor: 0.72,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.accent.withValues(alpha: 0.16),
-                            AppColors.accentLight.withValues(alpha: 0.05),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.accent.withValues(alpha: 0.35),
-                          width: 1,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final itemWidth = constraints.maxWidth / items.length;
+
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 280),
+                      curve: Curves.easeOutCubic,
+                      left: itemWidth * selectedIndex,
+                      top: 10,
+                      width: itemWidth,
+                      height: 52,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.accent.withValues(alpha: 0.16),
+                                AppColors.accentLight.withValues(alpha: 0.05),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.accent.withValues(alpha: 0.35),
+                              width: 1,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(items.length, (index) {
-                    final isSelected = selectedIndex == index;
-                    final item = items[index];
-                    return Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => onDestinationSelected(index),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AnimatedScale(
-                              scale: isSelected ? 1.15 : 1.0,
-                              duration: const Duration(milliseconds: 200),
-                              child: Icon(
-                                isSelected ? item.$2 : item.$1,
-                                color: isSelected
-                                    ? AppColors.accentLight
-                                    : AppColors.textSecondary,
-                                size: 24,
+                    Row(
+                      children: List.generate(items.length, (index) {
+                        final isSelected = selectedIndex == index;
+                        final item = items[index];
+
+                        return SizedBox(
+                          width: itemWidth,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => onDestinationSelected(index),
+                            child: Center(
+                              child: SizedBox(
+                                height: 48,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      height: 26,
+                                      child: Center(
+                                        child: AnimatedScale(
+                                          scale: isSelected ? 1.12 : 1.0,
+                                          duration: const Duration(
+                                            milliseconds: 200,
+                                          ),
+                                          child: Icon(
+                                            isSelected ? item.$2 : item.$1,
+                                            color: isSelected
+                                                ? AppColors.accentLight
+                                                : AppColors.textSecondary,
+                                            size: 23,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      item.$3,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        height: 1.1,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? AppColors.textPrimary
+                                            : AppColors.textMuted,
+                                        letterSpacing: 0.1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 5),
-                            Text(
-                              item.$3,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: isSelected
-                                    ? AppColors.textPrimary
-                                    : AppColors.textMuted,
-                                letterSpacing: 0.1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

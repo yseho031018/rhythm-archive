@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-label="Rhythm app wave graph preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071111"/>
+      <stop offset="0.52" stop-color="#0b1717"/>
+      <stop offset="1" stop-color="#040606"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#142425" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#091112" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1be0b5"/>
+      <stop offset="0.55" stop-color="#eac98c"/>
+      <stop offset="1" stop-color="#6ec6ff"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-60%" width="160%" height="220%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="960" height="620" rx="38" fill="url(#bg)"/>
+  <circle cx="750" cy="190" r="260" fill="#1be0b5" opacity="0.08"/>
+  <circle cx="360" cy="470" r="240" fill="#d6b66d" opacity="0.07"/>
+  <g transform="translate(64 58)">
+    <rect x="0" y="0" width="832" height="504" rx="30" fill="url(#panel)" stroke="#30484b" stroke-opacity="0.72"/>
+    <g transform="translate(42 38)">
+      <rect width="58" height="58" rx="17" fill="#123635" stroke="#d6b66d" stroke-opacity="0.38"/>
+      <path d="M17 22c8-7 17 7 25 0M17 31c8-7 17 7 25 0M17 40c8-7 17 7 25 0" fill="none" stroke="#f1d7a1" stroke-width="3" stroke-linecap="round"/>
+      <text x="78" y="24" fill="#e9eff0" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">Rhythm</text>
+      <text x="78" y="52" fill="#a8b5b7" font-family="Segoe UI, Arial, sans-serif" font-size="15">감정 데이터를 움직이는 파동으로 변환</text>
+    </g>
+    <g transform="translate(42 128)">
+      <rect width="310" height="322" rx="22" fill="#0b1213" stroke="#1d2b2d"/>
+      <text x="28" y="44" fill="#e9eff0" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800">오늘의 리듬 기록</text>
+      <text x="28" y="86" fill="#a8b5b7" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">에너지 레벨</text>
+      <g transform="translate(28 106)">
+        <rect width="48" height="66" rx="16" fill="#111b1c" stroke="#1d2b2d"/><text x="21" y="38" fill="#718082" font-size="18" font-family="Segoe UI, Arial">1</text>
+        <rect x="58" width="48" height="66" rx="16" fill="#111b1c" stroke="#1d2b2d"/><text x="79" y="38" fill="#718082" font-size="18" font-family="Segoe UI, Arial">2</text>
+        <rect x="116" width="54" height="66" rx="16" fill="#1b211b" stroke="#d6b66d"/><text x="138" y="38" fill="#f1d7a1" font-size="18" font-weight="800" font-family="Segoe UI, Arial">3</text>
+        <rect x="180" width="48" height="66" rx="16" fill="#111b1c" stroke="#1d2b2d"/><text x="201" y="38" fill="#718082" font-size="18" font-family="Segoe UI, Arial">4</text>
+        <rect x="238" width="48" height="66" rx="16" fill="#111b1c" stroke="#1d2b2d"/><text x="259" y="38" fill="#718082" font-size="18" font-family="Segoe UI, Arial">5</text>
+      </g>
+      <text x="28" y="218" fill="#a8b5b7" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">감정 키워드</text>
+      <g font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">
+        <rect x="28" y="238" width="66" height="34" rx="14" fill="#1be0b5" fill-opacity="0.16" stroke="#1be0b5" stroke-opacity="0.72"/>
+        <text x="47" y="261" fill="#e9eff0">집중</text>
+        <rect x="104" y="238" width="80" height="34" rx="14" fill="#ffd86b" fill-opacity="0.14" stroke="#ffd86b" stroke-opacity="0.68"/>
+        <text x="124" y="261" fill="#e9eff0">성취감</text>
+        <rect x="194" y="238" width="66" height="34" rx="14" fill="#0b1213" stroke="#30484b"/>
+        <text x="213" y="261" fill="#a8b5b7">평온</text>
+      </g>
+    </g>
+    <g transform="translate(388 128)">
+      <rect width="402" height="322" rx="22" fill="#071011" stroke="#1d2b2d"/>
+      <text x="28" y="44" fill="#e9eff0" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800">오늘의 파동</text>
+      <text x="28" y="70" fill="#c7ab7e" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">Energy 3 · 집중 / 성취감</text>
+      <g opacity="0.34" stroke="#ffffff" stroke-width="1">
+        <path d="M28 104h346M28 156h346M28 208h346M28 260h346"/>
+        <path d="M76 94v190M142 94v190M208 94v190M274 94v190M340 94v190"/>
+      </g>
+      <path d="M28 196 C70 146 101 124 142 150 C177 172 187 230 228 218 C274 205 281 120 330 116 C356 114 374 126 394 144" fill="none" stroke="url(#wave)" stroke-width="7" stroke-linecap="round" opacity="0.24" filter="url(#glow)"/>
+      <path d="M28 196 C70 146 101 124 142 150 C177 172 187 230 228 218 C274 205 281 120 330 116 C356 114 374 126 394 144" fill="none" stroke="url(#wave)" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

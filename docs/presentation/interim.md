@@ -16,6 +16,11 @@ style: |
   table { font-size: 21px; line-height: 1.25; }
   code { font-size: 0.9em; }
   .small { font-size: 0.78em; }
+  .hero-preview {
+    display: block;
+    width: 48%;
+    margin: 18px auto 0;
+  }
 ---
 
 # Rhythm
@@ -23,6 +28,8 @@ style: |
 
 윤세호  
 중간 발표 · 2026-05-26
+
+![Rhythm app preview](docs/presentation/assets/rhythm-wave-preview.svg){.hero-preview}
 
 ---
 

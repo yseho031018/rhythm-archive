@@ -18,10 +18,10 @@ style: |
   .small { font-size: 0.78em; }
   .hero-preview {
     display: block;
-    width: 58%;
+    width: 46%;
     max-height: 300px;
     object-fit: contain;
-    margin: 20px auto 0;
+    margin: 20px 0 0 auto;
     border-radius: 18px;
   }
   .compact { font-size: 0.78em; line-height: 1.25; }

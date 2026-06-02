@@ -74,13 +74,13 @@ flowchart LR
 
 - 앱의 핵심 규칙을 담당한다.
 - UI나 DB에 의존하지 않는다.
-- 예: `RhythmEntry`, 감정 색상 규칙, 에너지 계산 규칙, Repository Interface
+- 예: `RhythmEntry`, 감정 색상 규칙, 에너지 계산 규칙, 감정-활동 상관 분석 규칙, Repository Interface
 
 ### Data Layer
 
 - 실제 저장소 구현을 담당한다.
 - 최종 구조에서는 Isar DB를 사용한다.
-- 예: Isar Collection, Repository 구현체, 데이터 매핑
+- 예: Isar Collection, Repository 구현체, 데이터 매핑, 선택 기능으로 저장되는 날씨 맥락 데이터
 
 ---
 
@@ -124,8 +124,12 @@ sequenceDiagram
 - [ ] 화면 상태를 Riverpod Notifier로 이동
 - [ ] `shared_preferences` 데모 저장을 Isar 구현체로 교체
 - [ ] Wave Painter를 `lib/presentation/widgets/`로 분리
+- [ ] 감정-활동 상관 분석을 Domain Service로 분리
+- [ ] 주간 리듬 리포트를 UseCase로 분리
+- [ ] 날씨 API를 도입할 경우 Data Layer의 선택적 External Data Source로 분리
 
 ---
 
-*문서 버전: 1.0*  
-*작성일: 2026-05-26*
+*문서 버전: 1.1*  
+*작성일: 2026-05-26*  
+*수정일: 2026-06-02*

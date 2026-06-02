@@ -213,27 +213,25 @@ Rhythm은 **에너지, 감정, 활동을 30초 안에 기록**하고, 그 데이
 
 ---
 
-## 4. 데모와 산출물
+## 4. 사용자 시나리오
 
 <div class="demo-grid compact">
   <div class="demo-box">
-    <h3>발표 산출물</h3>
-    <ul>
-      <li>GitHub 저장소의 기획 문서 세트</li>
-      <li>WBS/Gantt 페이지</li>
-      <li>ADR 3개</li>
-      <li>Flutter Web 데모 앱</li>
-    </ul>
-    <div class="url-line">https://yseho031018.github.io/rhythm-archive/</div>
-    <div class="url-line">https://yseho031018.github.io/rhythm-archive/wbs-gantt.html</div>
+    <h3>오늘의 리듬을 남기는 사용자</h3>
+    <ol>
+      <li>밤에 앱을 열고 오늘의 에너지 레벨을 선택한다.</li>
+      <li>감정 키워드와 주요 활동 태그를 고른다.</li>
+      <li>저장하면 오늘의 기록이 로컬에 저장된다.</li>
+      <li>Wave Graph가 입력값을 파동 그래프로 표현한다.</li>
+    </ol>
   </div>
   <div class="demo-box">
-    <h3>30초 데모 흐름</h3>
+    <h3>기록 이후 확인 흐름</h3>
     <ol>
-      <li>오늘 탭에서 에너지, 감정, 활동을 입력한다.</li>
-      <li>저장 후 Wave Graph가 바뀌는지 확인한다.</li>
-      <li>히스토리 탭에서 저장된 기록을 확인한다.</li>
-      <li>패턴 탭에서 평균 에너지와 자주 나온 감정/활동을 확인한다.</li>
+      <li>히스토리에서 날짜별 기록을 다시 확인한다.</li>
+      <li>패턴 탭에서 평균 에너지와 대표 감정을 본다.</li>
+      <li>자주 나온 활동을 보고 생활 리듬을 돌아본다.</li>
+      <li>최종 목표는 1분 이내 입력과 확인이다.</li>
     </ol>
   </div>
 </div>

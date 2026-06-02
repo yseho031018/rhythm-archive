@@ -77,6 +77,67 @@ style: |
     font-size: 0.68em;
     white-space: nowrap;
   }
+  .arch-flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    align-items: stretch;
+    margin: 16px 0 24px;
+  }
+  .arch-card {
+    position: relative;
+    min-height: 156px;
+    padding: 16px 14px;
+    border: 1px solid #d9dfe7;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+    box-shadow: 0 8px 20px rgba(31, 41, 55, 0.08);
+  }
+  .arch-card:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a97a6;
+    font-weight: 800;
+    font-size: 0.9em;
+  }
+  .arch-kicker {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #eef4f7;
+    color: #24476b;
+    font-size: 0.54em;
+    font-weight: 800;
+  }
+  .arch-title {
+    margin-bottom: 8px;
+    color: #1f2937;
+    font-size: 0.86em;
+    font-weight: 900;
+  }
+  .arch-desc {
+    color: #4b5563;
+    font-size: 0.58em;
+    line-height: 1.35;
+  }
+  .arch-note {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .arch-pill {
+    padding: 12px 14px;
+    border-left: 5px solid #24476b;
+    background: #f8fafc;
+    color: #1f2937;
+    font-size: 0.68em;
+    line-height: 1.35;
+  }
 ---
 
 <div class="cover-grid">
@@ -147,20 +208,33 @@ Rhythm은 매일 30초 안에 감정, 에너지, 활동을 기록하고 이를 W
 
 ## 5. 아키텍처 방향
 
-```mermaid
-flowchart LR
-  UI["Presentation\nScreens / Widgets / Wave Graph"]
-  APP["Application\nViewModel / UseCase"]
-  DOMAIN["Domain\nEntity / Rule / Repository Interface"]
-  DATA["Data\nIsar / Repository Implementation"]
+<div class="arch-flow">
+  <div class="arch-card">
+    <div class="arch-kicker">Presentation</div>
+    <div class="arch-title">화면 / 위젯</div>
+    <div class="arch-desc">오늘 탭, 히스토리, 패턴 화면과 Wave Graph UI를 담당한다.</div>
+  </div>
+  <div class="arch-card">
+    <div class="arch-kicker">Application</div>
+    <div class="arch-title">상태 / UseCase</div>
+    <div class="arch-desc">입력값 변경, 저장 요청, 화면 갱신 흐름을 관리한다.</div>
+  </div>
+  <div class="arch-card">
+    <div class="arch-kicker">Domain</div>
+    <div class="arch-title">규칙 / Entity</div>
+    <div class="arch-desc">감정 파동 계산, 기록 모델, Repository 규칙을 정의한다.</div>
+  </div>
+  <div class="arch-card">
+    <div class="arch-kicker">Data</div>
+    <div class="arch-title">저장소 / Isar</div>
+    <div class="arch-desc">로컬 DB 저장, 조회, 데이터 변환을 구현한다.</div>
+  </div>
+</div>
 
-  UI --> APP
-  APP --> DOMAIN
-  DATA --> DOMAIN
-```
-
-핵심 원칙:  
-**Wave Graph와 감정 파동 계산 로직을 분리한다.**
+<div class="arch-note">
+  <div class="arch-pill"><strong>핵심 원칙</strong><br>Wave Graph와 감정 파동 계산 로직을 분리한다.</div>
+  <div class="arch-pill"><strong>확장 방향</strong><br>저장소나 분석 기능이 바뀌어도 화면 구조는 크게 흔들리지 않게 한다.</div>
+</div>
 
 ---
 

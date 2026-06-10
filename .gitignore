@@ -46,3 +46,26 @@ app.*.map.json
 
 # Local scratch (screenshot drivers, node_modules, captures)
 tmp/
+
+# Flutter web build output — must NOT be committed to repo root.
+# (Stale committed output here shadows the dev server's assets and broke icons.)
+# Deploy GitHub Pages from a fresh `flutter build web` instead.
+/index.html
+/flutter.js
+/flutter_bootstrap.js
+/flutter_service_worker.js
+/main.dart.js
+/main.dart.js.map
+/version.json
+/manifest.json
+/favicon.png
+/.nojekyll
+/canvaskit/
+/icons/
+/assets/AssetManifest.bin
+/assets/AssetManifest.bin.json
+/assets/FontManifest.json
+/assets/NOTICES
+/assets/fonts/
+/assets/packages/
+/assets/shaders/

@@ -7,6 +7,17 @@ import '../diary_entry.dart';
 import '../widgets/harutalk_ui.dart';
 import '../widgets/tori_mascot.dart';
 
+/// 통계 집계 기간.
+enum StatsPeriod {
+  weekly('주간'),
+  monthly('월간'),
+  yearly('연간');
+
+  const StatsPeriod(this.label);
+
+  final String label;
+}
+
 class MyScreen extends StatefulWidget {
   const MyScreen({super.key, required this.controller});
 
@@ -17,29 +28,85 @@ class MyScreen extends StatefulWidget {
 }
 
 class _MyScreenState extends State<MyScreen> {
-  late DateTime _month;
+  StatsPeriod _period = StatsPeriod.monthly;
+  late DateTime _anchor;
 
   DiaryController get controller => widget.controller;
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _month = DateTime(now.year, now.month);
+    _anchor = DateTime.now();
   }
 
-  bool get _isCurrentMonth {
-    final now = DateTime.now();
-    return _month.year == now.year && _month.month == now.month;
+  /// 현재 기간/기준일이 가리키는 날짜 범위 [start, end).
+  ({DateTime start, DateTime end}) get _range {
+    switch (_period) {
+      case StatsPeriod.weekly:
+        final monday = _anchor.subtract(Duration(days: _anchor.weekday - 1));
+        final start = DateTime(monday.year, monday.month, monday.day);
+        return (start: start, end: start.add(const Duration(days: 7)));
+      case StatsPeriod.monthly:
+        return (
+          start: DateTime(_anchor.year, _anchor.month),
+          end: DateTime(_anchor.year, _anchor.month + 1),
+        );
+      case StatsPeriod.yearly:
+        return (start: DateTime(_anchor.year), end: DateTime(_anchor.year + 1));
+    }
   }
 
-  void _shiftMonth(int delta) {
-    setState(() => _month = DateTime(_month.year, _month.month + delta));
+  String get _periodLabel {
+    final range = _range;
+    switch (_period) {
+      case StatsPeriod.weekly:
+        final last = range.end.subtract(const Duration(days: 1));
+        return '${range.start.month}월 ${range.start.day}일 ~ ${last.month}월 ${last.day}일';
+      case StatsPeriod.monthly:
+        return '${_anchor.year}년 ${_anchor.month}월';
+      case StatsPeriod.yearly:
+        return '${_anchor.year}년';
+    }
   }
 
-  Map<DiaryMood, int> _moodCounts(List<DiaryEntry> monthEntries) {
+  String get _periodWord => switch (_period) {
+    StatsPeriod.weekly => '이번 주',
+    StatsPeriod.monthly => '이번 달',
+    StatsPeriod.yearly => '올해',
+  };
+
+  String get _countLabel => switch (_period) {
+    StatsPeriod.weekly => '주간 기록',
+    StatsPeriod.monthly => '이번 달 기록',
+    StatsPeriod.yearly => '올해 기록',
+  };
+
+  // 미래 기간으로는 이동하지 않는다(아직 오지 않은 날은 데이터가 없으므로).
+  bool get _canGoNext => !DateTime.now().isBefore(_range.end);
+
+  void _selectPeriod(StatsPeriod period) {
+    setState(() {
+      _period = period;
+      _anchor = DateTime.now();
+    });
+  }
+
+  void _shift(int delta) {
+    setState(() {
+      switch (_period) {
+        case StatsPeriod.weekly:
+          _anchor = _anchor.add(Duration(days: 7 * delta));
+        case StatsPeriod.monthly:
+          _anchor = DateTime(_anchor.year, _anchor.month + delta, 15);
+        case StatsPeriod.yearly:
+          _anchor = DateTime(_anchor.year + delta, 6, 15);
+      }
+    });
+  }
+
+  Map<DiaryMood, int> _moodCounts(List<DiaryEntry> rangeEntries) {
     final result = {for (final mood in DiaryMood.values) mood: 0};
-    for (final entry in monthEntries) {
+    for (final entry in rangeEntries) {
       result[entry.mood] = (result[entry.mood] ?? 0) + 1;
     }
     return result;
@@ -50,11 +117,12 @@ class _MyScreenState extends State<MyScreen> {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
+        final range = _range;
         final entries = controller.entries
             .where(
               (entry) =>
-                  entry.date.year == _month.year &&
-                  entry.date.month == _month.month,
+                  !entry.date.isBefore(range.start) &&
+                  entry.date.isBefore(range.end),
             )
             .toList();
         final counts = _moodCounts(entries);
@@ -73,15 +141,16 @@ class _MyScreenState extends State<MyScreen> {
               subtitle: '기록이 모이면 마음의 흐름이 보여요.',
             ),
             const SizedBox(height: 20),
-            _PeriodTabs(),
+            _PeriodTabs(selected: _period, onSelect: _selectPeriod),
             const SizedBox(height: 14),
-            _MonthSwitcher(
-              month: _month,
-              onPrev: () => _shiftMonth(-1),
-              onNext: _isCurrentMonth ? null : () => _shiftMonth(1),
+            _PeriodSwitcher(
+              label: _periodLabel,
+              onPrev: () => _shift(-1),
+              onNext: _canGoNext ? () => _shift(1) : null,
             ),
             const SizedBox(height: 18),
             _SummaryStrip(
+              countLabel: _countLabel,
               count: entries.length,
               streak: controller.currentStreak,
               average: average,
@@ -178,7 +247,7 @@ class _MyScreenState extends State<MyScreen> {
             ),
             const SizedBox(height: 24),
             _AiInsightCard(
-              message: _monthlyInsight(counts, entries),
+              message: _periodInsight(counts, entries),
               expression: entries.isEmpty
                   ? ToriExpression.sleeping
                   : ToriExpression.thinking,
@@ -189,7 +258,7 @@ class _MyScreenState extends State<MyScreen> {
     );
   }
 
-  String _monthlyInsight(Map<DiaryMood, int> counts, List<DiaryEntry> entries) {
+  String _periodInsight(Map<DiaryMood, int> counts, List<DiaryEntry> entries) {
     if (entries.isEmpty) {
       return '아직 기록이 없어요. 토리와 오늘의 감정부터 가볍게 남겨보세요.';
     }
@@ -205,12 +274,17 @@ class _MyScreenState extends State<MyScreen> {
     final topKeyword = keywordCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final keywordText = topKeyword.isEmpty ? '일상' : topKeyword.first.key;
-    return '${top.emoji} 이번 달에는 ${top.label}을 가장 자주 느꼈고, '
+    return '${top.emoji} $_periodWord에는 ${top.label}을 가장 자주 느꼈고, '
         '$keywordText와 함께한 날이 많았어요. 기록이 더 쌓이면 토리가 관계를 자세히 알려줄게요.';
   }
 }
 
 class _PeriodTabs extends StatelessWidget {
+  const _PeriodTabs({required this.selected, required this.onSelect});
+
+  final StatsPeriod selected;
+  final ValueChanged<StatsPeriod> onSelect;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -221,32 +295,39 @@ class _PeriodTabs extends StatelessWidget {
       ),
       child: Row(
         children: [
-          for (final label in ['주간', '월간', '연간'])
+          for (final period in StatsPeriod.values)
             Expanded(
-              child: Container(
-                height: 36,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: label == '월간' ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(11),
-                  boxShadow: label == '월간'
-                      ? const [
-                          BoxShadow(
-                            color: Color(0x0F52675A),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: label == '월간'
-                        ? HarutalkColors.primaryDark
-                        : HarutalkColors.muted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSelect(period),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 170),
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: period == selected
+                        ? Colors.white
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(11),
+                    boxShadow: period == selected
+                        ? const [
+                            BoxShadow(
+                              color: Color(0x0F52675A),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Text(
+                    period.label,
+                    style: TextStyle(
+                      color: period == selected
+                          ? HarutalkColors.primaryDark
+                          : HarutalkColors.muted,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
@@ -257,14 +338,14 @@ class _PeriodTabs extends StatelessWidget {
   }
 }
 
-class _MonthSwitcher extends StatelessWidget {
-  const _MonthSwitcher({
-    required this.month,
+class _PeriodSwitcher extends StatelessWidget {
+  const _PeriodSwitcher({
+    required this.label,
     required this.onPrev,
     required this.onNext,
   });
 
-  final DateTime month;
+  final String label;
   final VoidCallback onPrev;
   final VoidCallback? onNext;
 
@@ -278,12 +359,15 @@ class _MonthSwitcher extends StatelessWidget {
           icon: const Icon(Icons.chevron_left_rounded),
           color: HarutalkColors.muted,
         ),
-        Text(
-          '${month.year}년 ${month.month}월',
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+        Expanded(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+          ),
         ),
         IconButton(
-          // 미래 달은 데이터가 없으므로 현재 달까지만 이동.
+          // 미래 기간은 데이터가 없으므로 현재 기간까지만 이동.
           onPressed: onNext,
           icon: const Icon(Icons.chevron_right_rounded),
           color: HarutalkColors.muted,
@@ -295,11 +379,13 @@ class _MonthSwitcher extends StatelessWidget {
 
 class _SummaryStrip extends StatelessWidget {
   const _SummaryStrip({
+    required this.countLabel,
     required this.count,
     required this.streak,
     required this.average,
   });
 
+  final String countLabel;
   final int count;
   final int streak;
   final double average;
@@ -311,7 +397,7 @@ class _SummaryStrip extends StatelessWidget {
         _SummaryItem(
           icon: Icons.calendar_today_rounded,
           value: '$count일',
-          label: '이번 달 기록',
+          label: countLabel,
         ),
         const SizedBox(width: 8),
         _SummaryItem(

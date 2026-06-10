@@ -76,4 +76,35 @@ void main() {
     );
     expect(find.text('AI 한 줄 회고'), findsOneWidget);
   });
+
+  testWidgets('통계: 주간/월간/연간 토글로 집계 기간이 바뀐다', (tester) async {
+    final controller = await _loadedController();
+    await tester.pumpWidget(
+      MaterialApp(home: Scaffold(body: MyScreen(controller: controller))),
+    );
+    await tester.pumpAndSettle();
+
+    final now = DateTime.now();
+    // 기본: 월간
+    expect(find.text('이번 달 기록'), findsOneWidget);
+    expect(find.text('${now.year}년 ${now.month}월'), findsOneWidget);
+
+    // 연간
+    await tester.tap(find.text('연간'));
+    await tester.pumpAndSettle();
+    expect(find.text('올해 기록'), findsOneWidget);
+    expect(find.text('${now.year}년'), findsOneWidget);
+
+    // 주간
+    await tester.tap(find.text('주간'));
+    await tester.pumpAndSettle();
+    expect(find.text('주간 기록'), findsOneWidget);
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final start = DateTime(monday.year, monday.month, monday.day);
+    final last = start.add(const Duration(days: 6));
+    expect(
+      find.text('${start.month}월 ${start.day}일 ~ ${last.month}월 ${last.day}일'),
+      findsOneWidget,
+    );
+  });
 }

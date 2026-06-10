@@ -228,6 +228,18 @@ class _KeywordChoices extends StatelessWidget {
     '운동': Icons.fitness_center_rounded,
   };
 
+  // 활동별 고유 색(목업의 컬러 일러스트 아이콘 톤에 맞춤).
+  static const colors = {
+    '공부': Color(0xFF4F83CC), // 블루
+    '친구': Color(0xFFF2994A), // 오렌지
+    '게임': Color(0xFF9B6BD6), // 퍼플
+    '카페': Color(0xFFB07C53), // 브라운
+    '과제': Color(0xFF45A36B), // 그린
+    '운동': Color(0xFF3FAE9A), // 틸
+  };
+
+  static const _fallbackColor = Color(0xFF4B9875);
+
   @override
   Widget build(BuildContext context) {
     final options = [...DiaryController.keywordOptions];
@@ -240,6 +252,7 @@ class _KeywordChoices extends StatelessWidget {
           _ChoiceTile(
             width: 96,
             icon: icons[keyword] ?? Icons.edit_rounded,
+            accentColor: colors[keyword] ?? _fallbackColor,
             label: keyword,
             selected: controller.selectedKeywords.contains(keyword),
             onTap: () => controller.toggleKeyword(keyword),
@@ -307,11 +320,13 @@ class _ChoiceTile extends StatelessWidget {
     required this.onTap,
     this.emoji,
     this.icon,
+    this.accentColor,
   });
 
   final double width;
   final String? emoji;
   final IconData? icon;
+  final Color? accentColor;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -345,6 +360,17 @@ class _ChoiceTile extends StatelessWidget {
           children: [
             if (emoji != null)
               Text(emoji!, style: const TextStyle(fontSize: 29))
+            else if (accentColor != null)
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: accentColor!.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(icon, size: 24, color: accentColor),
+              )
             else
               Icon(
                 icon,
@@ -353,7 +379,7 @@ class _ChoiceTile extends StatelessWidget {
                     ? const Color(0xFF2E7559)
                     : const Color(0xFF6D7770),
               ),
-            const SizedBox(height: 7),
+            SizedBox(height: accentColor != null ? 8 : 7),
             Text(
               label,
               overflow: TextOverflow.ellipsis,

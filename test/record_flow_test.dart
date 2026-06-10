@@ -48,7 +48,10 @@ void main() {
     await tester.tap(find.text('다음'));
     await tester.pumpAndSettle();
 
-    // STEP 2: 키워드 선택 → 다음
+    // STEP 2: '직접 입력'이 하단 바가 아니라 키워드 그리드의 타일로 존재한다.
+    expect(find.text('직접 입력'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, '직접 입력'), findsNothing);
+    // 키워드 선택 → 다음
     await tester.tap(find.text('공부'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('다음'));

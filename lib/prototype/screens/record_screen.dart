@@ -42,8 +42,6 @@ class _RecordScreenState extends State<RecordScreen> {
             onSkip: _skip,
             onNext: _canMoveNext ? _next : null,
             nextLabel: _step == 2 ? 'AI 한 줄 만들기' : '다음',
-            showDirectInput: _step == 1,
-            onDirectInput: _showDirectInput,
           ),
         ],
       ),
@@ -85,6 +83,7 @@ class _RecordScreenState extends State<RecordScreen> {
           _KeywordChoices(
             controller: controller,
             directKeyword: _directKeyword,
+            onDirectInput: _showDirectInput,
           ),
         if (_step == 2) _ScoreChoices(controller: controller),
       ],
@@ -217,10 +216,12 @@ class _KeywordChoices extends StatelessWidget {
   const _KeywordChoices({
     required this.controller,
     required this.directKeyword,
+    required this.onDirectInput,
   });
 
   final DiaryController controller;
   final String? directKeyword;
+  final VoidCallback onDirectInput;
 
   static const icons = {
     '공부': Icons.menu_book_rounded,
@@ -260,6 +261,15 @@ class _KeywordChoices extends StatelessWidget {
             selected: controller.selectedKeywords.contains(keyword),
             onTap: () => controller.toggleKeyword(keyword),
           ),
+        // 운동 옆 '직접 입력' 추가 타일(다른 키워드와 동일한 모양 + 아이콘).
+        _ChoiceTile(
+          width: 96,
+          icon: Icons.add_rounded,
+          accentColor: const Color(0xFF7E8A82),
+          label: '직접 입력',
+          selected: false,
+          onTap: onDirectInput,
+        ),
       ],
     );
   }
@@ -407,15 +417,11 @@ class _BottomActionBar extends StatelessWidget {
     required this.onSkip,
     required this.onNext,
     required this.nextLabel,
-    required this.showDirectInput,
-    required this.onDirectInput,
   });
 
   final VoidCallback onSkip;
   final VoidCallback? onNext;
   final String nextLabel;
-  final bool showDirectInput;
-  final VoidCallback onDirectInput;
 
   @override
   Widget build(BuildContext context) {
@@ -429,20 +435,6 @@ class _BottomActionBar extends StatelessWidget {
         top: false,
         child: Row(
           children: [
-            if (showDirectInput) ...[
-              OutlinedButton.icon(
-                onPressed: onDirectInput,
-                icon: const Icon(Icons.edit_outlined, size: 17),
-                label: const Text('직접 입력'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
             TextButton(onPressed: onSkip, child: const Text('건너뛰기')),
             const SizedBox(width: 8),
             Expanded(

@@ -6,7 +6,7 @@ class ToriMascot extends StatelessWidget {
   const ToriMascot({
     super.key,
     this.expression = ToriExpression.hello,
-    this.size = 72,
+    this.size = 94,
   });
 
   final ToriExpression expression;

@@ -530,7 +530,7 @@ class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
                     children: [
                       const ToriMascot(
                         expression: ToriExpression.complete,
-                        size: 80,
+                        size: 104,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -618,7 +618,7 @@ class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
                       children: [
                         const ToriMascot(
                           expression: ToriExpression.journal,
-                          size: 36,
+                          size: 48,
                         ),
                         const SizedBox(width: 10),
                         const Expanded(

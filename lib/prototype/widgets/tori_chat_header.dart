@@ -59,7 +59,7 @@ class ToriChatHeader extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ToriMascot(expression: expression, size: 84),
+            ToriMascot(expression: expression, size: 110),
             const SizedBox(width: 12),
             Expanded(
               child: Container(

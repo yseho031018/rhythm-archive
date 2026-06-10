@@ -511,7 +511,7 @@ class _AiInsightCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ToriMascot(expression: expression, size: 72),
+          ToriMascot(expression: expression, size: 94),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

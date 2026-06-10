@@ -56,7 +56,7 @@ class DiaryScreen extends StatelessWidget {
               const SoftCard(
                 child: Row(
                   children: [
-                    ToriMascot(expression: ToriExpression.sleeping, size: 88),
+                    ToriMascot(expression: ToriExpression.sleeping, size: 114),
                     SizedBox(width: 14),
                     Expanded(child: Text('아직 기록이 없어요.\n토리와 오늘의 한 줄을 남겨보세요.')),
                   ],
@@ -104,7 +104,7 @@ class _LatestEntryCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ToriMascot(expression: ToriExpression.complete, size: 80),
+              const ToriMascot(expression: ToriExpression.complete, size: 104),
               const SizedBox(width: 12),
               Expanded(
                 child: Container(
@@ -252,7 +252,7 @@ class DiaryDetailScreen extends StatelessWidget {
                     children: [
                       const ToriMascot(
                         expression: ToriExpression.journal,
-                        size: 98,
+                        size: 128,
                       ),
                       const SizedBox(width: 12),
                       Expanded(

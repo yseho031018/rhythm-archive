@@ -7,24 +7,57 @@ import '../diary_entry.dart';
 import '../widgets/harutalk_ui.dart';
 import '../widgets/tori_mascot.dart';
 
-class MyScreen extends StatelessWidget {
+class MyScreen extends StatefulWidget {
   const MyScreen({super.key, required this.controller});
 
   final DiaryController controller;
+
+  @override
+  State<MyScreen> createState() => _MyScreenState();
+}
+
+class _MyScreenState extends State<MyScreen> {
+  late DateTime _month;
+
+  DiaryController get controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _month = DateTime(now.year, now.month);
+  }
+
+  bool get _isCurrentMonth {
+    final now = DateTime.now();
+    return _month.year == now.year && _month.month == now.month;
+  }
+
+  void _shiftMonth(int delta) {
+    setState(() => _month = DateTime(_month.year, _month.month + delta));
+  }
+
+  Map<DiaryMood, int> _moodCounts(List<DiaryEntry> monthEntries) {
+    final result = {for (final mood in DiaryMood.values) mood: 0};
+    for (final entry in monthEntries) {
+      result[entry.mood] = (result[entry.mood] ?? 0) + 1;
+    }
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
-        final now = DateTime.now();
         final entries = controller.entries
             .where(
               (entry) =>
-                  entry.date.year == now.year && entry.date.month == now.month,
+                  entry.date.year == _month.year &&
+                  entry.date.month == _month.month,
             )
             .toList();
-        final counts = controller.thisMonthMoodCounts;
+        final counts = _moodCounts(entries);
         final average = entries.isEmpty
             ? 0.0
             : entries
@@ -36,11 +69,17 @@ class MyScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
           children: [
             const AppPageHeader(
-              title: '나의 패턴',
+              title: '통계',
               subtitle: '기록이 모이면 마음의 흐름이 보여요.',
             ),
             const SizedBox(height: 20),
             _PeriodTabs(),
+            const SizedBox(height: 14),
+            _MonthSwitcher(
+              month: _month,
+              onPrev: () => _shiftMonth(-1),
+              onNext: _isCurrentMonth ? null : () => _shiftMonth(1),
+            ),
             const SizedBox(height: 18),
             _SummaryStrip(
               count: entries.length,
@@ -218,6 +257,42 @@ class _PeriodTabs extends StatelessWidget {
   }
 }
 
+class _MonthSwitcher extends StatelessWidget {
+  const _MonthSwitcher({
+    required this.month,
+    required this.onPrev,
+    required this.onNext,
+  });
+
+  final DateTime month;
+  final VoidCallback onPrev;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          onPressed: onPrev,
+          icon: const Icon(Icons.chevron_left_rounded),
+          color: HarutalkColors.muted,
+        ),
+        Text(
+          '${month.year}년 ${month.month}월',
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+        ),
+        IconButton(
+          // 미래 달은 데이터가 없으므로 현재 달까지만 이동.
+          onPressed: onNext,
+          icon: const Icon(Icons.chevron_right_rounded),
+          color: HarutalkColors.muted,
+        ),
+      ],
+    );
+  }
+}
+
 class _SummaryStrip extends StatelessWidget {
   const _SummaryStrip({
     required this.count,
@@ -357,7 +432,7 @@ class _AiInsightCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '토리의 한 줄 패턴',
+                  'AI 한 줄 회고',
                   style: TextStyle(fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 5),

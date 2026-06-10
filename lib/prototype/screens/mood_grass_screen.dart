@@ -15,12 +15,32 @@ class MoodGrassScreen extends StatefulWidget {
 
 class _MoodGrassScreenState extends State<MoodGrassScreen> {
   DateTime? _selectedDay;
+  late DateTime _month;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _month = DateTime(now.year, now.month);
+  }
+
+  bool get _isCurrentMonth {
+    final now = DateTime.now();
+    return _month.year == now.year && _month.month == now.month;
+  }
+
+  void _shiftMonth(int delta) {
+    setState(() {
+      _month = DateTime(_month.year, _month.month + delta);
+      _selectedDay = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final firstDay = DateTime(now.year, now.month);
-    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final firstDay = _month;
+    final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
     final leading = firstDay.weekday % 7;
     final cells = leading + daysInMonth;
 
@@ -45,20 +65,21 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                 children: [
                   Row(
                     children: [
-                      const IconButton(
-                        onPressed: null,
-                        icon: Icon(Icons.chevron_left_rounded),
+                      IconButton(
+                        onPressed: () => _shiftMonth(-1),
+                        icon: const Icon(Icons.chevron_left_rounded),
                       ),
                       Expanded(
                         child: Text(
-                          '${now.year}년 ${now.month}월',
+                          '${_month.year}년 ${_month.month}월',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
-                      const IconButton(
-                        onPressed: null,
-                        icon: Icon(Icons.chevron_right_rounded),
+                      IconButton(
+                        // 미래 달은 데이터가 없으므로 현재 달까지만 이동.
+                        onPressed: _isCurrentMonth ? null : () => _shiftMonth(1),
+                        icon: const Icon(Icons.chevron_right_rounded),
                       ),
                     ],
                   ),
@@ -94,7 +115,7 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                     itemBuilder: (context, index) {
                       if (index < leading) return const SizedBox.shrink();
                       final day = index - leading + 1;
-                      final date = DateTime(now.year, now.month, day);
+                      final date = DateTime(_month.year, _month.month, day);
                       final entry = widget.controller.entryForDay(date);
                       final selected =
                           _selectedDay != null &&

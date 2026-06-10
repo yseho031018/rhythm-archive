@@ -169,18 +169,18 @@ class _RecordScreenState extends State<RecordScreen> {
   Future<void> _generate() async {
     final entry = await controller.generatePreview();
     if (entry == null || !mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _GeneratedDiarySheet(
-        entry: entry,
-        controller: controller,
-        onSaved: () {
-          Navigator.pop(context);
-          _reset();
-          widget.onOpenDiary();
-        },
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (context) => _GeneratedDiaryScreen(
+          entry: entry,
+          controller: controller,
+          onSaved: () {
+            Navigator.pop(context);
+            _reset();
+            widget.onOpenDiary();
+          },
+        ),
       ),
     );
   }
@@ -451,8 +451,8 @@ class _BottomActionBar extends StatelessWidget {
   }
 }
 
-class _GeneratedDiarySheet extends StatefulWidget {
-  const _GeneratedDiarySheet({
+class _GeneratedDiaryScreen extends StatefulWidget {
+  const _GeneratedDiaryScreen({
     required this.entry,
     required this.controller,
     required this.onSaved,
@@ -463,12 +463,23 @@ class _GeneratedDiarySheet extends StatefulWidget {
   final VoidCallback onSaved;
 
   @override
-  State<_GeneratedDiarySheet> createState() => _GeneratedDiarySheetState();
+  State<_GeneratedDiaryScreen> createState() => _GeneratedDiaryScreenState();
 }
 
-class _GeneratedDiarySheetState extends State<_GeneratedDiarySheet> {
+class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
   late DiaryEntry _entry;
   bool _working = false;
+
+  // 키워드를 대표하는 한 줄 앞 이모지(목업의 📚 자리).
+  static const _keywordEmoji = {
+    '공부': '📚',
+    '친구': '👫',
+    '게임': '🎮',
+    '카페': '☕',
+    '과제': '📝',
+    '운동': '🏃',
+    '일상': '🌿',
+  };
 
   @override
   void initState() {
@@ -476,115 +487,198 @@ class _GeneratedDiarySheetState extends State<_GeneratedDiarySheet> {
     _entry = widget.entry;
   }
 
+  String get _leadingEmoji {
+    for (final keyword in _entry.keywords) {
+      final emoji = _keywordEmoji[keyword];
+      if (emoji != null) return emoji;
+    }
+    return _entry.mood.emoji;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        margin: const EdgeInsets.all(12),
-        padding: const EdgeInsets.fromLTRB(22, 14, 22, 22),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-        ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7FAF7),
+      body: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 42,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD9DDDA),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 6, 12, 0),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  TextButton(
+                    onPressed: _working ? null : _save,
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF2E7559),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    child: const Text('완료'),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 18),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const ToriMascot(expression: ToriExpression.complete, size: 88),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(22, 8, 22, 8),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ToriMascot(
+                        expression: ToriExpression.complete,
+                        size: 80,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F1E6),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Text(
+                            '기록 완료! 🎉\n정말 수고했어!',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    '오늘의 한 줄',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F1E6),
-                      borderRadius: BorderRadius.circular(18),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE3EBE5)),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x0D52675A),
+                          blurRadius: 14,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: Text(
-                      '기록 완료! 🎉\n정말 수고했어.',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      '$_leadingEmoji  ${_entry.summary}',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        height: 1.55,
+                        color: const Color(0xFF245D56),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Text('오늘의 한 줄', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF7FAF7),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFE3EBE5)),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: _working ? null : _regenerate,
+                      icon: _working
+                          ? const SizedBox.square(
+                              dimension: 15,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFF4B9875),
+                              ),
+                            )
+                          : const Icon(Icons.refresh_rounded, size: 18),
+                      label: const Text('AI가 다시 정리'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF4B9875),
+                        textStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: Text(
-                '“${_entry.summary}”',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  height: 1.55,
-                  color: const Color(0xFF245D56),
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 4, 22, 16),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 14, 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF4F0),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        const ToriMascot(
+                          expression: ToriExpression.journal,
+                          size: 36,
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            '내가 정리한 한 줄이 마음에 들지 않으면 수정해도 괜찮아!',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              height: 1.4,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF5E6B62),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: OutlinedButton.icon(
+                          onPressed: _working ? null : _edit,
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text('수정하기'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF2E7559),
+                            minimumSize: const Size.fromHeight(54),
+                            side: const BorderSide(color: Color(0xFFCBD9CF)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 6,
+                        child: FilledButton.icon(
+                          onPressed: _working ? null : _save,
+                          icon: _working
+                              ? const SizedBox.square(
+                                  dimension: 17,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.check_rounded),
+                          label: const Text('저장하기'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _working ? null : _regenerate,
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('다시 생성'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _working ? null : _edit,
-                    icon: const Icon(Icons.edit_outlined),
-                    label: const Text('직접 수정'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: _working ? null : _save,
-              icon: _working
-                  ? const SizedBox.square(
-                      dimension: 17,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check_rounded),
-              label: const Text('이 한 줄 저장'),
             ),
           ],
         ),

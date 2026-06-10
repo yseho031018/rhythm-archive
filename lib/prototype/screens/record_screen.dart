@@ -193,17 +193,20 @@ class _MoodChoices extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+    // 5가지 감정을 항상 한 줄에 균등 배치(고정폭 Wrap 대신 유연폭 Row).
+    return Row(
       children: [
         for (final mood in DiaryMood.values)
-          _ChoiceTile(
-            width: 96,
-            emoji: mood.emoji,
-            label: mood.label,
-            selected: controller.selectedMood == mood,
-            onTap: () => controller.selectMood(mood),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: _ChoiceTile(
+                emoji: mood.emoji,
+                label: mood.label,
+                selected: controller.selectedMood == mood,
+                onTap: () => controller.selectMood(mood),
+              ),
+            ),
           ),
       ],
     );
@@ -314,16 +317,17 @@ class _ScoreChoices extends StatelessWidget {
 
 class _ChoiceTile extends StatelessWidget {
   const _ChoiceTile({
-    required this.width,
     required this.label,
     required this.selected,
     required this.onTap,
+    this.width,
     this.emoji,
     this.icon,
     this.accentColor,
   });
 
-  final double width;
+  /// null이면 부모(예: Expanded) 폭을 채운다.
+  final double? width;
   final String? emoji;
   final IconData? icon;
   final Color? accentColor;

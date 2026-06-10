@@ -64,6 +64,13 @@ void main() {
     expect(find.text('수정하기'), findsOneWidget);
     // 토리 안심 멘트
     expect(find.textContaining('수정해도 괜찮아'), findsOneWidget);
+    // 모바일 폭(560)으로 제약 — 와이드 화면에서 전체 폭으로 퍼지지 않는다.
+    expect(
+      find.byWidgetPredicate(
+        (w) => w is ConstrainedBox && w.constraints.maxWidth == 560,
+      ),
+      findsOneWidget,
+    );
 
     // 저장 → 전체화면이 닫히고 onOpenDiary 콜백이 호출된다.
     await tester.tap(find.text('저장하기'));

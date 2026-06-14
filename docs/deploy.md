@@ -36,6 +36,7 @@ python -m http.server 8110 --directory build/web
 checkout
 → Flutter 3.44.0 설정
 → flutter pub get
+→ Drift 생성 코드 최신 상태 확인
 → flutter analyze
 → flutter test
 → Flutter Web Release 빌드
@@ -44,6 +45,23 @@ checkout
 ```
 
 첫 실행 전 GitHub 저장소에서 `Settings → Pages → Build and deployment → Source`를 `GitHub Actions`로 선택해야 한다.
+
+## PR·기능 브랜치 품질 검사
+
+`.github/workflows/quality-check.yml`은 `master` 대상 Pull Request와 `master` 이외 브랜치 push에서 다음 품질 게이트를 실행한다.
+
+```text
+checkout
+→ Flutter 3.44.0 설정
+→ flutter pub get
+→ build_runner로 Drift 생성 코드 재생성
+→ 커밋된 생성 코드와 차이가 없는지 확인
+→ flutter analyze
+→ flutter test
+→ Flutter Web Release 빌드
+```
+
+실패한 검증이 있으면 배포 전에 문제를 발견할 수 있다. 같은 브랜치에 새 커밋이 push되면 이전 실행은 취소해 Actions 시간을 줄인다.
 
 ## GitHub Pages 배포 단계
 

@@ -41,7 +41,7 @@
 | 단위 테스트 | controller, Drift repository, backup restore, pattern analysis |
 | 통합 테스트 | record flow와 화면 기간 이동 |
 | 설치 가이드 | README, setup, deploy |
-| 빌드·배포 자동화 | `.github/workflows/deploy-pages.yml` |
+| 빌드·배포 자동화 | `.github/workflows/quality-check.yml`, `.github/workflows/deploy-pages.yml` |
 
 ## 4. 결과물 품질 5점
 

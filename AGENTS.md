@@ -48,12 +48,14 @@
 
 ```powershell
 flutter pub get
+dart run build_runner build
+git diff --exit-code -- lib/prototype/database/harutalk_database.g.dart
 flutter analyze
 flutter test
 flutter build web --release --base-href "/rhythm-archive/"
 ```
 
-배포 전에는 네 명령이 모두 성공해야 한다. 새로운 핵심 규칙에는 단위 테스트를, 기록 생성·저장 같은 사용자 흐름에는 통합 위젯 테스트를 추가한다.
+배포 전에는 모든 명령이 성공해야 한다. 새로운 핵심 규칙에는 단위 테스트를, 기록 생성·저장 같은 사용자 흐름에는 통합 위젯 테스트를 추가한다. 기능 브랜치와 PR에서는 `quality-check.yml`, `master`에서는 `deploy-pages.yml`이 같은 품질 게이트를 자동 실행한다.
 
 ## 6. 구현 규칙
 

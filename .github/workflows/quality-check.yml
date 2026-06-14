@@ -1,0 +1,49 @@
+name: Verify Flutter quality
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches-ignore:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.0"
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify generated Drift code
+        run: |
+          dart run build_runner build
+          git diff --exit-code -- lib/prototype/database/harutalk_database.g.dart
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build Flutter Web
+        run: flutter build web --release --base-href "/rhythm-archive/"

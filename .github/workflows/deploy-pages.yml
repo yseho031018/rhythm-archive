@@ -18,6 +18,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,6 +32,11 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Verify generated Drift code
+        run: |
+          dart run build_runner build
+          git diff --exit-code -- lib/prototype/database/harutalk_database.g.dart
 
       - name: Analyze
         run: flutter analyze

@@ -12,6 +12,12 @@ flutter test
 flutter build web --release --base-href "/rhythm-archive/"
 ```
 
+## GitHub Actions 품질 게이트
+
+- `quality-check.yml`: 기능 브랜치 push와 `master` 대상 PR에서 Drift 생성 코드, 정적 분석, 전체 테스트, Web Release 빌드를 검증한다.
+- `deploy-pages.yml`: `master` push에서 같은 품질 검증을 통과한 뒤 GitHub Pages를 배포한다.
+- Drift 생성 코드가 실제 테이블 정의와 다르면 `git diff --exit-code`가 실패해 누락된 생성 파일을 발견한다.
+
 ## 2026-06-14 결과
 
 | 검증 | 결과 |

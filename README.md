@@ -1,5 +1,7 @@
 # 하루톡
 
+[![Verify and deploy GitHub Pages](https://github.com/yseho031018/rhythm-archive/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/yseho031018/rhythm-archive/actions/workflows/deploy-pages.yml)
+
 > 세 가지 질문에 답하면 오늘을 한 줄로 정리하고, 쌓인 기록에서 생활 패턴을 발견하는 감정 다이어리
 
 하루톡은 긴 일기를 직접 쓰는 부담을 줄이기 위해 만든 Flutter 앱이다. 사용자는 기분, 함께한 일, 만족도만 선택한다. 앱은 선택한 사실만 사용해 한 줄을 만들고, 감정잔디와 생활 패턴으로 기록을 다시 보여준다.
@@ -99,4 +101,4 @@ AGENTS.md                          # AI Agent 작업 규칙과 암묵지
 
 ## 설치 및 배포 요약
 
-자세한 설치 과정은 [docs/setup.md](docs/setup.md), 빌드·배포 개념과 절차는 [docs/deploy.md](docs/deploy.md)를 참고한다. `master` push 시 [GitHub Pages workflow](.github/workflows/deploy-pages.yml)가 정적 분석, 테스트, Web Release 빌드 후 앱·발표자료·WBS를 함께 배포한다.
+자세한 설치 과정은 [docs/setup.md](docs/setup.md), 빌드·배포 개념과 절차는 [docs/deploy.md](docs/deploy.md)를 참고한다. 기능 브랜치 push와 PR에서는 [품질 검사 workflow](.github/workflows/quality-check.yml)가 Drift 생성 코드, 정적 분석, 테스트, Web Release 빌드를 검증한다. `master` push 시에는 [GitHub Pages workflow](.github/workflows/deploy-pages.yml)가 같은 품질 게이트를 통과한 뒤 앱·발표자료·WBS를 함께 배포한다.

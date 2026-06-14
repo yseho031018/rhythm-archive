@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../diary_controller.dart';
 import '../diary_entry.dart';
+import '../pattern_analysis.dart';
 import '../widgets/harutalk_ui.dart';
 import '../widgets/tori_mascot.dart';
 
@@ -69,12 +70,6 @@ class _MyScreenState extends State<MyScreen> {
     }
   }
 
-  String get _periodWord => switch (_period) {
-    StatsPeriod.weekly => '이번 주',
-    StatsPeriod.monthly => '이번 달',
-    StatsPeriod.yearly => '올해',
-  };
-
   String get _countLabel => switch (_period) {
     StatsPeriod.weekly => '주간 기록',
     StatsPeriod.monthly => '이번 달 기록',
@@ -132,6 +127,7 @@ class _MyScreenState extends State<MyScreen> {
                       .map((entry) => entry.satisfaction)
                       .reduce((a, b) => a + b) /
                   entries.length;
+        final colors = context.colors;
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
@@ -139,6 +135,7 @@ class _MyScreenState extends State<MyScreen> {
             const AppPageHeader(
               title: '통계',
               subtitle: '기록이 모이면 마음의 흐름이 보여요.',
+              trailing: ThemeToggleButton(),
             ),
             const SizedBox(height: 20),
             _PeriodTabs(selected: _period, onSelect: _selectPeriod),
@@ -164,7 +161,7 @@ class _MyScreenState extends State<MyScreen> {
                   SizedBox.square(
                     dimension: 122,
                     child: CustomPaint(
-                      painter: _MoodDonutPainter(counts),
+                      painter: _MoodDonutPainter(counts, colors.surfaceSoft),
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -173,10 +170,10 @@ class _MyScreenState extends State<MyScreen> {
                               '${entries.length}',
                               style: Theme.of(context).textTheme.headlineMedium,
                             ),
-                            const Text(
+                            Text(
                               '기록',
                               style: TextStyle(
-                                color: HarutalkColors.muted,
+                                color: colors.muted,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -218,15 +215,15 @@ class _MyScreenState extends State<MyScreen> {
                       Text(
                         average.toStringAsFixed(1),
                         style: Theme.of(context).textTheme.headlineLarge
-                            ?.copyWith(color: HarutalkColors.primary),
+                            ?.copyWith(color: colors.primary),
                       ),
                       const SizedBox(width: 4),
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           '/ 5점',
                           style: TextStyle(
-                            color: HarutalkColors.muted,
+                            color: colors.muted,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                           ),
@@ -239,43 +236,23 @@ class _MyScreenState extends State<MyScreen> {
                     height: 84,
                     width: double.infinity,
                     child: CustomPaint(
-                      painter: _ScoreTrendPainter(entries.reversed.toList()),
+                      painter: _ScoreTrendPainter(
+                        entries.reversed.toList(),
+                        colors.primary,
+                        colors.border,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
-            _AiInsightCard(
-              message: _periodInsight(counts, entries),
-              expression: entries.isEmpty
-                  ? ToriExpression.sleeping
-                  : ToriExpression.thinking,
-            ),
+            // 생활 패턴은 기간과 무관하게 누적 기록 전체를 분석한다.
+            _LifePatternSection(report: analyzePatterns(controller.entries)),
           ],
         );
       },
     );
-  }
-
-  String _periodInsight(Map<DiaryMood, int> counts, List<DiaryEntry> entries) {
-    if (entries.isEmpty) {
-      return '아직 기록이 없어요. 토리와 오늘의 감정부터 가볍게 남겨보세요.';
-    }
-    final sorted = counts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final top = sorted.first.key;
-    final keywordCounts = <String, int>{};
-    for (final entry in entries) {
-      for (final keyword in entry.keywords) {
-        keywordCounts[keyword] = (keywordCounts[keyword] ?? 0) + 1;
-      }
-    }
-    final topKeyword = keywordCounts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final keywordText = topKeyword.isEmpty ? '일상' : topKeyword.first.key;
-    return '${top.emoji} $_periodWord에는 ${top.label}을 가장 자주 느꼈고, '
-        '$keywordText와 함께한 날이 많았어요. 기록이 더 쌓이면 토리가 관계를 자세히 알려줄게요.';
   }
 }
 
@@ -287,10 +264,11 @@ class _PeriodTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F1),
+        color: colors.surfaceSoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -306,15 +284,15 @@ class _PeriodTabs extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: period == selected
-                        ? Colors.white
+                        ? colors.surface
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(11),
                     boxShadow: period == selected
-                        ? const [
+                        ? [
                             BoxShadow(
-                              color: Color(0x0F52675A),
+                              color: colors.shadow,
                               blurRadius: 8,
-                              offset: Offset(0, 2),
+                              offset: const Offset(0, 2),
                             ),
                           ]
                         : null,
@@ -323,8 +301,8 @@ class _PeriodTabs extends StatelessWidget {
                     period.label,
                     style: TextStyle(
                       color: period == selected
-                          ? HarutalkColors.primaryDark
-                          : HarutalkColors.muted,
+                          ? colors.primaryDark
+                          : colors.muted,
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
                     ),
@@ -357,7 +335,7 @@ class _PeriodSwitcher extends StatelessWidget {
         IconButton(
           onPressed: onPrev,
           icon: const Icon(Icons.chevron_left_rounded),
-          color: HarutalkColors.muted,
+          color: context.colors.muted,
         ),
         Expanded(
           child: Text(
@@ -370,7 +348,7 @@ class _PeriodSwitcher extends StatelessWidget {
           // 미래 기간은 데이터가 없으므로 현재 기간까지만 이동.
           onPressed: onNext,
           icon: const Icon(Icons.chevron_right_rounded),
-          color: HarutalkColors.muted,
+          color: context.colors.muted,
         ),
       ],
     );
@@ -434,7 +412,7 @@ class _SummaryItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         child: Column(
           children: [
-            Icon(icon, color: HarutalkColors.primary, size: 20),
+            Icon(icon, color: context.colors.primary, size: 20),
             const SizedBox(height: 7),
             Text(
               value,
@@ -444,8 +422,8 @@ class _SummaryItem extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: HarutalkColors.muted,
+              style: TextStyle(
+                color: context.colors.muted,
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
               ),
@@ -487,8 +465,8 @@ class _LegendRow extends StatelessWidget {
         ),
         Text(
           '$percent%',
-          style: const TextStyle(
-            color: HarutalkColors.muted,
+          style: TextStyle(
+            color: context.colors.muted,
             fontSize: 10,
             fontWeight: FontWeight.w700,
           ),
@@ -498,44 +476,221 @@ class _LegendRow extends StatelessWidget {
   }
 }
 
-class _AiInsightCard extends StatelessWidget {
-  const _AiInsightCard({required this.message, required this.expression});
+/// 누적 기록을 분석한 생활 패턴 섹션.
+class _LifePatternSection extends StatelessWidget {
+  const _LifePatternSection({required this.report});
 
-  final String message;
-  final ToriExpression expression;
+  final PatternReport report;
 
   @override
   Widget build(BuildContext context) {
-    return SoftCard(
-      color: HarutalkColors.cream,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ToriMascot(expression: expression, size: 94),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
+    final colors = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('생활 패턴', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(width: 8),
+            const SmallPill(label: '전체 기록'),
+          ],
+        ),
+        const SizedBox(height: 11),
+        if (!report.hasEnoughData)
+          SoftCard(
+            color: colors.cream,
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'AI 한 줄 회고',
-                  style: TextStyle(fontWeight: FontWeight.w900),
+                const ToriMascot(expression: ToriExpression.sleeping, size: 88),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '아직 패턴을 찾는 중이에요',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        '같은 키워드가 며칠 더 쌓이면 토리가 키워드와 기분, '
+                        '만족도의 관계를 알려줄게요.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 5),
-                Text(message, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          )
+        else ...[
+          SoftCard(
+            color: colors.cream,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ToriMascot(expression: ToriExpression.thinking, size: 92),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '토리가 찾은 관계',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      const SizedBox(height: 8),
+                      for (final sentence in report.sentences)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 7),
+                          child: _PatternBullet(text: sentence),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '키워드별 평균 만족도',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 11),
+          SoftCard(
+            child: Column(
+              children: [
+                for (var i = 0; i < report.keywords.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 14),
+                  _KeywordStatRow(insight: report.keywords[i]),
+                ],
               ],
             ),
           ),
         ],
-      ),
+      ],
+    );
+  }
+}
+
+class _PatternBullet extends StatelessWidget {
+  const _PatternBullet({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 6, right: 8),
+          width: 5,
+          height: 5,
+          decoration: BoxDecoration(
+            color: colors.primary,
+            shape: BoxShape.circle,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.45,
+              fontWeight: FontWeight.w600,
+              color: colors.ink,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _KeywordStatRow extends StatelessWidget {
+  const _KeywordStatRow({required this.insight});
+
+  final KeywordInsight insight;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final fraction = (insight.averageSatisfaction / 5).clamp(0.0, 1.0);
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: insight.topMood.color.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Text(
+            insight.topMood.emoji,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    insight.keyword,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${insight.count}일',
+                    style: TextStyle(
+                      color: colors.muted,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: fraction,
+                  minHeight: 6,
+                  backgroundColor: colors.surfaceSoft,
+                  valueColor: AlwaysStoppedAnimation(colors.primary),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          insight.averageSatisfaction.toStringAsFixed(1),
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+            color: colors.primaryDark,
+          ),
+        ),
+      ],
     );
   }
 }
 
 class _MoodDonutPainter extends CustomPainter {
-  _MoodDonutPainter(this.counts);
+  _MoodDonutPainter(this.counts, this.trackColor);
 
   final Map<DiaryMood, int> counts;
+  final Color trackColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -546,7 +701,7 @@ class _MoodDonutPainter extends CustomPainter {
     final background = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 16
-      ..color = const Color(0xFFF0F2EF);
+      ..color = trackColor;
     canvas.drawCircle(center, radius, background);
     if (total == 0) return;
 
@@ -571,14 +726,16 @@ class _MoodDonutPainter extends CustomPainter {
 }
 
 class _ScoreTrendPainter extends CustomPainter {
-  _ScoreTrendPainter(this.entries);
+  _ScoreTrendPainter(this.entries, this.lineColor, this.gridColor);
 
   final List<DiaryEntry> entries;
+  final Color lineColor;
+  final Color gridColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final grid = Paint()
-      ..color = const Color(0xFFE9EEE9)
+      ..color = gridColor
       ..strokeWidth = 1;
     for (var i = 0; i < 3; i++) {
       final y = size.height * i / 2;
@@ -604,12 +761,12 @@ class _ScoreTrendPainter extends CustomPainter {
       }
     }
     final line = Paint()
-      ..color = HarutalkColors.primary
+      ..color = lineColor
       ..strokeWidth = 2.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(path, line);
-    final dot = Paint()..color = HarutalkColors.primary;
+    final dot = Paint()..color = lineColor;
     for (final point in points) {
       canvas.drawCircle(point, 3.5, dot);
     }

@@ -1,135 +1,118 @@
-# Rhythm — Architecture
+# 하루톡 아키텍처
 
-> Rhythm 데모 앱의 현재 구조와 최종 목표 아키텍처를 설명한다.
+## 목표
 
----
+하루톡은 개인 프로젝트 규모에서 설명 가능성과 테스트 용이성을 확보하기 위해 Repository Pattern을 적용한 간소화된 Layered Architecture를 사용한다.
 
-## 1. 아키텍처 목표
+```mermaid
+flowchart LR
+  USER["사용자"]
+  UI["Presentation\nscreens / widgets"]
+  APP["Application\nDiaryController"]
+  DOMAIN["Domain\nDiaryEntry / pattern_analysis"]
+  REPO["Repository Interface\nDiaryRepository"]
+  DATA["Data\nSharedPreferencesDiaryRepository"]
 
-Rhythm은 감정, 에너지, 활동 기록을 기반으로 사용자의 하루를 Wave Graph로 표현하는 모바일 앱이다.  
-앱의 핵심은 단순 UI가 아니라 **기록 데이터 → 감정/활동 해석 → 시각화**로 이어지는 흐름이다.
+  USER --> UI
+  UI --> APP
+  APP --> DOMAIN
+  APP --> REPO
+  DATA --> REPO
+```
 
-따라서 최종 구조는 `Presentation`, `Application`, `Domain`, `Data` 레이어를 나누는 Layered Architecture를 목표로 한다.
-
----
-
-## 2. 현재 중간 발표 데모 구조
-
-현재 데모는 발표 시연을 위해 Flutter Web에서 빠르게 실행되는 단일 앱 형태로 구현했다.
+## 현재 디렉토리 구조
 
 ```text
 lib/
   main.dart
-test/
-  widget_test.dart
-docs/
-  architecture.md
-  setup.md
-  presentation/
-    interim.md
+  prototype/
+    ai_diary_app.dart
+    diary_controller.dart
+    diary_entry.dart
+    diary_repository.dart
+    shared_preferences_diary_repository.dart
+    pattern_analysis.dart
+    screens/
+      record_screen.dart
+      diary_screen.dart
+      mood_grass_screen.dart
+      my_screen.dart
+      summary_editor.dart
+    widgets/
+      harutalk_ui.dart
+      harutalk_theme.dart
+      tori_chat_header.dart
+      tori_mascot.dart
 ```
 
-`lib/main.dart` 안에는 다음 역할이 포함되어 있다.
+## 레이어별 책임
 
-| 역할 | 현재 구현 |
-|------|-----------|
-| 앱 진입점 | `RhythmApp` |
-| 화면 상태 | `RhythmHomePage` |
-| 데이터 모델 | `RhythmEntry` |
-| 입력 화면 | `_HomeTab` |
-| 히스토리 화면 | `_HistoryTab` |
-| 패턴 화면 | `_PatternTab` |
-| 시각화 | `RhythmWavePainter`, `WeeklyRhythmPainter` |
-| 데모 저장 | `shared_preferences` |
+### Presentation
 
----
+- `screens/`와 `widgets/`
+- 사용자 입력을 받고 상태를 화면에 표시한다.
+- 기록 규칙과 저장 형식은 직접 알지 않는다.
 
-## 3. 목표 레이어 구조
+### Application
 
-```mermaid
-flowchart LR
-  UI["Presentation\nscreens / widgets / painters"]
-  APP["Application\nview_models / use_cases"]
-  DOMAIN["Domain\nentities / rules / repository interfaces"]
-  DATA["Data\nIsar / repository implementations"]
+- `DiaryController`
+- 기분·키워드·만족도 선택, 한 줄 생성, 저장·수정·삭제 흐름을 조정한다.
+- `ChangeNotifier`로 화면 갱신을 알린다.
 
-  UI --> APP
-  APP --> DOMAIN
-  DATA --> DOMAIN
-```
+### Domain
 
-### Presentation Layer
+- `DiaryEntry`: 날짜, 기분, 키워드, 만족도, 한 줄을 가진 핵심 모델
+- `pattern_analysis.dart`: 키워드별 만족도와 대표 기분을 계산하는 순수 로직
+- 핵심 규칙:
+  - 하루 기록은 한 개만 유지
+  - 표본이 부족한 생활 패턴은 단정하지 않음
+  - 사용자가 선택하지 않은 사건은 한 줄에 만들지 않음
 
-- 화면, 위젯, Wave Graph를 담당한다.
-- 사용자의 입력을 받고 ViewModel에 전달한다.
-- 예: 일일 입력 화면, 히스토리 화면, 패턴 화면
+### Data
 
-### Application Layer
+- `DiaryRepository`: 저장 기능의 인터페이스
+- `SharedPreferencesDiaryRepository`: 실제 로컬 저장 구현
+- Controller는 구체적인 저장 기술 대신 Repository 인터페이스에 의존한다.
 
-- 화면 상태와 UseCase 호출 흐름을 관리한다.
-- Riverpod Notifier/ViewModel을 둘 예정이다.
-- 예: 오늘 기록 저장, 히스토리 불러오기, 패턴 계산 요청
-
-### Domain Layer
-
-- 앱의 핵심 규칙을 담당한다.
-- UI나 DB에 의존하지 않는다.
-- 예: `RhythmEntry`, 감정 색상 규칙, 에너지 계산 규칙, 감정-활동 상관 분석 규칙, Repository Interface
-
-### Data Layer
-
-- 실제 저장소 구현을 담당한다.
-- 최종 구조에서는 Isar DB를 사용한다.
-- 예: Isar Collection, Repository 구현체, 데이터 매핑, 선택 기능으로 저장되는 날씨 맥락 데이터
-
----
-
-## 4. 데이터 흐름
+## 데이터 흐름
 
 ```mermaid
 sequenceDiagram
   participant User as 사용자
-  participant UI as Presentation
-  participant VM as Application
-  participant Domain as Domain
-  participant Data as Data
+  participant Screen as RecordScreen
+  participant Controller as DiaryController
+  participant Rule as Summary/Pattern Rule
+  participant Repo as DiaryRepository
+  participant Storage as SharedPreferences
 
-  User->>UI: 에너지/감정/활동 입력
-  UI->>VM: 저장 요청
-  VM->>Domain: RhythmEntry 생성 규칙 확인
-  Domain->>Data: Repository Interface 호출
-  Data-->>Domain: 저장 결과 반환
-  Domain-->>VM: 저장 완료
-  VM-->>UI: 화면 갱신
+  User->>Screen: 기분·키워드·만족도 선택
+  Screen->>Controller: 선택값 전달
+  Controller->>Rule: 한 줄 생성
+  Rule-->>Controller: 한 줄 미리보기
+  User->>Screen: 저장
+  Screen->>Controller: saveEntry
+  Controller->>Repo: saveAll
+  Repo->>Storage: JSON 문자열 목록 저장
+  Storage-->>Screen: 저장 후 화면 갱신
 ```
 
-현재 데모에서는 이 흐름을 하나의 파일 안에서 단순화해 구현했다. 이후 기능이 늘어나면 위 레이어 구조로 분리한다.
+## Repository를 사용한 이유
 
----
+테스트에서는 브라우저 저장소를 직접 사용하지 않고 `MemoryDiaryRepository`를 주입한다. 이 덕분에 저장·수정·삭제 규칙을 빠르고 결정적으로 검증할 수 있다. 향후 SharedPreferences를 다른 로컬 데이터베이스로 바꿔도 Controller 변경을 줄일 수 있다.
 
-## 5. ADR 연결
+## 현재 구조와 향후 구조 구분
 
-| ADR | 결정 | 아키텍처 영향 |
-|-----|------|---------------|
-| ADR-0001 | Flutter 선택 | CustomPainter 기반 시각화와 Web/Windows 실행 가능 |
-| ADR-0002 | Layered Architecture | UI, 로직, 저장소 책임 분리 |
-| ADR-0003 | Isar 기반 로컬 우선 저장 | Data Layer를 로컬 DB 중심으로 설계 |
+| 항목 | 현재 구현 | 향후 후보 |
+|---|---|---|
+| 상태 관리 | ChangeNotifier | 기능이 커지면 Riverpod 검토 |
+| 로컬 저장 | SharedPreferences | 검색량이 늘면 Isar/SQLite 검토 |
+| 한 줄 생성 | 규칙 기반 | 로컬 AI 서버 연결 |
+| 배포 | Flutter Web + GitHub Pages | Android APK |
 
----
+현재 구현하지 않은 기술을 발표에서 구현했다고 말하지 않는다. 대신 개인 프로젝트 범위에서 왜 단순한 구조를 선택했는지 설명한다.
 
-## 6. 다음 구조 개선 계획
+## 관련 ADR
 
-- [ ] `RhythmEntry`를 `lib/domain/entities/`로 분리
-- [ ] 저장 흐름을 `RhythmRepository` Interface로 분리
-- [ ] 화면 상태를 Riverpod Notifier로 이동
-- [ ] `shared_preferences` 데모 저장을 Isar 구현체로 교체
-- [ ] Wave Painter를 `lib/presentation/widgets/`로 분리
-- [ ] 감정-활동 상관 분석을 Domain Service로 분리
-- [ ] 주간 리듬 리포트를 UseCase로 분리
-- [ ] 날씨 API를 도입할 경우 Data Layer의 선택적 External Data Source로 분리
-
----
-
-*문서 버전: 1.1*  
-*작성일: 2026-05-26*  
-*수정일: 2026-06-02*
+- ADR-0001: Flutter 선택
+- ADR-0002: Repository Pattern 기반 간소화 구조
+- ADR-0003: SharedPreferences 로컬 우선 저장

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'harutalk_ui.dart';
 import 'tori_mascot.dart';
 
 class ToriChatHeader extends StatelessWidget {
@@ -20,6 +21,7 @@ class ToriChatHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Column(
       children: [
         Row(
@@ -42,9 +44,7 @@ class ToriChatHeader extends StatelessWidget {
                         ),
                         height: 4,
                         decoration: BoxDecoration(
-                          color: index <= step
-                              ? const Color(0xFF4B9875)
-                              : const Color(0xFFE2ECE6),
+                          color: index <= step ? colors.primary : colors.border,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -56,34 +56,44 @@ class ToriChatHeader extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 22),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ToriMascot(expression: expression, size: 110),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(17, 14, 17, 15),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F1E6),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(5),
-                    topRight: Radius.circular(20),
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 420;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ToriMascot(expression: expression, size: compact ? 92 : 110),
+                SizedBox(width: compact ? 8 : 12),
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(
+                      compact ? 14 : 17,
+                      14,
+                      compact ? 14 : 17,
+                      15,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.cream,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(5),
+                        topRight: Radius.circular(20),
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                      border: Border.all(color: colors.border),
+                    ),
+                    child: Text(
+                      message,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colors.ink,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                  border: Border.all(color: const Color(0xFFEDE6D7)),
                 ),
-                child: Text(
-                  message,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: const Color(0xFF434A45),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ],
     );

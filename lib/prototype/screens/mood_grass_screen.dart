@@ -5,9 +5,20 @@ import '../diary_entry.dart';
 import '../widgets/harutalk_ui.dart';
 
 class MoodGrassScreen extends StatefulWidget {
-  const MoodGrassScreen({super.key, required this.controller});
+  const MoodGrassScreen({
+    super.key,
+    required this.controller,
+    required this.onRecord,
+    required this.onOpenEntry,
+  });
 
   final DiaryController controller;
+
+  /// 빈 날짜에서 "이 날 기록하기"를 눌렀을 때 그 날짜로 기록을 시작한다.
+  final ValueChanged<DateTime> onRecord;
+
+  /// 기록이 있는 날짜에서 상세 한 줄을 연다.
+  final ValueChanged<String> onOpenEntry;
 
   @override
   State<MoodGrassScreen> createState() => _MoodGrassScreenState();
@@ -50,6 +61,7 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
         final selectedEntry = _selectedDay == null
             ? null
             : widget.controller.entryForDay(_selectedDay!);
+        final colors = context.colors;
         return ListView(
           padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
           children: [
@@ -78,7 +90,9 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                       ),
                       IconButton(
                         // 미래 달은 데이터가 없으므로 현재 달까지만 이동.
-                        onPressed: _isCurrentMonth ? null : () => _shiftMonth(1),
+                        onPressed: _isCurrentMonth
+                            ? null
+                            : () => _shiftMonth(1),
                         icon: const Icon(Icons.chevron_right_rounded),
                       ),
                     ],
@@ -91,8 +105,8 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                           child: Center(
                             child: Text(
                               day,
-                              style: const TextStyle(
-                                color: HarutalkColors.muted,
+                              style: TextStyle(
+                                color: colors.muted,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -134,13 +148,13 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                           decoration: BoxDecoration(
                             color:
                                 entry?.mood.color.withValues(
-                                  alpha: selected ? 1 : 0.72,
+                                  alpha: selected ? 1 : 0.78,
                                 ) ??
-                                const Color(0xFFF0F2EF),
+                                colors.surfaceSoft,
                             borderRadius: BorderRadius.circular(11),
                             border: selected
                                 ? Border.all(
-                                    color: HarutalkColors.primaryDark,
+                                    color: colors.primaryDark,
                                     width: 2,
                                   )
                                 : null,
@@ -151,8 +165,8 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                               color: entry != null
                                   ? Colors.white
                                   : future
-                                  ? const Color(0xFFD0D4D0)
-                                  : const Color(0xFFA5AAA6),
+                                  ? colors.muted.withValues(alpha: 0.45)
+                                  : colors.muted,
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                             ),
@@ -179,12 +193,10 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                       body: '그날의 감정과 토리가 정리한 한 줄을 볼 수 있어요.',
                     )
                   : selectedEntry == null
-                  ? _SelectedDayCard(
-                      key: ValueKey(_selectedDay),
-                      icon: Icons.edit_note_rounded,
-                      title:
-                          '${_selectedDay!.month}월 ${_selectedDay!.day}일은 비어 있어요',
-                      body: '짧게 기록하면 이곳에 오늘의 색이 채워져요.',
+                  ? _EmptyDayCard(
+                      key: ValueKey(('empty', _selectedDay)),
+                      date: _selectedDay!,
+                      onRecord: () => widget.onRecord(_selectedDay!),
                     )
                   : _SelectedDayCard(
                       key: ValueKey(selectedEntry.id),
@@ -195,6 +207,7 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
                       ),
                       body: selectedEntry.summary,
                       score: selectedEntry.satisfaction,
+                      onOpen: () => widget.onOpenEntry(selectedEntry.id),
                     ),
             ),
           ],
@@ -226,8 +239,8 @@ class _MoodLegend extends StatelessWidget {
               const SizedBox(width: 5),
               Text(
                 mood.label,
-                style: const TextStyle(
-                  color: HarutalkColors.muted,
+                style: TextStyle(
+                  color: context.colors.muted,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                 ),
@@ -235,6 +248,66 @@ class _MoodLegend extends StatelessWidget {
             ],
           ),
       ],
+    );
+  }
+}
+
+class _EmptyDayCard extends StatelessWidget {
+  const _EmptyDayCard({super.key, required this.date, required this.onRecord});
+
+  final DateTime date;
+  final VoidCallback onRecord;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 49,
+                height: 49,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: context.colors.primarySoft,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.edit_calendar_rounded,
+                  color: context.colors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${date.month}월 ${date.day}일은 비어 있어요',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      '이 날의 감정을 짧게 남겨볼까요?',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: onRecord,
+            icon: const Icon(Icons.add_rounded, size: 20),
+            label: const Text('이 날 기록하기'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -247,6 +320,7 @@ class _SelectedDayCard extends StatelessWidget {
     required this.title,
     required this.body,
     this.score,
+    this.onOpen,
   });
 
   final IconData? icon;
@@ -254,46 +328,62 @@ class _SelectedDayCard extends StatelessWidget {
   final String title;
   final String body;
   final int? score;
+  final VoidCallback? onOpen;
 
   @override
   Widget build(BuildContext context) {
     return SoftCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          Container(
-            width: 49,
-            height: 49,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: HarutalkColors.primarySoft,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: emoji != null
-                ? Text(emoji!, style: const TextStyle(fontSize: 25))
-                : Icon(icon, color: HarutalkColors.primary, size: 24),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 49,
+                height: 49,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: context.colors.primarySoft,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: emoji != null
+                    ? Text(emoji!, style: const TextStyle(fontSize: 25))
+                    : Icon(icon, color: context.colors.primary, size: 24),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        if (score != null) SmallPill(label: '$score점'),
+                      ],
                     ),
-                    if (score != null) SmallPill(label: '$score점'),
+                    const SizedBox(height: 5),
+                    Text(body, style: Theme.of(context).textTheme.bodyMedium),
                   ],
                 ),
-                const SizedBox(height: 5),
-                Text(body, style: Theme.of(context).textTheme.bodyMedium),
-              ],
-            ),
+              ),
+            ],
           ),
+          if (onOpen != null) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onOpen,
+                icon: const Icon(Icons.menu_book_outlined, size: 18),
+                label: const Text('기록 보기'),
+              ),
+            ),
+          ],
         ],
       ),
     );

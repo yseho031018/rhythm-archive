@@ -1,49 +1,33 @@
-# ADR-0002 — Layered Architecture + Domain 중심 구조 적용
+# ADR-0002 — Repository Pattern 기반 간소화 아키텍처
 
-**상태**: Accepted  
-**작성일**: 2026-05-19  
-**작성자**: 포도
+- 상태: 채택
+- 결정일: 2026-05-19
+- 최종 검토일: 2026-06-13
 
-## 배경
-Rhythm은 Wave Graph Canvas라는 복잡한 시각화와 감정 파동 계산, 기록 관리 등의 비즈니스 로직이 함께 존재하는 앱이다.  
-7주라는 짧은 기간 동안 1인 개발을 하다 보면 UI와 로직이 쉽게 뒤섞여 코드가 복잡해질 위험이 크다.  
-따라서 적절한 수준의 레이어 분리가 필요하다.
+## 상황
+
+개인 프로젝트에서 완전한 Clean Architecture와 Riverpod을 한 번에 적용하면 구조 설명보다 보일러플레이트가 커질 위험이 있다. 하지만 UI, 기록 흐름, 저장, 패턴 분석을 한 파일에 두면 테스트와 변경이 어려워진다.
 
 ## 결정
-Rhythm 프로젝트에 **Layered Architecture**를 적용한다.  
-Domain Layer를 중심으로 핵심 로직을 보호하는 **간소화된 Clean Architecture** 형태로 구성한다.
 
-### 레이어 구조
-- **Presentation Layer**: UI, Screen, Widget, CustomPainter (Wave Graph Canvas), ViewModel (Riverpod Notifier)
-- **Domain Layer**: Entity, UseCase, Repository Interface, 핵심 비즈니스 규칙 (감정 파동 계산, Wave Graph 생성 로직 등)
-- **Data Layer**: Repository 구현체, Isar DB, 데이터 매핑
+화면, `DiaryController`, 핵심 모델·분석 로직, `DiaryRepository` 인터페이스, SharedPreferences 구현체로 책임을 분리한다. 상태 관리는 현재 규모에 맞게 `ChangeNotifier`를 사용한다.
 
 ## 선택 이유
-- **Domain Layer 보호**: 감정 파동 계산, Wave Graph 생성 규칙 같은 **앱의 핵심 로직**을 UI와 DB로부터 독립시켜 변경에 강하게 만든다.
-- **현실적인 균형**: 완전한 Clean Architecture는 7주 1인 프로젝트에 과도하게 복잡하므로, Layered Architecture 기반으로 Domain 중심으로 간소화했다.
-- **Riverpod과의 궁합**: Presentation Layer에서 ViewModel(Riverpod Notifier)을 사용해 상태 관리를 깔끔하게 처리할 수 있다.
-- **유지보수성과 테스트 용이성**: 나중에 Wave Graph Canvas 디자인을 바꾸거나 DB를 교체해도 Domain Layer는 거의 수정하지 않아도 된다.
-- **AI Vibe Coding에 최적**: AI Agent에게 “Domain UseCase 만들어줘”, “Presentation ViewModel 만들어줘”라고 명확하게 지시할 수 있다.
 
-## 대안 비교
+- 완전한 Clean Architecture보다 개인 프로젝트 범위에 현실적이다.
+- Repository 인터페이스를 통해 저장 기술을 교체할 수 있다.
+- 테스트에서 메모리 Repository를 주입할 수 있다.
+- `pattern_analysis.dart`를 UI와 분리해 순수 함수로 검증할 수 있다.
 
-| 대안                    | 장점                          | 단점                              | 적합도 |
-|-------------------------|-------------------------------|-----------------------------------|--------|
-| Layered + Domain 중심   | 균형 좋음, 유지보수 용이      | 초기 구조 설정 필요               | ★★★★★ |
-| 단순 MVVM               | 빠른 개발                     | 로직이 분산되어 장기적으로 어려움 | ★★★☆☆ |
-| 완전 Clean Architecture | 최고 수준의 분리              | 7주 1인 프로젝트에 과도하게 복잡  | ★★☆☆☆ |
-| Feature-first 구조      | 직관적                        | 레이어 분리가 약해 코드가 엉킴    | ★★☆☆☆ |
+## 대안
 
-## 위험 및 대응
-- **초기 구조 설정 부담** → Session 3에서 기본 구조를 먼저 잡고, 이후 기능 구현 시 레이어를 철저히 지킨다.
-- **과도한 분리** → 작은 기능은 실용적으로 합쳐서 적용한다.
+| 대안 | 제외 이유 |
+|---|---|
+| 모든 코드를 화면에 작성 | 빠르지만 테스트와 설명이 어려움 |
+| 완전한 Clean Architecture + Riverpod | 현재 범위에 과도하고 학습·구현 시간이 큼 |
 
-## 발표 시 설명 포인트
-- 7주 1인 프로젝트 규모에 맞게 Layered Architecture를 기반으로 Domain Layer를 중심으로 설계했다.
-- Wave Graph Canvas(UI)와 감정 파동 계산(로직)을 분리하여 코드 변경이 용이하게 만들었다.
-- Riverpod과 함께 사용해 Presentation Layer를 깔끔하게 관리한다.
+## 결과와 시행착오
 
----
-
-*참조: [ADR-0001 Flutter 선택](../0001-platform-flutter.md)*  
-*참조: [Vision Document](../../vision.md)*
+- 기록 생성·저장 흐름과 분석 규칙을 독립적으로 테스트할 수 있게 되었다.
+- 초기 계획의 Riverpod은 구현하지 않았다. 발표에서는 계획과 실제 구현을 구분한다.
+- 기능이 커지면 Controller 분리 또는 Riverpod 도입을 다시 검토한다.

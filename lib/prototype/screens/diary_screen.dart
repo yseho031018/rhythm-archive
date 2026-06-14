@@ -18,6 +18,7 @@ class DiaryScreen extends StatelessWidget {
       builder: (context, _) {
         final entries = controller.entries;
         final latest = entries.isEmpty ? null : entries.first;
+        final previousEntries = entries.skip(1).toList();
         return ListView(
           padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
           children: [
@@ -25,8 +26,8 @@ class DiaryScreen extends StatelessWidget {
               title: '한줄',
               subtitle: '토리와 함께 남긴 ${entries.length}개의 하루',
               trailing: const SmallPill(
-                label: 'AI 한 줄',
-                icon: Icons.auto_awesome_rounded,
+                label: '토리 한 줄',
+                icon: Icons.spa_rounded,
               ),
             ),
             const SizedBox(height: 24),
@@ -39,12 +40,12 @@ class DiaryScreen extends StatelessWidget {
             ],
             Row(
               children: [
-                Text('최근 기록', style: Theme.of(context).textTheme.titleLarge),
+                Text('이전 기록', style: Theme.of(context).textTheme.titleLarge),
                 const Spacer(),
                 Text(
-                  '${entries.length}개',
-                  style: const TextStyle(
-                    color: HarutalkColors.muted,
+                  '${previousEntries.length}개',
+                  style: TextStyle(
+                    color: context.colors.muted,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -62,8 +63,24 @@ class DiaryScreen extends StatelessWidget {
                   ],
                 ),
               )
+            else if (previousEntries.isEmpty)
+              SoftCard(
+                color: context.colors.surfaceSoft,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      color: context.colors.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text('첫 한 줄을 남겼어요.\n다음 기록부터 이곳에 차곡차곡 모여요.'),
+                    ),
+                  ],
+                ),
+              )
             else
-              for (final entry in entries) ...[
+              for (final entry in previousEntries) ...[
                 _DiaryListItem(
                   entry: entry,
                   onTap: () => _openDetail(context, entry),
@@ -94,10 +111,11 @@ class _LatestEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return SoftCard(
       onTap: onTap,
       padding: const EdgeInsets.all(18),
-      color: HarutalkColors.cream,
+      color: colors.cream,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -110,13 +128,13 @@ class _LatestEntryCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.72),
+                    color: colors.surface.withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Text(
                     '가장 최근에 남긴 하루야.\n오늘도 잘 기록했어!',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: HarutalkColors.primaryDark,
+                      color: colors.primaryDark,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -143,16 +161,16 @@ class _LatestEntryCard extends StatelessWidget {
               const SizedBox(width: 7),
               Text(
                 formatDiaryDate(entry.date, includeYear: false),
-                style: const TextStyle(
-                  color: HarutalkColors.muted,
+                style: TextStyle(
+                  color: colors.muted,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const Spacer(),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_rounded,
-                color: HarutalkColors.primary,
+                color: colors.primary,
                 size: 19,
               ),
             ],
@@ -171,6 +189,7 @@ class _DiaryListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return SoftCard(
       onTap: onTap,
       padding: const EdgeInsets.all(15),
@@ -181,7 +200,7 @@ class _DiaryListItem extends StatelessWidget {
             height: 48,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: entry.mood.color.withValues(alpha: 0.14),
+              color: entry.mood.color.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(entry.mood.emoji, style: const TextStyle(fontSize: 24)),
@@ -193,8 +212,8 @@ class _DiaryListItem extends StatelessWidget {
               children: [
                 Text(
                   formatDiaryDate(entry.date, includeYear: false),
-                  style: const TextStyle(
-                    color: HarutalkColors.muted,
+                  style: TextStyle(
+                    color: colors.muted,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -209,7 +228,7 @@ class _DiaryListItem extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: Color(0xFFB8BEB9)),
+          Icon(Icons.chevron_right_rounded, color: colors.muted),
         ],
       ),
     );
@@ -235,9 +254,10 @@ class DiaryDetailScreen extends StatelessWidget {
         if (entry == null) {
           return const Scaffold(body: Center(child: Text('삭제된 기록입니다.')));
         }
+        final colors = context.colors;
         return Scaffold(
           appBar: AppBar(
-            backgroundColor: HarutalkColors.background,
+            backgroundColor: colors.background,
             surfaceTintColor: Colors.transparent,
             title: const Text('오늘의 기록'),
           ),
@@ -259,7 +279,7 @@ class DiaryDetailScreen extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(15),
                           decoration: BoxDecoration(
-                            color: HarutalkColors.cream,
+                            color: colors.cream,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -301,14 +321,14 @@ class DiaryDetailScreen extends StatelessWidget {
                       for (final keyword in entry.keywords)
                         SmallPill(
                           label: keyword,
-                          color: HarutalkColors.cream,
-                          foreground: HarutalkColors.ink,
+                          color: colors.cream,
+                          foreground: colors.ink,
                         ),
                       SmallPill(
                         label: '${entry.satisfaction}점',
                         icon: Icons.star_rounded,
-                        color: const Color(0xFFFFF0C9),
-                        foreground: const Color(0xFF9A6B1E),
+                        color: colors.accentSoft,
+                        foreground: colors.accent,
                       ),
                     ],
                   ),

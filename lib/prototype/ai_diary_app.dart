@@ -12,85 +12,18 @@ class AiDiaryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '하루톡',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: HarutalkColors.background,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: HarutalkColors.primary,
-          brightness: Brightness.light,
-          surface: Colors.white,
-        ),
-        fontFamily: 'Segoe UI',
-        fontFamilyFallback: const ['Noto Sans KR', 'Roboto'],
-        textTheme: const TextTheme(
-          headlineLarge: TextStyle(
-            color: HarutalkColors.ink,
-            fontSize: 28,
-            height: 1.2,
-            fontWeight: FontWeight.w800,
-          ),
-          headlineMedium: TextStyle(
-            color: HarutalkColors.ink,
-            fontSize: 22,
-            height: 1.25,
-            fontWeight: FontWeight.w800,
-          ),
-          titleLarge: TextStyle(
-            color: HarutalkColors.ink,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-          titleMedium: TextStyle(
-            color: HarutalkColors.ink,
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-          ),
-          bodyLarge: TextStyle(
-            color: HarutalkColors.ink,
-            fontSize: 15,
-            height: 1.55,
-          ),
-          bodyMedium: TextStyle(
-            color: HarutalkColors.muted,
-            fontSize: 14,
-            height: 1.5,
-          ),
-        ),
-        navigationBarTheme: const NavigationBarThemeData(
-          height: 68,
-          elevation: 0,
-          backgroundColor: HarutalkColors.surface,
-          indicatorColor: Colors.transparent,
-          iconTheme: WidgetStatePropertyAll(
-            IconThemeData(color: HarutalkColors.muted, size: 22),
-          ),
-          labelTextStyle: WidgetStatePropertyAll(
-            TextStyle(
-              color: HarutalkColors.muted,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(54),
-            backgroundColor: HarutalkColors.primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ),
-      home: const AiDiaryShell(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: harutalkThemeMode,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          title: '하루톡',
+          debugShowCheckedModeBanner: false,
+          theme: buildHarutalkTheme(Brightness.light),
+          darkTheme: buildHarutalkTheme(Brightness.dark),
+          themeMode: mode,
+          home: const AiDiaryShell(),
+        );
+      },
     );
   }
 }
@@ -136,13 +69,28 @@ class _AiDiaryShellState extends State<AiDiaryShell> {
         onOpenDiary: () => setState(() => _index = 1),
       ),
       DiaryScreen(controller: _controller),
-      MoodGrassScreen(controller: _controller),
+      MoodGrassScreen(
+        controller: _controller,
+        onRecord: (date) {
+          _controller.startRecord(date: date);
+          setState(() => _index = 0);
+        },
+        onOpenEntry: (entryId) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  DiaryDetailScreen(controller: _controller, entryId: entryId),
+            ),
+          );
+        },
+      ),
       MyScreen(controller: _controller),
     ];
 
+    final colors = context.colors;
     return Scaffold(
       body: ColoredBox(
-        color: const Color(0xFFF0F4F1),
+        color: colors.surfaceSoft,
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
@@ -160,14 +108,14 @@ class _AiDiaryShellState extends State<AiDiaryShell> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: DecoratedBox(
-            decoration: const BoxDecoration(
-              color: HarutalkColors.surface,
-              border: Border(top: BorderSide(color: HarutalkColors.border)),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              border: Border(top: BorderSide(color: colors.border)),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0x0F52675A),
+                  color: colors.shadow,
                   blurRadius: 16,
-                  offset: Offset(0, -4),
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
@@ -191,9 +139,9 @@ class _AiDiaryShellState extends State<AiDiaryShell> {
                   label: '감정잔디',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person),
-                  label: '마이',
+                  icon: Icon(Icons.bar_chart_outlined),
+                  selectedIcon: Icon(Icons.bar_chart_rounded),
+                  label: '통계',
                 ),
               ],
             ),

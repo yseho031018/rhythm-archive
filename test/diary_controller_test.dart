@@ -5,11 +5,12 @@ import 'package:rhythm_archive/prototype/diary_repository.dart';
 import 'package:rhythm_archive/prototype/shared_preferences_diary_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MemoryDiaryRepository implements DiaryRepository {
+class MemoryDiaryRepository extends DiaryRepository {
   MemoryDiaryRepository([List<DiaryEntry>? entries])
     : stored = entries == null ? null : [...entries];
 
   List<DiaryEntry>? stored;
+  List<String>? storedKeywords;
 
   @override
   Future<List<DiaryEntry>?> loadAll() async {
@@ -20,9 +21,19 @@ class MemoryDiaryRepository implements DiaryRepository {
   Future<void> saveAll(List<DiaryEntry> entries) async {
     stored = [...entries];
   }
+
+  @override
+  Future<List<String>?> loadKeywords() async {
+    return storedKeywords == null ? null : [...storedKeywords!];
+  }
+
+  @override
+  Future<void> saveKeywords(List<String> keywords) async {
+    storedKeywords = [...keywords];
+  }
 }
 
-class FailingDiaryRepository implements DiaryRepository {
+class FailingDiaryRepository extends DiaryRepository {
   @override
   Future<List<DiaryEntry>?> loadAll() async => [];
 
@@ -185,6 +196,125 @@ void main() {
       expect(second.mood, first.mood);
       expect(second.keywords, first.keywords);
       expect(second.summary, isNot(first.summary));
+    });
+
+    test('과거 날짜로 기록을 시작하면 그 날짜로 저장된다', () async {
+      final repository = MemoryDiaryRepository([]);
+      final controller = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+
+      final pastDay = DateTime(2026, 6, 3, 14, 30);
+      controller.startRecord(date: pastDay);
+
+      // startRecord는 선택값을 비우고 날짜만 정한다(시각은 버린다).
+      expect(controller.selectedMood, isNull);
+      expect(controller.selectedKeywords, isEmpty);
+      expect(controller.recordDate, DateTime(2026, 6, 3));
+
+      controller.selectMood(DiaryMood.happy);
+      controller.toggleKeyword('운동');
+      final preview = await controller.generatePreview();
+
+      expect(preview!.date, DateTime(2026, 6, 3));
+
+      await controller.saveEntry(preview);
+      expect(controller.entryForDay(DateTime(2026, 6, 3)), isNotNull);
+      // 저장 후에는 작성 날짜가 오늘로 돌아온다.
+      final now = DateTime.now();
+      expect(controller.recordDate, DateTime(now.year, now.month, now.day));
+    });
+
+    test('같은 과거 날짜에 다시 기록하면 기존 기록을 덮어쓴다', () async {
+      final controller = DiaryController(
+        repository: MemoryDiaryRepository([]),
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+      final day = DateTime(2026, 6, 5);
+
+      controller.startRecord(date: day);
+      controller.selectMood(DiaryMood.sad);
+      controller.toggleKeyword('공부');
+      await controller.saveEntry((await controller.generatePreview())!);
+
+      controller.startRecord(date: day);
+      controller.selectMood(DiaryMood.happy);
+      controller.toggleKeyword('친구');
+      await controller.saveEntry((await controller.generatePreview())!);
+
+      final onDay = controller.entries
+          .where((entry) => entry.date == day)
+          .toList();
+      expect(onDay, hasLength(1));
+      expect(onDay.single.mood, DiaryMood.happy);
+    });
+
+    test('직접 입력한 키워드는 저장되고 선택 상태가 된다', () async {
+      final repository = MemoryDiaryRepository([]);
+      final controller = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+
+      await controller.addCustomKeyword(' 산책 ');
+
+      expect(controller.customKeywords, ['산책']);
+      expect(controller.selectedKeywords, contains('산책'));
+      expect(controller.allKeywords, contains('산책'));
+      expect(repository.storedKeywords, ['산책']);
+    });
+
+    test('저장된 사용자 키워드는 다시 불러온 뒤에도 남는다', () async {
+      final repository = MemoryDiaryRepository([]);
+      final first = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await first.load();
+      await first.addCustomKeyword('산책');
+
+      final second = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await second.load();
+
+      expect(second.customKeywords, contains('산책'));
+      // 다시 불러왔을 때는 선택되어 있지 않다(목록에만 남는다).
+      expect(second.selectedKeywords, isEmpty);
+    });
+
+    test('기본 키워드를 직접 입력하면 중복 추가 없이 선택만 된다', () async {
+      final controller = DiaryController(
+        repository: MemoryDiaryRepository([]),
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+
+      await controller.addCustomKeyword('공부');
+
+      expect(controller.customKeywords, isEmpty);
+      expect(controller.selectedKeywords, contains('공부'));
+    });
+
+    test('사용자 키워드를 삭제하면 목록·선택·저장소에서 빠진다', () async {
+      final repository = MemoryDiaryRepository([]);
+      final controller = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+      await controller.addCustomKeyword('산책');
+
+      await controller.removeCustomKeyword('산책');
+
+      expect(controller.customKeywords, isEmpty);
+      expect(controller.selectedKeywords, isNot(contains('산책')));
+      expect(repository.storedKeywords, isEmpty);
     });
 
     test('저장 실패가 발생해도 앱 상태를 유지하고 오류를 알린다', () async {

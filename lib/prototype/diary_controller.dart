@@ -20,11 +20,24 @@ class DiaryController extends ChangeNotifier {
   DiaryMood? selectedMood;
   final Set<String> selectedKeywords = {};
   int satisfaction = 3;
+
+  /// 작성 중인 기록이 저장될 날짜(기본값은 오늘, 과거 날짜 선택 가능).
+  DateTime recordDate = _dateOnly(DateTime.now());
+
   bool generating = false;
   bool loaded = false;
   String? storageError;
 
   static const keywordOptions = ['공부', '친구', '게임', '카페', '과제', '운동'];
+
+  /// 사용자가 직접 추가한 키워드(기본 키워드 다음에 노출, 로컬 저장됨).
+  final List<String> customKeywords = [];
+
+  /// 기본 키워드 + 사용자 키워드(중복 제거, 노출 순서).
+  List<String> get allKeywords => [
+    ...keywordOptions,
+    ...customKeywords.where((keyword) => !keywordOptions.contains(keyword)),
+  ];
 
   UnmodifiableListView<DiaryEntry> get entries {
     final sorted = [..._entries]..sort((a, b) => b.date.compareTo(a.date));
@@ -46,7 +59,33 @@ class DiaryController extends ChangeNotifier {
         ..clear()
         ..addAll(_sampleEntries());
     }
+    try {
+      final savedKeywords = await _repository.loadKeywords();
+      if (savedKeywords != null) {
+        customKeywords
+          ..clear()
+          ..addAll(savedKeywords);
+      }
+    } catch (_) {
+      // 키워드 로드 실패는 핵심 흐름을 막지 않는다.
+    }
     loaded = true;
+    notifyListeners();
+  }
+
+  /// 새 기록 작성을 시작한다. 선택값을 비우고 대상 날짜를 정한다.
+  /// 감정잔디의 빈 날짜에서 호출하면 그 날짜로 기록을 시작할 수 있다.
+  void startRecord({DateTime? date}) {
+    selectedMood = null;
+    selectedKeywords.clear();
+    satisfaction = 3;
+    recordDate = _dateOnly(date ?? DateTime.now());
+    notifyListeners();
+  }
+
+  /// 작성 중인 기록의 날짜만 바꾼다(선택값은 유지).
+  void setRecordDate(DateTime date) {
+    recordDate = _dateOnly(date);
     notifyListeners();
   }
 
@@ -60,6 +99,37 @@ class DiaryController extends ChangeNotifier {
       selectedKeywords.remove(keyword);
     }
     notifyListeners();
+  }
+
+  /// 직접 입력한 키워드를 추가(처음이면 저장)하고 선택 상태로 만든다.
+  /// 이미 있는 키워드면 중복 추가 없이 선택만 한다.
+  Future<bool> addCustomKeyword(String raw) async {
+    final keyword = raw.trim();
+    if (keyword.isEmpty) return true;
+    final isNew =
+        !keywordOptions.contains(keyword) && !customKeywords.contains(keyword);
+    if (isNew) customKeywords.add(keyword);
+    selectedKeywords.add(keyword);
+    notifyListeners();
+    return isNew ? _persistKeywords() : true;
+  }
+
+  /// 사용자 키워드를 목록과 저장소, 현재 선택에서 모두 제거한다.
+  Future<bool> removeCustomKeyword(String keyword) async {
+    if (!customKeywords.remove(keyword)) return true;
+    selectedKeywords.remove(keyword);
+    notifyListeners();
+    return _persistKeywords();
+  }
+
+  Future<bool> _persistKeywords() async {
+    try {
+      await _repository.saveKeywords(customKeywords);
+      return true;
+    } catch (_) {
+      storageError = '키워드를 저장하지 못했어요.';
+      return false;
+    }
   }
 
   void setSatisfaction(int value) {
@@ -116,7 +186,7 @@ class DiaryController extends ChangeNotifier {
     final keywords = selectedKeywords.toList();
     final entry = DiaryEntry(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
-      date: DateTime.now(),
+      date: recordDate,
       mood: mood,
       keywords: keywords,
       satisfaction: satisfaction,
@@ -178,6 +248,7 @@ class DiaryController extends ChangeNotifier {
     selectedMood = null;
     selectedKeywords.clear();
     satisfaction = 3;
+    recordDate = _dateOnly(DateTime.now());
   }
 
   Future<bool> _persist() async {
@@ -241,3 +312,5 @@ class DiaryController extends ChangeNotifier {
     ];
   }
 }
+
+DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);

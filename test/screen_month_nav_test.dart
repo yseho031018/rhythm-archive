@@ -6,7 +6,7 @@ import 'package:rhythm_archive/prototype/diary_repository.dart';
 import 'package:rhythm_archive/prototype/screens/mood_grass_screen.dart';
 import 'package:rhythm_archive/prototype/screens/my_screen.dart';
 
-class MemoryDiaryRepository implements DiaryRepository {
+class MemoryDiaryRepository extends DiaryRepository {
   MemoryDiaryRepository([List<DiaryEntry>? entries])
     : stored = entries == null ? null : [...entries];
 
@@ -22,9 +22,9 @@ class MemoryDiaryRepository implements DiaryRepository {
   }
 }
 
-Future<DiaryController> _loadedController() async {
+Future<DiaryController> _loadedController([List<DiaryEntry>? entries]) async {
   final controller = DiaryController(
-    repository: MemoryDiaryRepository([]),
+    repository: MemoryDiaryRepository(entries ?? []),
     generationDelay: Duration.zero,
   );
   await controller.load();
@@ -35,7 +35,15 @@ void main() {
   testWidgets('감정잔디: 이전 달 화살표로 월이 바뀐다', (tester) async {
     final controller = await _loadedController();
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: MoodGrassScreen(controller: controller))),
+      MaterialApp(
+        home: Scaffold(
+          body: MoodGrassScreen(
+            controller: controller,
+            onRecord: (_) {},
+            onOpenEntry: (_) {},
+          ),
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -49,10 +57,82 @@ void main() {
     expect(find.text('${prev.year}년 ${prev.month}월'), findsOneWidget);
   });
 
-  testWidgets('통계: 타이틀/AI 회고 문구 + 이전 달 이동', (tester) async {
+  testWidgets('감정잔디: 빈 날짜에서 "이 날 기록하기"가 그 날짜로 콜백한다', (tester) async {
+    final controller = await _loadedController();
+    DateTime? recordedFor;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MoodGrassScreen(
+            controller: controller,
+            onRecord: (date) => recordedFor = date,
+            onOpenEntry: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 기록이 없는 1일을 누르면 빈 날짜 카드가 뜬다.
+    await tester.tap(find.text('1').first);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('이 날 기록하기'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('이 날 기록하기'));
+    await tester.pumpAndSettle();
+
+    final now = DateTime.now();
+    expect(recordedFor, DateTime(now.year, now.month, 1));
+  });
+
+  testWidgets('감정잔디: 기록이 있는 날짜에서 상세 기록을 연다', (tester) async {
+    final now = DateTime.now();
+    final entry = DiaryEntry(
+      id: 'grass-entry',
+      date: DateTime(now.year, now.month, 1),
+      mood: DiaryMood.happy,
+      keywords: const ['친구'],
+      satisfaction: 5,
+      summary: '친구와 웃으며 보낸 하루',
+    );
+    final controller = await _loadedController([entry]);
+    String? openedEntryId;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MoodGrassScreen(
+            controller: controller,
+            onRecord: (_) {},
+            onOpenEntry: (entryId) => openedEntryId = entryId,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('1').first);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('기록 보기'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('기록 보기'));
+    await tester.pumpAndSettle();
+
+    expect(openedEntryId, entry.id);
+  });
+
+  testWidgets('통계: 타이틀/생활 패턴 섹션 + 이전 달 이동', (tester) async {
     final controller = await _loadedController();
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: MyScreen(controller: controller))),
+      MaterialApp(
+        home: Scaffold(body: MyScreen(controller: controller)),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -68,19 +148,21 @@ void main() {
     final prev = DateTime(now.year, now.month - 1);
     expect(find.text('${prev.year}년 ${prev.month}월'), findsOneWidget);
 
-    // AI 회고 카드는 리스트 하단 → 스크롤해서 확인.
+    // 생활 패턴 섹션은 리스트 하단 → 스크롤해서 확인.
     await tester.scrollUntilVisible(
-      find.text('AI 한 줄 회고'),
+      find.text('생활 패턴'),
       250,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('AI 한 줄 회고'), findsOneWidget);
+    expect(find.text('생활 패턴'), findsOneWidget);
   });
 
   testWidgets('통계: 주간/월간/연간 토글로 집계 기간이 바뀐다', (tester) async {
     final controller = await _loadedController();
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: MyScreen(controller: controller))),
+      MaterialApp(
+        home: Scaffold(body: MyScreen(controller: controller)),
+      ),
     );
     await tester.pumpAndSettle();
 

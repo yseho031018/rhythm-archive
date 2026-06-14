@@ -3,14 +3,46 @@ import 'package:flutter/material.dart';
 Future<String?> showSummaryEditor(
   BuildContext context, {
   required String initialValue,
-}) async {
-  final controller = TextEditingController(text: initialValue);
-  final result = await showDialog<String>(
+}) {
+  return showDialog<String>(
     context: context,
-    builder: (context) => AlertDialog(
+    builder: (context) => _SummaryEditorDialog(initialValue: initialValue),
+  );
+}
+
+/// 한 줄 수정 다이얼로그. TextEditingController를 자기 State에서 소유·해제해
+/// 다이얼로그 종료 애니메이션 도중 컨트롤러가 조기 dispose되는 문제를 피한다.
+class _SummaryEditorDialog extends StatefulWidget {
+  const _SummaryEditorDialog({required this.initialValue});
+
+  final String initialValue;
+
+  @override
+  State<_SummaryEditorDialog> createState() => _SummaryEditorDialogState();
+}
+
+class _SummaryEditorDialogState extends State<_SummaryEditorDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final value = _controller.text.trim();
+    if (value.isNotEmpty) Navigator.pop(context, value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
       title: const Text('오늘의 한 줄 수정'),
       content: TextField(
-        controller: controller,
+        controller: _controller,
         autofocus: true,
         maxLength: 70,
         maxLines: 3,
@@ -24,16 +56,8 @@ Future<String?> showSummaryEditor(
           onPressed: () => Navigator.pop(context),
           child: const Text('취소'),
         ),
-        FilledButton(
-          onPressed: () {
-            final value = controller.text.trim();
-            if (value.isNotEmpty) Navigator.pop(context, value);
-          },
-          child: const Text('적용'),
-        ),
+        FilledButton(onPressed: _submit, child: const Text('적용')),
       ],
-    ),
-  );
-  controller.dispose();
-  return result;
+    );
+  }
 }

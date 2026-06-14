@@ -1,214 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rhythm — WBS & Gantt Chart</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
-    font-size: 12px;
-    color: #111;
-    background: #fff;
-    padding: 16px;
-  }
-  h2 { font-size: 16px; margin-bottom: 8px; }
-  .note {
-    margin-bottom: 10px;
-    padding: 8px 10px;
-    border: 1px solid #d8d8d8;
-    background: #fafafa;
-    line-height: 1.45;
-  }
-  .wbs-table {
-    border-collapse: collapse;
-    width: 100%;
-    table-layout: fixed;
-  }
-  .wbs-table th, .wbs-table td {
-    border: 1px solid #b4b4b4;
-    padding: 4px 6px;
-    vertical-align: middle;
-    height: 24px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .wbs-table th {
-    background: #f2f2f2;
-    font-weight: 700;
-    text-align: center;
-  }
-  .col-wbs { width: 54px; text-align: center; }
-  .col-task { width: 220px; }
-  .col-owner { width: 72px; text-align: center; }
-  .col-status { width: 92px; text-align: center; }
-  .col-start, .col-finish { width: 82px; text-align: center; }
-  .col-pct { width: 46px; text-align: center; }
-  .col-gantt { width: 390px; }
-  .lv1 td { background: #d9d9d9 !important; font-weight: 700; }
-  .lv2 .col-task { padding-left: 18px; }
-  .lv3 .col-task { padding-left: 34px; font-size: 11px; color: #333; }
-  .st-completed { color: #0645ad; }
-  .st-progress { color: #0645ad; }
-  .st-notstart { color: #777; }
-  .st-milestone { background: #e6f3ff !important; color: #0645ad; font-weight: 600; }
-  .gantt-scale {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    color: #555;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 2px;
-  }
-  .gantt-cell { position: relative; padding: 0 !important; }
-  .gantt-track { position: relative; height: 19px; width: 100%; }
-  .gantt-bar {
-    position: absolute;
-    top: 4px;
-    height: 11px;
-    border-radius: 1px;
-    min-width: 3px;
-  }
-  .bar-completed { background: #4472c4; }
-  .bar-progress { background: #70ad47; }
-  .bar-notstart { background: #d9d9d9; border: 1px solid #b4b4b4; }
-  .bar-milestone {
-    width: 10px !important;
-    height: 10px;
-    background: #4472c4;
-    transform: rotate(45deg);
-    top: 4px;
-  }
-  tr:not(.lv1):hover td { background: #f7f7f7; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>하루톡 — WBS & Gantt</title>
+  <style>
+    :root {
+      --ink: #25342c;
+      --muted: #68776e;
+      --line: #dfe7e1;
+      --surface: #ffffff;
+      --soft: #f4f7f4;
+      --cream: #f8f3e8;
+      --green: #438d69;
+      --green-soft: #dceee3;
+      --yellow: #e3b74e;
+      --orange: #e99055;
+      --blue: #5f88ba;
+      --red: #ce6a6a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fbfcfa;
+      color: var(--ink);
+      font-family: "Segoe UI", "Noto Sans KR", sans-serif;
+      line-height: 1.5;
+    }
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .header-inner, main { width: min(1180px, calc(100% - 32px)); margin: auto; }
+    .header-inner { padding: 28px 0 24px; display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font-size: 30px; letter-spacing: 0; }
+    h2 { margin-bottom: 14px; font-size: 20px; letter-spacing: 0; }
+    .subtitle { margin: 0; color: var(--muted); }
+    .links { display: flex; gap: 8px; flex-wrap: wrap; }
+    a { color: var(--green); text-decoration: none; font-weight: 700; }
+    .link {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px 11px;
+      background: var(--surface);
+      font-size: 13px;
+    }
+    main { padding: 28px 0 48px; }
+    .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 16px;
+    }
+    .metric strong { display: block; font-size: 25px; color: var(--green); }
+    .metric span { color: var(--muted); font-size: 13px; }
+    section { margin-top: 34px; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 12px; }
+    .status-note { color: var(--muted); font-size: 13px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+    table { width: 100%; border-collapse: collapse; min-width: 860px; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; vertical-align: top; }
+    th { background: var(--soft); font-size: 12px; color: var(--muted); }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fafcfb; }
+    .group td { background: var(--cream); font-weight: 800; color: var(--ink); }
+    .badge { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; font-size: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .active .dot { background: var(--yellow); }
+    .planned .dot { background: var(--blue); }
+    .gantt {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .gantt-head, .gantt-row {
+      display: grid;
+      grid-template-columns: 220px repeat(6, minmax(90px, 1fr));
+      min-width: 860px;
+    }
+    .gantt-scroll { overflow-x: auto; }
+    .gantt-head > div { background: var(--soft); color: var(--muted); padding: 10px; border-right: 1px solid var(--line); font-size: 11px; text-align: center; }
+    .gantt-head > div:first-child { text-align: left; }
+    .gantt-row > div { min-height: 48px; border-top: 1px solid var(--line); border-right: 1px solid var(--line); position: relative; }
+    .task { padding: 13px 10px; font-size: 12px; font-weight: 700; background: #fcfdfc; }
+    .bar {
+      position: absolute;
+      inset: 9px 5px;
+      border-radius: 5px;
+      background: var(--green);
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+    .bar.feature { background: var(--orange); }
+    .bar.quality { background: var(--yellow); color: #4d421e; }
+    .bar.exam { background: var(--red); }
+    .story {
+      border-left: 4px solid var(--green);
+      padding: 14px 16px;
+      background: var(--cream);
+      color: #4d594f;
+    }
+    footer { padding: 22px 0 36px; color: var(--muted); font-size: 12px; text-align: center; }
+    @media (max-width: 760px) {
+      .header-inner { display: block; }
+      .links { margin-top: 16px; }
+      .summary { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
 </head>
 <body>
-<h2>Rhythm WBS &amp; Gantt Chart</h2>
-<div class="note">
-  실제 진행 흐름 반영: 중간 발표 대응을 위해 도메인/Isar 구현보다 Flutter Web 데모와 발표 URL 배포를 먼저 완료했다.
-  이후 Riverpod, Isar, 레이어 분리 작업을 진행한다.
-</div>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>하루톡 WBS & Gantt</h1>
+        <p class="subtitle">윤세호 · App Programming Project · 최종 평가 2026-06-16</p>
+      </div>
+      <nav class="links" aria-label="관련 링크">
+        <a class="link" href="./">앱 데모</a>
+        <a class="link" href="./presentation.html">발표자료</a>
+        <a class="link" href="https://github.com/yseho031018/rhythm-archive">GitHub</a>
+      </nav>
+    </div>
+  </header>
 
-<table class="wbs-table">
-  <thead>
-    <tr>
-      <th class="col-wbs">WBS</th>
-      <th class="col-task">Task</th>
-      <th class="col-owner">Owner</th>
-      <th class="col-status">Status</th>
-      <th class="col-start">Start</th>
-      <th class="col-finish">Finish</th>
-      <th class="col-pct">%</th>
-      <th class="col-gantt">
-        <div class="gantt-scale">
-          <span>10주</span><span>11주</span><span>12주</span><span>13주</span><span>14주</span><span>15주</span>
+  <main>
+    <div class="summary">
+      <div class="metric"><strong>21</strong><span>전체 WBS 항목</span></div>
+      <div class="metric"><strong>18</strong><span>완료</span></div>
+      <div class="metric"><strong>2</strong><span>진행 중</span></div>
+      <div class="metric"><strong>86%</strong><span>현재 진척률</span></div>
+    </div>
+
+    <section>
+      <div class="section-head">
+        <h2>작업 분해 구조</h2>
+        <span class="status-note">Owner: 윤세호 · 2026-06-13 기준</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>WBS</th><th>작업</th><th>세부 작업</th><th>상태</th><th>산출물</th></tr></thead>
+          <tbody>
+            <tr class="group"><td>1</td><td colspan="4">기획과 범위</td></tr>
+            <tr><td>1.1</td><td>비전·문제 정의</td><td>긴 일기 부담, 기록 활용 문제, 핵심 가치</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>vision / requirements</td></tr>
+            <tr><td>1.2</td><td>WBS·일정·위험</td><td>작업 분해, 일정 변경, 위험 대응</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>planning 문서</td></tr>
+            <tr class="group"><td>2</td><td colspan="4">설계와 기술 결정</td></tr>
+            <tr><td>2.1</td><td>ADR 3개</td><td>Flutter, 간소화 구조, 로컬 저장</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>ADR-0001~0003</td></tr>
+            <tr><td>2.2</td><td>앱 구조</td><td>Screen, Controller, Domain, Repository</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>architecture.md</td></tr>
+            <tr class="group"><td>3</td><td colspan="4">핵심 기능</td></tr>
+            <tr><td>3.1</td><td>기록 흐름</td><td>기분, 키워드, 만족도, 한 줄 생성</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>RecordScreen</td></tr>
+            <tr><td>3.2</td><td>저장·결과 제어</td><td>수정, 다시 생성, 삭제, 로컬 복구</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>Controller / Repository</td></tr>
+            <tr><td>3.3</td><td>감정잔디·통계</td><td>과거 기록, 기간별 통계, 생활 패턴</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>Screens / PatternAnalysis</td></tr>
+            <tr class="group"><td>4</td><td colspan="4">품질과 발표</td></tr>
+            <tr><td>4.1</td><td>테스트</td><td>단위·통합 테스트, 정적 분석</td><td><span class="badge"><span class="dot"></span>완료</span></td><td>28 tests / testing.md</td></tr>
+            <tr><td>4.2</td><td>문서·배포</td><td>README, AGENTS, setup/deploy, Pages</td><td><span class="badge active"><span class="dot"></span>진행</span></td><td>docs / GitHub Pages</td></tr>
+            <tr><td>4.3</td><td>발표·시연</td><td>5분 발표, 30초 영상, Q&A</td><td><span class="badge planned"><span class="dot"></span>예정</span></td><td>presentation / MP4</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>Gantt 일정</h2><span class="status-note">기능 동결: 6월 15일</span></div>
+      <div class="gantt">
+        <div class="gantt-scroll">
+          <div class="gantt-head">
+            <div>작업</div><div>05/12–18</div><div>05/19–25</div><div>05/26–06/02</div><div>06/03–09</div><div>06/10–13</div><div>06/14–16</div>
+          </div>
+          <div class="gantt-row"><div class="task">기획·요구사항·WBS</div><div><span class="bar">완료</span></div><div></div><div></div><div></div><div></div><div></div></div>
+          <div class="gantt-row"><div class="task">ADR·아키텍처·Pages</div><div></div><div><span class="bar">완료</span></div><div></div><div></div><div></div><div></div></div>
+          <div class="gantt-row"><div class="task">하루톡 UX 프로토타입</div><div></div><div></div><div><span class="bar">완료</span></div><div></div><div></div><div></div></div>
+          <div class="gantt-row"><div class="task">기록·저장 핵심 기능</div><div></div><div></div><div></div><div><span class="bar feature">완료</span></div><div></div><div></div></div>
+          <div class="gantt-row"><div class="task">저장·패턴·테스트·문서</div><div></div><div></div><div></div><div></div><div><span class="bar quality">진행</span></div><div></div></div>
+          <div class="gantt-row"><div class="task">발표자료·시연·최종 평가</div><div></div><div></div><div></div><div></div><div></div><div><span class="bar exam">06/16</span></div></div>
         </div>
-        Gantt
-      </th>
-    </tr>
-  </thead>
-  <tbody id="wbsBody"></tbody>
-</table>
+      </div>
+    </section>
 
-<script>
-  const PROJ_START = new Date('2026-05-12');
-  const PROJ_END = new Date('2026-06-22');
-  const PROJ_DAYS = (PROJ_END - PROJ_START) / (1000 * 60 * 60 * 24);
+    <section>
+      <h2>개발 전략</h2>
+      <p class="story">하루톡은 긴 기록의 부담을 줄이는 사용자 경험을 먼저 설계한 뒤, 질문형 기록 흐름과 로컬 저장을 구현했다. 이후 감정잔디와 생활 패턴 분석을 연결하고, 최종 단계에서는 기능 수를 늘리기보다 테스트·문서화·배포 안정성을 높이는 데 집중했다.</p>
+    </section>
+  </main>
 
-  const rows = [
-    { wbs:'1', task:'기획 및 요구사항', lv:1, owner:'-', status:'-', start:'', finish:'', pct:'', bar:'none' },
-    { wbs:'1.1', task:'비전 / 요구사항 / MoSCoW', lv:2, owner:'윤세호', status:'Completed', start:'05-12', finish:'05-18', pct:'100', bar:'full' },
-    { wbs:'1.2', task:'WBS / 위험 / 일정 문서', lv:2, owner:'윤세호', status:'Completed', start:'05-12', finish:'05-18', pct:'100', bar:'full' },
-    { wbs:'1.3', task:'AUTHORING / BONUS', lv:2, owner:'윤세호', status:'Completed', start:'05-13', finish:'05-18', pct:'100', bar:'full' },
-
-    { wbs:'2', task:'설계 결정 및 발표 준비', lv:1, owner:'-', status:'-', start:'', finish:'', pct:'', bar:'none' },
-    { wbs:'2.1', task:'ADR 3개 작성', lv:2, owner:'윤세호', status:'Completed', start:'05-19', finish:'05-26', pct:'100', bar:'full' },
-    { wbs:'2.2', task:'중간 발표자료 작성 및 HTML 변환', lv:2, owner:'윤세호', status:'Completed', start:'05-23', finish:'05-26', pct:'100', bar:'full' },
-    { wbs:'2.3', task:'WBS/Gantt GitHub Pages 공개', lv:2, owner:'윤세호', status:'Completed', start:'05-25', finish:'05-26', pct:'100', bar:'full' },
-
-    { wbs:'3', task:'Flutter Web 데모 선행 개발', lv:1, owner:'-', status:'-', start:'', finish:'', pct:'', bar:'none' },
-    { wbs:'3.1', task:'Flutter 프로젝트 초기화', lv:2, owner:'윤세호', status:'Completed', start:'05-23', finish:'05-24', pct:'100', bar:'full' },
-    { wbs:'3.2', task:'오늘 입력 / 히스토리 / 패턴 탭', lv:2, owner:'윤세호', status:'Completed', start:'05-24', finish:'05-26', pct:'100', bar:'full' },
-    { wbs:'3.3', task:'Wave Graph 데모', lv:2, owner:'윤세호', status:'Completed', start:'05-25', finish:'05-26', pct:'100', bar:'full' },
-    { wbs:'3.4', task:'GitHub Pages 앱 데모 배포', lv:2, owner:'윤세호', status:'Completed', start:'05-25', finish:'05-26', pct:'100', bar:'full' },
-    { wbs:'3.5', task:'중간 발표', lv:2, owner:'윤세호', status:'Milestone', start:'05-26', finish:'05-26', pct:'100', bar:'milestone' },
-
-    { wbs:'4', task:'아키텍처 정리 및 리팩토링', lv:1, owner:'-', status:'-', start:'', finish:'', pct:'', bar:'none' },
-    { wbs:'4.1', task:'Presentation/Application/Domain/Data 분리', lv:2, owner:'윤세호', status:'In progress', start:'05-27', finish:'06-03', pct:'20', bar:'partial' },
-    { wbs:'4.2', task:'Riverpod 상태 관리 도입', lv:2, owner:'윤세호', status:'Not Started', start:'05-29', finish:'06-04', pct:'0', bar:'grey' },
-
-    { wbs:'5', task:'도메인 및 데이터 레이어', lv:1, owner:'-', status:'-', start:'', finish:'', pct:'', bar:'none' },
-    { wbs:'5.1', task:'RhythmEntry / Repository / UseCase', lv:2, owner:'윤세호', status:'Not Started', start:'06-03', finish:'06-06', pct:'0', bar:'grey' },
-    { wbs:'5.2', task:'Isar DB 연동 및 임시 저장 교체', lv:2, owner:'윤세호', status:'Not Started', start:'06-05', finish:'06-10', pct:'0', bar:'grey' },
-
-    { wbs:'6', task:'기능 고도화', lv:1, owner:'-', status:'-', start:'', finish:'', pct:'', bar:'none' },
-    { wbs:'6.1', task:'히스토리 조회/수정/삭제 개선', lv:2, owner:'윤세호', status:'Not Started', start:'06-09', finish:'06-13', pct:'0', bar:'grey' },
-    { wbs:'6.2', task:'패턴 힌트 및 통계 개선', lv:2, owner:'윤세호', status:'Not Started', start:'06-10', finish:'06-15', pct:'0', bar:'grey' },
-    { wbs:'6.3', task:'설정/내보내기/리마인드 선택 구현', lv:2, owner:'윤세호', status:'Not Started', start:'06-12', finish:'06-16', pct:'0', bar:'grey' },
-
-    { wbs:'7', task:'테스트 및 최종 발표 준비', lv:1, owner:'-', status:'-', start:'', finish:'', pct:'', bar:'none' },
-    { wbs:'7.1', task:'위젯 테스트 / Web 빌드 검증', lv:2, owner:'윤세호', status:'In progress', start:'05-26', finish:'06-18', pct:'30', bar:'partial' },
-    { wbs:'7.2', task:'README / setup / architecture 최신화', lv:2, owner:'윤세호', status:'In progress', start:'05-26', finish:'06-18', pct:'40', bar:'partial' },
-    { wbs:'7.3', task:'최종 발표자료 및 Q&A 로그', lv:2, owner:'윤세호', status:'Not Started', start:'06-18', finish:'06-22', pct:'0', bar:'grey' },
-    { wbs:'7.4', task:'최종 발표', lv:2, owner:'윤세호', status:'Milestone', start:'06-22', finish:'06-22', pct:'0', bar:'milestone' },
-  ];
-
-  function fmtDate(md) {
-    return md ? `2026-${md}` : '';
-  }
-
-  function parseDate(md) {
-    return md ? new Date(`2026-${md}`) : null;
-  }
-
-  function ganttHTML(row) {
-    const s = parseDate(row.start);
-    const f = parseDate(row.finish);
-    if (!s || !f || row.bar === 'none') return '<div class="gantt-track"></div>';
-
-    const startDay = (s - PROJ_START) / (1000 * 60 * 60 * 24);
-    const leftPct = (startDay / PROJ_DAYS) * 100;
-
-    if (row.bar === 'milestone') {
-      return `<div class="gantt-track"><div class="gantt-bar bar-milestone" style="left:${leftPct}%"></div></div>`;
-    }
-
-    const duration = (f - s) / (1000 * 60 * 60 * 24) + 1;
-    const widthPct = (duration / PROJ_DAYS) * 100;
-    let cls = 'bar-notstart';
-    if (row.bar === 'full') cls = 'bar-completed';
-    if (row.bar === 'partial') cls = 'bar-progress';
-    if (row.bar === 'grey') cls = 'bar-notstart';
-    return `<div class="gantt-track"><div class="gantt-bar ${cls}" style="left:${leftPct}%;width:${widthPct}%"></div></div>`;
-  }
-
-  function statusClass(status) {
-    if (status === 'Completed') return 'st-completed';
-    if (status === 'In progress') return 'st-progress';
-    if (status === 'Not Started') return 'st-notstart';
-    if (status === 'Milestone') return 'st-milestone';
-    return '';
-  }
-
-  const tbody = document.getElementById('wbsBody');
-  rows.forEach((row) => {
-    const tr = document.createElement('tr');
-    tr.className = `lv${row.lv}`;
-    if (row.status === 'Milestone') tr.classList.add('st-milestone');
-    tr.innerHTML = `
-      <td class="col-wbs">${row.wbs}</td>
-      <td class="col-task">${row.task}</td>
-      <td class="col-owner">${row.owner}</td>
-      <td class="col-status ${statusClass(row.status)}">${row.status}</td>
-      <td class="col-start">${fmtDate(row.start)}</td>
-      <td class="col-finish">${fmtDate(row.finish)}</td>
-      <td class="col-pct">${row.pct}</td>
-      <td class="col-gantt gantt-cell">${ganttHTML(row)}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-</script>
+  <footer>하루톡 · 윤세호 · 마지막 갱신 2026-06-13</footer>
 </body>
 </html>

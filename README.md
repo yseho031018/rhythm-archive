@@ -1,80 +1,96 @@
 # 하루톡
 
-> 세 가지 질문에 답하면 AI가 오늘을 한 줄로 정리해주는 인터뷰 다이어리
+> 세 가지 질문에 답하면 오늘을 한 줄로 정리하고, 쌓인 기록에서 생활 패턴을 발견하는 감정 다이어리
 
-하루톡은 긴 일기를 직접 쓰기 어려운 사용자를 위한 Flutter 기반 모바일 앱 프로토타입이다. 사용자는 오늘의 기분, 키워드, 만족도만 선택하고 AI가 생성한 오늘의 한 줄을 확인할 수 있다.
+하루톡은 긴 일기를 직접 쓰는 부담을 줄이기 위해 만든 Flutter 앱이다. 사용자는 기분, 함께한 일, 만족도만 선택한다. 앱은 선택한 사실만 사용해 한 줄을 만들고, 감정잔디와 생활 패턴으로 기록을 다시 보여준다.
 
-## 현재 프로토타입 기능
+## 비전과 문제 정의
 
-- 기분, 오늘의 키워드, 하루 만족도 선택
-- 토리와 질문을 하나씩 진행하는 순차형 대화 UI
-- 진행률, 건너뛰기, 키워드 직접 입력
-- 더미 AI 한 줄 기록 생성
-- AI 한 줄 다시 생성 및 직접 수정
-- SharedPreferences 기반 로컬 저장과 기록 삭제
-- 생성된 한 줄 기록 목록 및 상세 조회
-- 날짜별 기분을 보여주는 감정잔디
-- 이번 달 감정 통계 및 연속 기록 일수
-- 모바일 중심 반응형 UI
+- **비전:** 매일 긴 글을 쓰지 않아도 자신의 하루와 감정 흐름을 돌아볼 수 있게 한다.
+- **문제:** 기존 일기는 꾸준히 긴 글을 작성해야 해서 기록이 쉽게 끊기고, 기록이 쌓여도 생활과 감정의 관계를 찾기 어렵다.
+- **해결:** 토리와 세 단계로 대화하듯 기록하고, 한 줄 요약과 누적 패턴으로 결과를 돌려준다.
 
-## 실행
+## 현재 구현
+
+- 기분 → 키워드 → 만족도 순차 기록
+- 규칙 기반 AI 한 줄 생성, 다시 생성, 직접 수정
+- 사용자 키워드 추가·삭제·재사용
+- 과거 날짜 기록과 하루 한 개 기록 규칙
+- SharedPreferences 기반 로컬 저장
+- 한줄 목록·상세·삭제
+- 월별 감정잔디와 날짜별 기록 연결
+- 주간·월간·연간 감정 통계
+- 키워드별 만족도와 대표 기분을 계산하는 생활 패턴 분석
+- 라이트·다크 테마와 토리 상태별 이미지
+
+## 기술 스택
+
+| 구분 | 적용 기술 | 역할 |
+|---|---|---|
+| UI | Flutter, Material 3 | 모바일 중심 화면과 상호작용 |
+| 상태 | ChangeNotifier | 화면 상태와 기록 흐름 관리 |
+| 저장 | SharedPreferences | 오프라인 로컬 기록·키워드 저장 |
+| 구조 | Repository Pattern, 간소화된 Layered Architecture | UI, 상태, 저장 책임 분리 |
+| 품질 | flutter_lints, flutter_test | 정적 분석, 단위·통합 위젯 테스트 |
+| 배포 | Flutter Web, GitHub Pages | URL 기반 시연 및 제출 |
+
+현재 프로토타입의 “AI 한 줄”은 외부 API가 아니라 설명 가능한 규칙 기반 생성기다. 실제 AI 서버 연결은 향후 확장 항목이며, 발표에서는 구현 여부를 정확히 구분해 설명한다.
+
+## 빠른 실행
 
 ```powershell
 flutter pub get
 flutter run -d chrome
 ```
 
-자세한 실행 절차는 [docs/setup.md](docs/setup.md)를 참고한다.
+검증:
 
-## 문서
+```powershell
+flutter analyze
+flutter test
+flutter build web --release --base-href "/rhythm-archive/"
+```
 
-- [Vision](.planning/00-vision.md)
-- [Requirements](.planning/01-requirements.md)
+## 프로젝트 구조
+
+```text
+lib/
+  main.dart
+  prototype/
+    screens/                       # 기록, 한줄, 감정잔디, 통계 화면
+    widgets/                       # 공통 UI, 테마, 토리
+    diary_controller.dart          # 기록 흐름과 상태
+    diary_entry.dart               # 기록 모델
+    diary_repository.dart          # 저장소 인터페이스
+    shared_preferences_diary_repository.dart
+    pattern_analysis.dart          # 생활 패턴 계산
+test/                              # 단위·통합 위젯 테스트
+docs/                              # setup, architecture, deploy, testing
+.planning/                         # 비전, 요구사항, WBS, 일정, 위험, ADR
+AGENTS.md                          # AI Agent 작업 규칙과 암묵지
+```
+
+## 문서와 평가 증빙
+
+- [비전과 문제 정의](.planning/00-vision.md)
+- [요구사항](.planning/01-requirements.md)
 - [WBS](.planning/02-wbs.md)
-- [Risk](.planning/03-risk.md)
-- [Schedule](.planning/04-schedule.md)
-- [Final Week Plan](.planning/05-final-week-plan.md)
-- [Today Plan — 2026-06-09](.planning/06-today-2026-06-09.md)
-- [Today Plan — 2026-06-10](.planning/07-today-2026-06-10.md)
-- [Architecture](docs/architecture.md)
-- [Setup](docs/setup.md)
-- [Interim Presentation](docs/presentation/interim.md)
+- [최종 주간 계획](.planning/05-final-week-plan.md)
+- [아키텍처](docs/architecture.md)
+- [개발 환경 설정](docs/setup.md)
+- [빌드와 배포](docs/deploy.md)
+- [테스트 결과](docs/testing.md)
+- [최종 평가 체크리스트](docs/final-evaluation-checklist.md)
+- [AI Agent 운영 가이드](AGENTS.md)
+- [ADR 목록](.planning/decisions/)
 
-## ADR
+## 공개 URL
 
-- `.planning/decisions/ADR-0001 — mobile-framework.md`
-- `.planning/decisions/ADR-0002 — Layered Architecture + Domain.md`
-- `.planning/decisions/ADR-0003 — local-first-database.md`
+- 앱 데모: <https://yseho031018.github.io/rhythm-archive/>
+- 발표자료: <https://yseho031018.github.io/rhythm-archive/presentation.html>
+- WBS/Gantt: <https://yseho031018.github.io/rhythm-archive/wbs-gantt.html>
+- GitHub: <https://github.com/yseho031018/rhythm-archive>
 
-## GitHub Pages
+## 설치 및 배포 요약
 
-앱 데모:
-
-```text
-https://yseho031018.github.io/rhythm-archive/
-```
-
-중간 발표자료:
-
-```text
-https://yseho031018.github.io/rhythm-archive/presentation.html
-```
-
-WBS/Gantt 페이지:
-
-```text
-https://yseho031018.github.io/rhythm-archive/wbs-gantt.html
-```
-
-## 개발 메모
-
-현재 프로토타입은 실제 AI API 없이 로컬 상태와 더미 데이터로 동작한다. 기존 Rhythm 데모 코드는 제거했고, 앱을 선택형 AI 인터뷰 다이어리 프로토타입(`lib/prototype/`)으로 전환했다.
-
-현재 토리 마스코트는 Flutter 위젯으로 제작한 플레이스홀더이며, 이후 표정별 이미지 에셋으로 교체할 수 있도록 별도 컴포넌트로 분리되어 있다.
-
-## 향후 개발 계획
-
-- 사용자 키워드 추가와 과거 날짜 기록
-- 감정과 활동의 관계를 보여주는 생활 패턴 분석
-- 별도 컴퓨터의 로컬 AI 모델을 이용한 실제 한 줄 생성
-- AI 서버 연결 실패 시 규칙 기반 생성 유지
+자세한 설치 과정은 [docs/setup.md](docs/setup.md), 빌드·배포 개념과 절차는 [docs/deploy.md](docs/deploy.md)를 참고한다. `master` push 시 [GitHub Pages workflow](.github/workflows/deploy-pages.yml)가 정적 분석, 테스트, Web Release 빌드 후 앱·발표자료·WBS를 함께 배포한다.

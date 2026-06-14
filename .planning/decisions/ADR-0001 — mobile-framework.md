@@ -1,50 +1,33 @@
-# ADR-0001 — Flutter를 모바일 프레임워크로 선택
+# ADR-0001 — Flutter를 앱 프레임워크로 선택
 
-**상태**: Accepted  
-**작성일**: 2026-05-19  
-**작성자**: 포도
+- 상태: 채택
+- 결정일: 2026-05-12
+- 최종 검토일: 2026-06-13
 
-## 배경
-Rhythm은 사용자의 감정·활동을 기록하고 Wave Graph Canvas로 시각화하는 감성 다이어리 앱이다.  
-수업 프로젝트가 모바일 앱을 우선하고 있으며, iOS와 Android 모두 지원해야 하고, 1인 개발이기 때문에 개발 속도와 UI 구현 편의성이 중요하다.
+## 상황
+
+하루톡은 모바일 중심 UI, 토리 캐릭터, 순차 질문, 감정잔디, 통계 화면을 하나의 코드베이스로 만들고 발표에서는 URL로 즉시 실행해야 한다.
 
 ## 결정
-Rhythm의 모바일 프레임워크로 **Flutter**를 선택한다.  
-- 상태 관리: **Riverpod**  
-- 로컬 DB: **Isar**  
-- 아키텍처: Clean Architecture (Presentation / Domain / Data)
 
-## 대안 비교
-
-| 대안                    | 장점                          | 단점 / 제외 이유                          | 적합도 |
-|-------------------------|-------------------------------|-------------------------------------------|--------|
-| Android Native (Kotlin) | 최고 성능, 네이티브 기능 활용 | iOS 별도 개발 필요                        | ★★☆☆☆ |
-| iOS Native (Swift)      | Apple 디자인 완벽 구현, 최고 성능 | Android 별도 개발 필요, macOS 필수       | ★★☆☆☆ |
-| React Native            | JS/TS 생태계                  | 복잡한 커스텀 UI(Wave Graph) 구현 어려움     | ★★★☆☆ |
+Flutter와 Material 3를 사용한다.
 
 ## 선택 이유
 
-- **Rhythm의 핵심 기능인 Wave Graph Canvas 구현에 최적**  
-  Flutter는 `CustomPainter`와 **Animation 시스템(AnimationController, Tween, CurvedAnimation)** 이 프레임워크에 **내장**되어 있어, 여러 파형이 부드럽게 움직이는 복합 시각 애니메이션을 비교적 쉽게 구현할 수 있다.
+- 모바일 중심 UI와 반응형 화면을 빠르게 구현할 수 있다.
+- Web Release 빌드로 GitHub Pages 시연 URL을 제공할 수 있다.
+- Hot Reload로 화면 디자인을 반복 개선하기 좋다.
+- Dart 코드 하나로 UI, 로컬 저장, 테스트를 함께 관리할 수 있다.
 
-- 하나의 코드베이스로 iOS·Android를 동시에 지원 → 1인 프로젝트 시간 효율 극대화.
+## 대안
 
-- Hot Reload로 빠른 반복 개발 가능 (감정 입력 → Wave Graph Canvas 즉시 반영 테스트).
+| 대안 | 장점 | 제외 이유 |
+|---|---|---|
+| Android Kotlin | Android 네이티브 기능과 성능 | 발표용 Web URL을 별도 구현해야 함 |
+| React Web | Web 배포가 간단함 | 모바일 앱 확장성과 수업 목표에 덜 맞음 |
 
-- Riverpod, Isar과의 궁합이 매우 뛰어나며, Clean Architecture와도 잘 어울린다.
+## 결과와 시행착오
 
-## 위험 및 대응
-
-- **Dart/Flutter 학습 부담**  
-  → AI Agent와 함께 Pair Programming 방식으로 개발하면서 핵심 개념(CustomPainter, Riverpod, Clean Architecture)을 위주로 이해한다. 초기에는 CRUD + 기본 Wave Graph 구현에 집중.
-
-- **Wave Graph Canvas 성능 이슈**  
-  → CustomPainter 최적화 + 필요 시 Flame 엔진 도입 검토. 실제 구현하면서 프레임률을 지속적으로 모니터링한다.
-
-- **AI 의존성**  
-  → AI가 생성한 코드는 반드시 직접 이해하고, 발표 시 설명할 수 있도록 문서화한다.
-
-
----
-
-*참조: [Vision Document](../vision.md)*
+- Flutter Web로 발표와 앱 시연을 같은 저장소에서 관리할 수 있었다.
+- 모바일 최대 폭을 560px로 제한해 넓은 PC 화면에서도 앱 형태를 유지했다.
+- 이미지 에셋과 Web base href를 정확히 관리해야 하는 배포 학습 비용이 있었다.

@@ -6,9 +6,13 @@ import 'diary_entry.dart';
 import 'diary_repository.dart';
 
 class SharedPreferencesDiaryRepository implements DiaryRepository {
-  SharedPreferencesDiaryRepository({this.storageKey = 'harutalk_entries_v1'});
+  SharedPreferencesDiaryRepository({
+    this.storageKey = 'harutalk_entries_v1',
+    this.keywordKey = 'harutalk_keywords_v1',
+  });
 
   final String storageKey;
+  final String keywordKey;
 
   @override
   Future<List<DiaryEntry>?> loadAll() async {
@@ -31,5 +35,17 @@ class SharedPreferencesDiaryRepository implements DiaryRepository {
       storageKey,
       entries.map((entry) => jsonEncode(entry.toJson())).toList(),
     );
+  }
+
+  @override
+  Future<List<String>?> loadKeywords() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(keywordKey);
+  }
+
+  @override
+  Future<void> saveKeywords(List<String> keywords) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(keywordKey, keywords);
   }
 }

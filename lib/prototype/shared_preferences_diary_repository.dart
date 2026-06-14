@@ -48,4 +48,13 @@ class SharedPreferencesDiaryRepository implements DiaryRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(keywordKey, keywords);
   }
+
+  @override
+  Future<void> replaceAll(
+    List<DiaryEntry> entries,
+    List<String> keywords,
+  ) async {
+    await saveAll(entries);
+    await saveKeywords(keywords);
+  }
 }

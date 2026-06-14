@@ -11,7 +11,7 @@ flowchart LR
   APP["Application\nDiaryController"]
   DOMAIN["Domain\nDiaryEntry / pattern_analysis"]
   REPO["Repository Interface\nDiaryRepository"]
-  DATA["Data\nSharedPreferencesDiaryRepository"]
+  DATA["Data\nDriftDiaryRepository / SQLite"]
 
   USER --> UI
   UI --> APP
@@ -30,6 +30,11 @@ lib/
     diary_controller.dart
     diary_entry.dart
     diary_repository.dart
+    backup_file_service.dart
+    database/
+      harutalk_database.dart
+    drift_diary_repository.dart
+    migrating_diary_repository.dart
     shared_preferences_diary_repository.dart
     pattern_analysis.dart
     screens/
@@ -71,7 +76,10 @@ lib/
 ### Data
 
 - `DiaryRepository`: 저장 기능의 인터페이스
-- `SharedPreferencesDiaryRepository`: 실제 로컬 저장 구현
+- `DriftDiaryRepository`: Drift/SQLite를 사용하는 실제 로컬 DB 구현
+- `MigratingDiaryRepository`: 기존 SharedPreferences 기록을 최초 한 번 Drift로 이전
+- `SharedPreferencesDiaryRepository`: 이전 데이터 읽기를 위해 유지하는 구현
+- `BackupFileService`: JSON 백업 파일을 저장하거나 사용자가 선택한 파일을 읽음
 - Controller는 구체적인 저장 기술 대신 Repository 인터페이스에 의존한다.
 
 ## 데이터 흐름
@@ -83,7 +91,7 @@ sequenceDiagram
   participant Controller as DiaryController
   participant Rule as Summary/Pattern Rule
   participant Repo as DiaryRepository
-  participant Storage as SharedPreferences
+  participant Storage as Drift / SQLite
 
   User->>Screen: 기분·키워드·만족도 선택
   Screen->>Controller: 선택값 전달
@@ -92,20 +100,22 @@ sequenceDiagram
   User->>Screen: 저장
   Screen->>Controller: saveEntry
   Controller->>Repo: saveAll
-  Repo->>Storage: JSON 문자열 목록 저장
+  Repo->>Storage: 트랜잭션으로 레코드 저장
   Storage-->>Screen: 저장 후 화면 갱신
 ```
 
 ## Repository를 사용한 이유
 
-테스트에서는 브라우저 저장소를 직접 사용하지 않고 `MemoryDiaryRepository`를 주입한다. 이 덕분에 저장·수정·삭제 규칙을 빠르고 결정적으로 검증할 수 있다. 향후 SharedPreferences를 다른 로컬 데이터베이스로 바꿔도 Controller 변경을 줄일 수 있다.
+테스트에서는 브라우저 저장소를 직접 사용하지 않고 `MemoryDiaryRepository`를 주입한다. Drift 저장소 자체는 메모리 SQLite로 별도 검증한다. Repository 경계 덕분에 SharedPreferences에서 Drift로 교체할 때 Controller와 화면은 거의 바꾸지 않았다.
+
+백업 복원과 전체 삭제는 `DiaryRepository.replaceAll`을 사용한다. Drift 구현은 기록과 사용자 키워드를 한 트랜잭션에서 교체하며, 파일 선택과 다운로드는 `BackupFileService`로 분리했다.
 
 ## 현재 구조와 향후 구조 구분
 
 | 항목 | 현재 구현 | 향후 후보 |
 |---|---|---|
 | 상태 관리 | ChangeNotifier | 기능이 커지면 Riverpod 검토 |
-| 로컬 저장 | SharedPreferences | 검색량이 늘면 Isar/SQLite 검토 |
+| 로컬 저장 | Drift/SQLite | 여러 기기 동기화가 필요하면 서버 저장 검토 |
 | 한 줄 생성 | 규칙 기반 | 로컬 AI 서버 연결 |
 | 배포 | Flutter Web + GitHub Pages | Android APK |
 
@@ -115,4 +125,4 @@ sequenceDiagram
 
 - ADR-0001: Flutter 선택
 - ADR-0002: Repository Pattern 기반 간소화 구조
-- ADR-0003: SharedPreferences 로컬 우선 저장
+- ADR-0003: Drift/SQLite 로컬 우선 저장

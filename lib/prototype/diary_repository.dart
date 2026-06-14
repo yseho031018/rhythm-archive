@@ -11,4 +11,14 @@ abstract class DiaryRepository {
 
   /// 사용자 키워드 목록을 저장한다. 기본 구현은 아무것도 하지 않는다.
   Future<void> saveKeywords(List<String> keywords) async {}
+
+  /// 기록과 사용자 키워드를 하나의 백업 상태로 교체한다.
+  /// DB 구현체는 이 메서드를 트랜잭션으로 재정의할 수 있다.
+  Future<void> replaceAll(
+    List<DiaryEntry> entries,
+    List<String> keywords,
+  ) async {
+    await saveAll(entries);
+    await saveKeywords(keywords);
+  }
 }

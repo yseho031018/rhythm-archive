@@ -18,6 +18,8 @@ flutter build web --release --base-href "/rhythm-archive/"
 
 빌드 결과는 `build/web/`에 생성된다.
 
+Drift Web 실행에 필요한 `sqlite3.wasm`과 `drift_worker.js`도 `web/`에서 빌드 결과로 복사된다.
+
 ## 로컬 빌드 확인
 
 ```powershell
@@ -61,6 +63,7 @@ checkout
 
 - URL이 404이면 GitHub Pages의 branch와 folder 설정을 확인한다.
 - 아이콘이나 이미지가 보이지 않으면 base href와 에셋 경로를 확인한다.
+- DB 초기화가 실패하면 `sqlite3.wasm`, `drift_worker.js`의 배포 여부와 WASM MIME 타입을 확인한다.
 - 브라우저에 옛 화면이 보이면 강력 새로고침 또는 캐시 삭제 후 확인한다.
 - 공개 루트가 README 페이지로 보이면 Pages Source가 `GitHub Actions`인지 확인한다.
 - 발표 당일 Pages가 느리면 로컬 서버와 30초 MP4를 백업으로 사용한다.

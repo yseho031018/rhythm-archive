@@ -1326,14 +1326,14 @@
             <article class="layer">
               <span class="layer-badge">Data</span>
               <h3>Repository</h3>
-              <p>인터페이스<br>SharedPreferences<br>교체 가능</p>
+              <p>인터페이스<br>Drift · SQLite<br>자동 이전</p>
             </article>
           </div>
           <aside class="tech-stack">
             <div class="tech-item">Flutter · Material 3</div>
             <div class="tech-item">ChangeNotifier</div>
             <div class="tech-item">Repository Pattern</div>
-            <div class="tech-item">SharedPreferences</div>
+            <div class="tech-item">Drift · SQLite · WASM</div>
             <div class="tech-item">GitHub Pages</div>
           </aside>
         </div>
@@ -1371,7 +1371,7 @@
             </article>
             <article class="adr-card">
               <div class="adr-number">ADR<br>03</div>
-              <div><h3>SharedPreferences 우선</h3><p>Isar와 실제 AI 연결보다 오프라인 안정성과 완성도를 우선</p></div>
+              <div><h3>Drift/SQLite 로컬 DB</h3><p>Repository 경계를 유지하며 기존 기록까지 자동 이전</p></div>
             </article>
           </div>
         </div>
@@ -1390,7 +1390,7 @@
         </div>
         <div class="quality-layout">
           <div class="metric-grid">
-            <article class="metric-card"><strong>28</strong><span>단위 + 통합 위젯 테스트 통과</span></article>
+            <article class="metric-card"><strong>39</strong><span>단위 + 통합 위젯 테스트 통과</span></article>
             <article class="metric-card"><strong>0</strong><span>flutter analyze 이슈</span></article>
             <article class="metric-card"><strong>Web</strong><span>Release 빌드 성공</span></article>
             <article class="metric-card"><strong>Local</strong><span>핵심 흐름 오프라인 동작</span></article>
@@ -1526,7 +1526,7 @@
         <div class="appendix-grid">
           <article class="appendix-card"><h3>ADR-0001 · Flutter</h3><p>모바일 중심 UI와 GitHub Pages Web 데모를 하나의 Dart 코드베이스에서 관리합니다.</p></article>
           <article class="appendix-card"><h3>ADR-0002 · 구조</h3><p>ChangeNotifier와 Repository Pattern으로 현재 규모에 맞는 책임 분리와 테스트 가능성을 확보합니다.</p></article>
-          <article class="appendix-card"><h3>ADR-0003 · 저장</h3><p>SharedPreferences로 안정적인 오프라인 MVP를 만들고, 데이터가 커질 때 Isar·SQLite로 교체합니다.</p></article>
+          <article class="appendix-card"><h3>ADR-0003 · 저장</h3><p>Drift/SQLite로 오프라인 기록을 구조화하고, 기존 SharedPreferences 기록은 최초 실행에 자동 이전합니다.</p></article>
         </div>
       </div>
     </section>

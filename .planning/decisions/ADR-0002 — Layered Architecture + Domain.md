@@ -10,7 +10,7 @@
 
 ## 결정
 
-화면, `DiaryController`, 핵심 모델·분석 로직, `DiaryRepository` 인터페이스, SharedPreferences 구현체로 책임을 분리한다. 상태 관리는 현재 규모에 맞게 `ChangeNotifier`를 사용한다.
+화면, `DiaryController`, 핵심 모델·분석 로직, `DiaryRepository` 인터페이스, Drift/SQLite 구현체로 책임을 분리한다. 상태 관리는 현재 규모에 맞게 `ChangeNotifier`를 사용한다.
 
 ## 선택 이유
 

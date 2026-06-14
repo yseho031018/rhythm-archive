@@ -14,12 +14,12 @@
 - 앱 이름: 하루톡
 - 실제 프레임워크: Flutter / Dart
 - 실제 상태 관리: `ChangeNotifier`
-- 실제 저장소: `SharedPreferences`
+- 실제 저장소: `Drift` + `SQLite` (`WASM` Web 지원)
 - 실제 구조: Repository Pattern을 사용한 간소화된 Layered Architecture
 - 실제 한 줄 생성: 규칙 기반 생성기
 - 실제 배포: Flutter Web + GitHub Pages
 
-문서와 발표에서 Riverpod, Isar, 외부 AI API를 “현재 구현”이라고 말하지 않는다. 이들은 검토했던 대안 또는 향후 확장 후보다.
+문서와 발표에서 Riverpod, Isar, 외부 AI API를 “현재 구현”이라고 말하지 않는다. 이들은 검토했던 대안 또는 향후 확장 후보다. `SharedPreferences`는 기존 사용자 데이터의 최초 이전을 위해서만 유지한다.
 
 ## 3. 디렉토리 규칙
 
@@ -28,7 +28,9 @@
 - `diary_controller.dart`: 화면 상태와 Use Case 흐름
 - `diary_entry.dart`: 핵심 기록 모델
 - `diary_repository.dart`: 저장소 추상화
-- `shared_preferences_diary_repository.dart`: 로컬 저장 구현
+- `database/harutalk_database.dart`: Drift 테이블과 SQLite 연결
+- `drift_diary_repository.dart`: 현재 로컬 DB 저장 구현
+- `migrating_diary_repository.dart`: 기존 SharedPreferences 기록 자동 이전
 - `pattern_analysis.dart`: UI와 분리된 순수 분석 로직
 - `test/`: 단위 테스트와 사용자 흐름 통합 위젯 테스트
 - `.planning/decisions/`: 기술 결정과 시행착오를 기록하는 ADR
@@ -59,6 +61,8 @@ flutter build web --release --base-href "/rhythm-archive/"
 - 기록 생성 전에는 기분과 키워드가 반드시 있어야 한다.
 - 패턴 분석은 표본이 부족할 때 관계를 단정하지 않는다.
 - 저장 실패가 발생해도 화면 상태를 잃지 않고 오류를 알린다.
+- 백업 복원과 전체 삭제는 기록·사용자 키워드를 함께 교체한다.
+- 잘못된 백업은 현재 데이터를 변경하지 않는다.
 - 외부 AI가 실패해도 규칙 기반 한 줄 생성으로 핵심 흐름을 유지한다.
 - 화면은 최대 폭 560px의 모바일 경험을 기준으로 한다.
 - 접근성과 다크 모드를 깨뜨리지 않는다.
@@ -76,4 +80,3 @@ flutter build web --release --base-href "/rhythm-archive/"
 - 시각 자료에는 결론만 두고, 원인과 과정은 대사로 설명해야 따라 읽는 발표가 되지 않는다.
 - “AI”라는 이름보다 실패 시 대체 흐름과 사용자가 수정할 권리를 설명하는 것이 중요하다.
 - 계획과 실제 구현이 달라졌다면 숨기지 않고 ADR에 변경 이유를 기록한다.
-

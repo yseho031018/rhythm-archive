@@ -338,5 +338,126 @@ void main() {
       expect(controller.entryById(entry.id), isNotNull);
       expect(controller.storageError, isNotNull);
     });
+
+    test('백업 JSON은 기록과 사용자 키워드를 다른 저장소에 복원한다', () async {
+      final source = DiaryController(
+        repository: MemoryDiaryRepository([]),
+        generationDelay: Duration.zero,
+      );
+      await source.load();
+      await source.addCustomKeyword('산책');
+      await source.saveEntry(
+        DiaryEntry(
+          id: 'backup-entry',
+          date: DateTime(2026, 6, 14),
+          mood: DiaryMood.happy,
+          keywords: const ['산책'],
+          satisfaction: 5,
+          summary: '산책하며 기분을 환기한 하루',
+        ),
+      );
+
+      final backup = source.createBackupJson(
+        exportedAt: DateTime(2026, 6, 14, 15),
+      );
+      final targetRepository = MemoryDiaryRepository([]);
+      final target = DiaryController(
+        repository: targetRepository,
+        generationDelay: Duration.zero,
+      );
+      await target.load();
+
+      final result = await target.restoreBackupJson(backup);
+
+      expect(result.success, isTrue);
+      expect(result.restoredCount, 1);
+      expect(target.entries.single.id, 'backup-entry');
+      expect(target.customKeywords, ['산책']);
+      expect(targetRepository.stored!.single.summary, '산책하며 기분을 환기한 하루');
+      expect(targetRepository.storedKeywords, ['산책']);
+    });
+
+    test('잘못된 백업은 현재 기록을 변경하지 않는다', () async {
+      final repository = MemoryDiaryRepository([
+        DiaryEntry(
+          id: 'existing',
+          date: DateTime(2026, 6, 14),
+          mood: DiaryMood.normal,
+          keywords: const ['공부'],
+          satisfaction: 3,
+          summary: '기존 기록',
+        ),
+      ]);
+      final controller = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+
+      final result = await controller.restoreBackupJson('{"app":"other"}');
+
+      expect(result.success, isFalse);
+      expect(controller.entries.single.id, 'existing');
+      expect(repository.stored!.single.id, 'existing');
+    });
+
+    test('형식이 깨진 기록이 포함된 백업도 현재 기록을 변경하지 않는다', () async {
+      final repository = MemoryDiaryRepository([
+        DiaryEntry(
+          id: 'existing',
+          date: DateTime(2026, 6, 14),
+          mood: DiaryMood.normal,
+          keywords: const ['공부'],
+          satisfaction: 3,
+          summary: '기존 기록',
+        ),
+      ]);
+      final controller = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+
+      final result = await controller.restoreBackupJson('''
+        {
+          "app": "harutalk",
+          "version": 1,
+          "entries": [{"id": 123}],
+          "customKeywords": []
+        }
+      ''');
+
+      expect(result.success, isFalse);
+      expect(result.message, '올바른 하루톡 백업 파일이 아니에요.');
+      expect(controller.entries.single.id, 'existing');
+      expect(repository.stored!.single.id, 'existing');
+      expect(controller.storageError, isNull);
+    });
+
+    test('전체 데이터 삭제는 기록과 사용자 키워드를 함께 비운다', () async {
+      final repository = MemoryDiaryRepository([
+        DiaryEntry(
+          id: 'delete-me',
+          date: DateTime(2026, 6, 14),
+          mood: DiaryMood.tired,
+          keywords: const ['과제'],
+          satisfaction: 2,
+          summary: '삭제할 기록',
+        ),
+      ])..storedKeywords = ['발표'];
+      final controller = DiaryController(
+        repository: repository,
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+
+      final cleared = await controller.clearAllData();
+
+      expect(cleared, isTrue);
+      expect(controller.entries, isEmpty);
+      expect(controller.customKeywords, isEmpty);
+      expect(repository.stored, isEmpty);
+      expect(repository.storedKeywords, isEmpty);
+    });
   });
 }

@@ -11,7 +11,7 @@
 | 2.2 | 앱 구조 | Screen, Controller, Domain, Repository 분리 | 완료 | `docs/architecture.md` |
 | 3.1 | 기록 흐름 | 기분, 키워드, 만족도, 한 줄 생성 | 완료 | `record_screen.dart` |
 | 3.2 | 결과 제어 | 다시 생성, 수정, 저장, 삭제 | 완료 | `summary_editor.dart`, Controller |
-| 3.3 | 로컬 저장 | 기록·사용자 키워드 저장과 복구 | 완료 | SharedPreferences Repository |
+| 3.3 | 로컬 저장 | Drift/SQLite 저장, 자동 이전, JSON 백업·복원 | 완료 | Drift Repository / BackupFileService |
 | 3.4 | 과거 기록 | 날짜 선택과 하루 한 개 기록 | 완료 | 감정잔디, Controller |
 | 4.1 | 기록 조회 | 한줄 목록과 상세 | 완료 | `diary_screen.dart` |
 | 4.2 | 감정잔디 | 월 이동, 날짜별 기분, 빈 날짜 기록 | 완료 | `mood_grass_screen.dart` |

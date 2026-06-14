@@ -16,7 +16,8 @@
 - 규칙 기반 AI 한 줄 생성, 다시 생성, 직접 수정
 - 사용자 키워드 추가·삭제·재사용
 - 과거 날짜 기록과 하루 한 개 기록 규칙
-- SharedPreferences 기반 로컬 저장
+- Drift/SQLite 기반 오프라인 로컬 DB와 기존 기록 자동 이전
+- JSON 백업 저장·복원과 전체 데이터 삭제
 - 한줄 목록·상세·삭제
 - 월별 감정잔디와 날짜별 기록 연결
 - 주간·월간·연간 감정 통계
@@ -29,7 +30,8 @@
 |---|---|---|
 | UI | Flutter, Material 3 | 모바일 중심 화면과 상호작용 |
 | 상태 | ChangeNotifier | 화면 상태와 기록 흐름 관리 |
-| 저장 | SharedPreferences | 오프라인 로컬 기록·키워드 저장 |
+| 저장 | Drift, SQLite, WebAssembly | 오프라인 기록·키워드 저장, 트랜잭션 |
+| 파일 | file_picker | JSON 백업 저장·복원 |
 | 구조 | Repository Pattern, 간소화된 Layered Architecture | UI, 상태, 저장 책임 분리 |
 | 품질 | flutter_lints, flutter_test | 정적 분석, 단위·통합 위젯 테스트 |
 | 배포 | Flutter Web, GitHub Pages | URL 기반 시연 및 제출 |
@@ -60,9 +62,13 @@ lib/
     screens/                       # 기록, 한줄, 감정잔디, 통계 화면
     widgets/                       # 공통 UI, 테마, 토리
     diary_controller.dart          # 기록 흐름과 상태
+    backup_file_service.dart       # JSON 백업 파일 저장·선택
     diary_entry.dart               # 기록 모델
     diary_repository.dart          # 저장소 인터페이스
-    shared_preferences_diary_repository.dart
+    database/harutalk_database.dart        # Drift 스키마와 SQLite 연결
+    drift_diary_repository.dart            # 현재 로컬 DB 저장 구현
+    migrating_diary_repository.dart        # 기존 SharedPreferences 자동 이전
+    shared_preferences_diary_repository.dart # 이전 데이터 읽기
     pattern_analysis.dart          # 생활 패턴 계산
 test/                              # 단위·통합 위젯 테스트
 docs/                              # setup, architecture, deploy, testing

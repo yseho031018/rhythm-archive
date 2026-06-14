@@ -47,7 +47,7 @@ DiaryController
    ↓
 DiaryEntry / PatternAnalysis
    ↓
-DiaryRepository → SharedPreferences
+DiaryRepository → Drift/SQLite
 ```
 
 말할 내용: 각 레이어 책임, Repository 테스트 장점
@@ -56,14 +56,14 @@ DiaryRepository → SharedPreferences
 
 - 생성 결과 → 다시 생성·직접 수정으로 사용자 제어권 제공
 - 패턴 분석 → 최소 표본 기준으로 섣부른 단정 방지
-- Isar·Riverpod 계획 → 설명 가능한 단순 구조 선택
+- SharedPreferences → Repository 경계를 이용해 Drift로 교체
 
 말할 내용: 신뢰성·범위·안정성을 위한 구현 판단
 
 ## 7. 품질과 배포
 
 - Analyze: 0 issues
-- Tests: 28 passed
+- Tests: 39 passed
 - Unit + Integration Widget
 - Web Release + GitHub Pages
 - README / AGENTS / setup / deploy / testing
@@ -75,7 +75,7 @@ DiaryRepository → SharedPreferences
 - 매일 30초 기록
 - 감정과 생활의 관계 회고
 - 실제 로컬 AI 서버 연결
-- 더 적합한 로컬 DB 교체 가능
+- 여러 기기 동기화를 위한 서버 저장 확장
 
 말할 내용: 앱 활용 방안, 개선 의지, 마무리
 

@@ -18,4 +18,4 @@
 - `qa-prep.md`
 - `assets/rhythm-wave-preview.svg`
 
-최종 발표에서는 Flutter, ChangeNotifier, SharedPreferences, Repository Pattern, 규칙 기반 한 줄 생성이라는 실제 구현만 설명한다.
+최종 발표에서는 Flutter, ChangeNotifier, Drift/SQLite, Repository Pattern, 규칙 기반 한 줄 생성이라는 실제 구현만 설명한다.

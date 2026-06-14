@@ -189,4 +189,49 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('통계: 데이터 관리에서 전체 기록을 확인 후 삭제한다', (tester) async {
+    final controller = await _loadedController([
+      DiaryEntry(
+        id: 'data-entry',
+        date: DateTime.now(),
+        mood: DiaryMood.happy,
+        keywords: const ['친구'],
+        satisfaction: 5,
+        summary: '친구와 웃은 하루',
+      ),
+    ]);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: MyScreen(controller: controller)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('내 데이터'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Drift · SQLite · 기록 1개'), findsOneWidget);
+    expect(find.text('백업 파일 저장'), findsOneWidget);
+    expect(find.text('백업 파일 복원'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('모든 기록 삭제'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(find.text('모든 기록 삭제'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('모든 기록 삭제'));
+    await tester.pumpAndSettle();
+    expect(find.text('모든 기록을 삭제할까요?'), findsOneWidget);
+
+    await tester.tap(find.text('전체 삭제'));
+    await tester.pumpAndSettle();
+
+    expect(controller.entries, isEmpty);
+    expect(find.text('Drift · SQLite · 기록 0개'), findsOneWidget);
+  });
 }

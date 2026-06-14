@@ -1,16 +1,20 @@
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import 'database/harutalk_database.dart';
 import 'diary_entry.dart';
 import 'diary_repository.dart';
+import 'drift_diary_repository.dart';
+import 'migrating_diary_repository.dart';
 import 'shared_preferences_diary_repository.dart';
 
 class DiaryController extends ChangeNotifier {
   DiaryController({
     DiaryRepository? repository,
     this.generationDelay = const Duration(milliseconds: 950),
-  }) : _repository = repository ?? SharedPreferencesDiaryRepository();
+  }) : _repository = repository ?? _defaultRepository();
 
   final DiaryRepository _repository;
   final Duration generationDelay;
@@ -45,6 +49,76 @@ class DiaryController extends ChangeNotifier {
   }
 
   bool get canGenerate => selectedMood != null && selectedKeywords.isNotEmpty;
+
+  String createBackupJson({DateTime? exportedAt}) {
+    return const JsonEncoder.withIndent('  ').convert({
+      'app': 'harutalk',
+      'version': 1,
+      'exportedAt': (exportedAt ?? DateTime.now()).toIso8601String(),
+      'entries': _entries.map((entry) => entry.toJson()).toList(),
+      'customKeywords': [...customKeywords],
+    });
+  }
+
+  Future<BackupRestoreResult> restoreBackupJson(String raw) async {
+    late final List<DiaryEntry> restoredEntries;
+    late final List<String> restoredKeywords;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map<String, dynamic> ||
+          decoded['app'] != 'harutalk' ||
+          decoded['version'] != 1 ||
+          decoded['entries'] is! List ||
+          decoded['customKeywords'] is! List) {
+        return const BackupRestoreResult.invalid();
+      }
+
+      restoredEntries = (decoded['entries'] as List)
+          .map(
+            (item) =>
+                DiaryEntry.fromJson(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+      restoredKeywords = List<String>.from(decoded['customKeywords'] as List);
+      _validateBackup(restoredEntries, restoredKeywords);
+    } catch (_) {
+      return const BackupRestoreResult.invalid();
+    }
+
+    try {
+      await _repository.replaceAll(restoredEntries, restoredKeywords);
+      _entries
+        ..clear()
+        ..addAll(restoredEntries);
+      customKeywords
+        ..clear()
+        ..addAll(restoredKeywords);
+      storageError = null;
+      _resetSelection();
+      notifyListeners();
+      return BackupRestoreResult.success(restoredEntries.length);
+    } catch (_) {
+      storageError = '백업을 기기에 복원하지 못했어요.';
+      notifyListeners();
+      return const BackupRestoreResult.storageFailure();
+    }
+  }
+
+  Future<bool> clearAllData() async {
+    try {
+      await _repository.replaceAll(const [], const []);
+      _entries.clear();
+      customKeywords.clear();
+      storageError = null;
+      _resetSelection();
+      notifyListeners();
+      return true;
+    } catch (_) {
+      storageError = '기록을 삭제하지 못했어요.';
+      notifyListeners();
+      return false;
+    }
+  }
 
   Future<void> load() async {
     try {
@@ -262,6 +336,27 @@ class DiaryController extends ChangeNotifier {
     }
   }
 
+  void _validateBackup(
+    List<DiaryEntry> entries,
+    List<String> restoredKeywords,
+  ) {
+    final days = <String>{};
+    for (final entry in entries) {
+      final day = '${entry.date.year}-${entry.date.month}-${entry.date.day}';
+      if (!days.add(day) ||
+          entry.keywords.isEmpty ||
+          entry.satisfaction < 1 ||
+          entry.satisfaction > 5 ||
+          entry.summary.trim().isEmpty) {
+        throw const FormatException('잘못된 기록 데이터');
+      }
+    }
+    if (restoredKeywords.any((keyword) => keyword.trim().isEmpty) ||
+        restoredKeywords.toSet().length != restoredKeywords.length) {
+      throw const FormatException('잘못된 키워드 데이터');
+    }
+  }
+
   String _buildSummary(
     DiaryMood mood,
     List<String> keywords,
@@ -314,3 +409,35 @@ class DiaryController extends ChangeNotifier {
 }
 
 DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+DiaryRepository _defaultRepository() {
+  return MigratingDiaryRepository(
+    primary: DriftDiaryRepository(HarutalkDatabase.defaults()),
+    legacy: SharedPreferencesDiaryRepository(),
+  );
+}
+
+class BackupRestoreResult {
+  const BackupRestoreResult._({
+    required this.success,
+    required this.restoredCount,
+    required this.message,
+  });
+
+  const BackupRestoreResult.invalid()
+    : this._(success: false, restoredCount: 0, message: '올바른 하루톡 백업 파일이 아니에요.');
+
+  const BackupRestoreResult.success(int restoredCount)
+    : this._(
+        success: true,
+        restoredCount: restoredCount,
+        message: '$restoredCount개의 기록을 복원했어요.',
+      );
+
+  const BackupRestoreResult.storageFailure()
+    : this._(success: false, restoredCount: 0, message: '백업을 기기에 복원하지 못했어요.');
+
+  final bool success;
+  final int restoredCount;
+  final String message;
+}

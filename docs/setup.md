@@ -53,7 +53,10 @@ flutter build web --release --base-href "/rhythm-archive/"
 
 | 패키지 | 목적 |
 |---|---|
-| `shared_preferences` | 기록과 사용자 키워드 로컬 저장 |
+| `drift`, `drift_flutter` | SQLite 로컬 DB와 Web 연결 |
+| `shared_preferences` | 기존 기록의 최초 자동 이전 |
+| `file_picker` | JSON 백업 파일 저장·선택 |
+| `drift_dev`, `build_runner` | DB 스키마 코드 생성 |
 | `cupertino_icons` | 아이콘 |
 | `flutter_test` | 단위·위젯 테스트 |
 | `flutter_lints` | 정적 분석 규칙 |
@@ -78,11 +81,29 @@ flutter build web --release --base-href "/rhythm-archive/"
 
 ### 저장 데이터 초기화
 
-브라우저 사이트 데이터에서 `yseho031018.github.io` 또는 localhost의 저장 데이터를 삭제한다. SharedPreferences Web 구현은 브라우저 로컬 저장소를 사용한다.
+브라우저 사이트 데이터에서 `yseho031018.github.io` 또는 localhost의 저장 데이터를 삭제한다. Drift Web 구현은 지원 환경에 따라 OPFS 또는 IndexedDB에 SQLite 데이터를 보존한다.
+
+### Drift 스키마 변경
+
+DB 테이블을 바꾼 뒤 생성 코드를 갱신한다.
+
+```powershell
+dart run build_runner build
+```
+
+Web 실행과 배포에는 버전이 맞는 `web/sqlite3.wasm`, `web/drift_worker.js`가 필요하다.
 
 ### Android SDK 경고
 
 현재 발표 시연과 공개 배포는 Chrome Web 기준이므로 Android SDK가 없어도 Web 실행·빌드는 가능하다.
+
+### Building with plugins requires symlink support
+
+Windows에서 네이티브 플러그인 링크 경고가 나오면 개발자 모드를 활성화한다.
+
+```powershell
+start ms-settings:developers
+```
 
 ## 연결 문서
 

@@ -12,7 +12,7 @@
 | 문제 정의 | 긴 일기 부담과 기록 활용 어려움 | 완료 |
 | 대사 준비 | `docs/presentation/final-script-5min.md`, `final-speaking-cues.md` | 완료 |
 | WBS | `.planning/02-wbs.md`, `wbs-gantt.html`, 발표 4장 | 완료 |
-| 적용 기술 | Flutter, ChangeNotifier, SharedPreferences, Repository | 문서화 완료 |
+| 적용 기술 | Flutter, ChangeNotifier, Drift/SQLite, Repository | 문서화 완료 |
 | 진행 및 완료 | WBS, Git log, 기능 체크리스트 | 완료 |
 | 구현 방법 | `docs/architecture.md`, 발표 5장 | 완료 |
 | 활용 방안 | 생활 패턴 회고, 향후 실제 AI 연결 | 대본 포함 |
@@ -33,12 +33,12 @@
 |---|---|
 | 적용 기술 이해 | README 기술 스택과 30초 설명 |
 | 아키텍처 이해 | Repository, Controller, 화면, 분석 로직 |
-| 시행착오 | 생성 결과 사용자 제어, 최소 표본 규칙, Isar 대신 SharedPreferences 범위 조절 |
+| 시행착오 | 생성 결과 사용자 제어, 최소 표본 규칙, SharedPreferences에서 Drift로 무중단 교체 |
 | 개발 환경 | Flutter 3.44.0, Dart 3.12.0, Chrome, Git |
 | 개선 의지 | 실제 AI 연결과 저장소 교체 가능성 |
 | 성능 최적화 | 모바일 최대 폭, 단순 로컬 연산, 패턴 최소 표본, 에셋 최적화 |
 | 코드 품질 | lint, 책임 분리, Repository 주입 |
-| 단위 테스트 | controller와 pattern analysis |
+| 단위 테스트 | controller, Drift repository, backup restore, pattern analysis |
 | 통합 테스트 | record flow와 화면 기간 이동 |
 | 설치 가이드 | README, setup, deploy |
 | 빌드·배포 자동화 | `.github/workflows/deploy-pages.yml` |

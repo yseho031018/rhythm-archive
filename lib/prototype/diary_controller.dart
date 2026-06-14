@@ -60,43 +60,42 @@ class DiaryController extends ChangeNotifier {
     });
   }
 
-  Future<BackupRestoreResult> restoreBackupJson(String raw) async {
-    late final List<DiaryEntry> restoredEntries;
-    late final List<String> restoredKeywords;
+  BackupPreview inspectBackupJson(String raw) {
     try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map<String, dynamic> ||
-          decoded['app'] != 'harutalk' ||
-          decoded['version'] != 1 ||
-          decoded['entries'] is! List ||
-          decoded['customKeywords'] is! List) {
-        return const BackupRestoreResult.invalid();
-      }
+      final backup = _decodeBackup(raw);
+      final dates = backup.entries.map((entry) => entry.date).toList()..sort();
+      return BackupPreview(
+        exportedAt: backup.exportedAt,
+        entryCount: backup.entries.length,
+        keywordCount: backup.keywords.length,
+        earliestEntry: dates.isEmpty ? null : dates.first,
+        latestEntry: dates.isEmpty ? null : dates.last,
+      );
+    } catch (_) {
+      throw const FormatException('올바른 하루톡 백업 파일이 아니에요.');
+    }
+  }
 
-      restoredEntries = (decoded['entries'] as List)
-          .map(
-            (item) =>
-                DiaryEntry.fromJson(Map<String, dynamic>.from(item as Map)),
-          )
-          .toList();
-      restoredKeywords = List<String>.from(decoded['customKeywords'] as List);
-      _validateBackup(restoredEntries, restoredKeywords);
+  Future<BackupRestoreResult> restoreBackupJson(String raw) async {
+    late final _DecodedBackup backup;
+    try {
+      backup = _decodeBackup(raw);
     } catch (_) {
       return const BackupRestoreResult.invalid();
     }
 
     try {
-      await _repository.replaceAll(restoredEntries, restoredKeywords);
+      await _repository.replaceAll(backup.entries, backup.keywords);
       _entries
         ..clear()
-        ..addAll(restoredEntries);
+        ..addAll(backup.entries);
       customKeywords
         ..clear()
-        ..addAll(restoredKeywords);
+        ..addAll(backup.keywords);
       storageError = null;
       _resetSelection();
       notifyListeners();
-      return BackupRestoreResult.success(restoredEntries.length);
+      return BackupRestoreResult.success(backup.entries.length);
     } catch (_) {
       storageError = '백업을 기기에 복원하지 못했어요.';
       notifyListeners();
@@ -357,6 +356,38 @@ class DiaryController extends ChangeNotifier {
     }
   }
 
+  _DecodedBackup _decodeBackup(String raw) {
+    final decoded = jsonDecode(raw);
+    if (decoded is! Map<String, dynamic> ||
+        decoded['app'] != 'harutalk' ||
+        decoded['version'] != 1 ||
+        decoded['entries'] is! List ||
+        decoded['customKeywords'] is! List) {
+      throw const FormatException('잘못된 백업 형식');
+    }
+
+    final entries = (decoded['entries'] as List)
+        .map(
+          (item) => DiaryEntry.fromJson(Map<String, dynamic>.from(item as Map)),
+        )
+        .toList();
+    final keywords = List<String>.from(decoded['customKeywords'] as List);
+    _validateBackup(entries, keywords);
+
+    final exportedAtValue = decoded['exportedAt'];
+    final exportedAt = exportedAtValue == null
+        ? null
+        : DateTime.tryParse(exportedAtValue as String);
+    if (exportedAtValue != null && exportedAt == null) {
+      throw const FormatException('잘못된 백업 생성 날짜');
+    }
+    return _DecodedBackup(
+      entries: entries,
+      keywords: keywords,
+      exportedAt: exportedAt,
+    );
+  }
+
   String _buildSummary(
     DiaryMood mood,
     List<String> keywords,
@@ -440,4 +471,32 @@ class BackupRestoreResult {
   final bool success;
   final int restoredCount;
   final String message;
+}
+
+class BackupPreview {
+  const BackupPreview({
+    required this.exportedAt,
+    required this.entryCount,
+    required this.keywordCount,
+    required this.earliestEntry,
+    required this.latestEntry,
+  });
+
+  final DateTime? exportedAt;
+  final int entryCount;
+  final int keywordCount;
+  final DateTime? earliestEntry;
+  final DateTime? latestEntry;
+}
+
+class _DecodedBackup {
+  const _DecodedBackup({
+    required this.entries,
+    required this.keywords,
+    required this.exportedAt,
+  });
+
+  final List<DiaryEntry> entries;
+  final List<String> keywords;
+  final DateTime? exportedAt;
 }

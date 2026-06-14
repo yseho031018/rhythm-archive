@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../diary_controller.dart';
 import '../diary_entry.dart';
 import '../widgets/harutalk_ui.dart';
+import '../widgets/tori_mascot.dart';
 
 class MoodGrassScreen extends StatefulWidget {
   const MoodGrassScreen({
@@ -181,35 +182,45 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
             const SizedBox(height: 15),
             _MoodLegend(),
             const SizedBox(height: 24),
-            Text('선택한 날', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 11),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              child: _selectedDay == null
-                  ? const _SelectedDayCard(
-                      key: ValueKey('hint'),
-                      icon: Icons.touch_app_outlined,
-                      title: '날짜를 눌러보세요',
-                      body: '그날의 감정과 토리가 정리한 한 줄을 볼 수 있어요.',
-                    )
-                  : selectedEntry == null
-                  ? _EmptyDayCard(
-                      key: ValueKey(('empty', _selectedDay)),
-                      date: _selectedDay!,
-                      onRecord: () => widget.onRecord(_selectedDay!),
-                    )
-                  : _SelectedDayCard(
-                      key: ValueKey(selectedEntry.id),
-                      emoji: selectedEntry.mood.emoji,
-                      title: formatDiaryDate(
-                        selectedEntry.date,
-                        includeYear: false,
+            if (widget.controller.entries.isEmpty && _selectedDay == null)
+              ToriEmptyStateCard(
+                title: '첫 번째 감정 색을 채워볼까요?',
+                body: '오늘 한 줄을 남기면 감정잔디에\n나만의 첫 색이 생겨요.',
+                actionLabel: '오늘 기록하기',
+                onAction: () => widget.onRecord(DateTime.now()),
+                expression: ToriExpression.hello,
+              )
+            else ...[
+              Text('선택한 날', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 11),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: _selectedDay == null
+                    ? const _SelectedDayCard(
+                        key: ValueKey('hint'),
+                        icon: Icons.touch_app_outlined,
+                        title: '날짜를 눌러보세요',
+                        body: '그날의 감정과 토리가 정리한 한 줄을 볼 수 있어요.',
+                      )
+                    : selectedEntry == null
+                    ? _EmptyDayCard(
+                        key: ValueKey(('empty', _selectedDay)),
+                        date: _selectedDay!,
+                        onRecord: () => widget.onRecord(_selectedDay!),
+                      )
+                    : _SelectedDayCard(
+                        key: ValueKey(selectedEntry.id),
+                        emoji: selectedEntry.mood.emoji,
+                        title: formatDiaryDate(
+                          selectedEntry.date,
+                          includeYear: false,
+                        ),
+                        body: selectedEntry.summary,
+                        score: selectedEntry.satisfaction,
+                        onOpen: () => widget.onOpenEntry(selectedEntry.id),
                       ),
-                      body: selectedEntry.summary,
-                      score: selectedEntry.satisfaction,
-                      onOpen: () => widget.onOpenEntry(selectedEntry.id),
-                    ),
-            ),
+              ),
+            ],
           ],
         );
       },

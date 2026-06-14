@@ -64,7 +64,7 @@
 
 ## 7. 품질과 배포 · 2:55–3:30
 
-핵심 키워드: `39`, `0`, `Web Release`, `GitHub Pages`
+핵심 키워드: `44`, `0`, `Web Release`, `GitHub Pages`
 
 말할 이야기:
 

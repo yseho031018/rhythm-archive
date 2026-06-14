@@ -25,10 +25,12 @@ class MyScreen extends StatefulWidget {
     super.key,
     required this.controller,
     this.backupFileService = const BackupFileService(),
+    this.onRecord,
   });
 
   final DiaryController controller;
   final BackupFileService backupFileService;
+  final VoidCallback? onRecord;
 
   @override
   State<MyScreen> createState() => _MyScreenState();
@@ -123,11 +125,15 @@ class _MyScreenState extends State<MyScreen> {
     try {
       final raw = await widget.backupFileService.pickBackup();
       if (raw == null || !mounted) return;
+      final preview = controller.inspectBackupJson(raw);
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('백업을 복원할까요?'),
-          content: const Text('현재 기록과 사용자 키워드를 백업 파일의 내용으로 교체합니다.'),
+          content: _BackupPreviewContent(
+            preview: preview,
+            currentEntryCount: controller.entries.length,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -235,109 +241,120 @@ class _MyScreenState extends State<MyScreen> {
               onNext: _canGoNext ? () => _shift(1) : null,
             ),
             const SizedBox(height: 18),
-            _SummaryStrip(
-              countLabel: _countLabel,
-              count: entries.length,
-              streak: controller.currentStreak,
-              average: average,
-            ),
-            const SizedBox(height: 24),
-            Text('기분 비율', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 11),
-            SoftCard(
-              child: Row(
-                children: [
-                  SizedBox.square(
-                    dimension: 122,
-                    child: CustomPaint(
-                      painter: _MoodDonutPainter(counts, colors.surfaceSoft),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${entries.length}',
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            Text(
-                              '기록',
-                              style: TextStyle(
-                                color: colors.muted,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
+            if (entries.isEmpty)
+              _StatsEmptyState(
+                hasAnyEntries: controller.entries.isNotEmpty,
+                onRecord: widget.onRecord,
+              )
+            else ...[
+              _SummaryStrip(
+                countLabel: _countLabel,
+                count: entries.length,
+                streak: controller.currentStreak,
+                average: average,
+              ),
+              const SizedBox(height: 24),
+              Text('기분 비율', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 11),
+              SoftCard(
+                child: Row(
+                  children: [
+                    SizedBox.square(
+                      dimension: 122,
+                      child: CustomPaint(
+                        painter: _MoodDonutPainter(counts, colors.surfaceSoft),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${entries.length}',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineMedium,
+                              ),
+                              Text(
+                                '기록',
+                                style: TextStyle(
+                                  color: colors.muted,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 18),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          for (final mood in DiaryMood.values)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: _LegendRow(
+                                mood: mood,
+                                count: counts[mood] ?? 0,
+                                total: entries.length,
                               ),
                             ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 18),
-                  Expanded(
-                    child: Column(
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text('만족도 흐름', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 11),
+              SoftCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        for (final mood in DiaryMood.values)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: _LegendRow(
-                              mood: mood,
-                              count: counts[mood] ?? 0,
-                              total: entries.length,
+                        Text(
+                          average.toStringAsFixed(1),
+                          style: Theme.of(context).textTheme.headlineLarge
+                              ?.copyWith(color: colors.primary),
+                        ),
+                        const SizedBox(width: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            '/ 5점',
+                            style: TextStyle(
+                              color: colors.muted,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text('만족도 흐름', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 11),
-            SoftCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        average.toStringAsFixed(1),
-                        style: Theme.of(context).textTheme.headlineLarge
-                            ?.copyWith(color: colors.primary),
-                      ),
-                      const SizedBox(width: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text(
-                          '/ 5점',
-                          style: TextStyle(
-                            color: colors.muted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 84,
+                      width: double.infinity,
+                      child: CustomPaint(
+                        painter: _ScoreTrendPainter(
+                          entries.reversed.toList(),
+                          colors.primary,
+                          colors.border,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 84,
-                    width: double.infinity,
-                    child: CustomPaint(
-                      painter: _ScoreTrendPainter(
-                        entries.reversed.toList(),
-                        colors.primary,
-                        colors.border,
-                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            // 생활 패턴은 기간과 무관하게 누적 기록 전체를 분석한다.
-            _LifePatternSection(report: analyzePatterns(controller.entries)),
+            ],
+            if (controller.entries.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              // 생활 패턴은 기간과 무관하게 누적 기록 전체를 분석한다.
+              _LifePatternSection(report: analyzePatterns(controller.entries)),
+            ],
             const SizedBox(height: 24),
             _DataManagementSection(
               entryCount: controller.entries.length,
@@ -350,6 +367,153 @@ class _MyScreenState extends State<MyScreen> {
       },
     );
   }
+}
+
+class _StatsEmptyState extends StatelessWidget {
+  const _StatsEmptyState({required this.hasAnyEntries, this.onRecord});
+
+  final bool hasAnyEntries;
+  final VoidCallback? onRecord;
+
+  @override
+  Widget build(BuildContext context) {
+    if (hasAnyEntries) {
+      return const ToriEmptyStateCard(
+        title: '이 기간에는 기록이 없어요',
+        body: '다른 기간으로 이동하면 쌓아둔 마음의 흐름을 다시 볼 수 있어요.',
+        expression: ToriExpression.sleeping,
+      );
+    }
+    return ToriEmptyStateCard(
+      title: '첫 기록이 통계의 시작이에요',
+      body: '한 줄이 쌓이면 기분 비율과 만족도 흐름,\n생활 패턴을 토리가 함께 찾아줄게요.',
+      actionLabel: onRecord == null ? null : '첫 기록 남기기',
+      onAction: onRecord,
+      expression: ToriExpression.thinking,
+    );
+  }
+}
+
+class _BackupPreviewContent extends StatelessWidget {
+  const _BackupPreviewContent({
+    required this.preview,
+    required this.currentEntryCount,
+  });
+
+  final BackupPreview preview;
+  final int currentEntryCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('현재 기록과 사용자 키워드를 선택한 백업의 내용으로 교체합니다.'),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: colors.primarySoft,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              _BackupPreviewRow(
+                icon: Icons.schedule_rounded,
+                label: '백업 생성',
+                value: _formatBackupDateTime(preview.exportedAt),
+              ),
+              const SizedBox(height: 10),
+              _BackupPreviewRow(
+                icon: Icons.menu_book_rounded,
+                label: '백업 기록',
+                value: '${preview.entryCount}개',
+              ),
+              const SizedBox(height: 10),
+              _BackupPreviewRow(
+                icon: Icons.sell_outlined,
+                label: '사용자 키워드',
+                value: '${preview.keywordCount}개',
+              ),
+              const SizedBox(height: 10),
+              _BackupPreviewRow(
+                icon: Icons.date_range_rounded,
+                label: '기록 기간',
+                value: _formatBackupRange(preview),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          '현재 기록 $currentEntryCount개 → 백업 기록 ${preview.entryCount}개',
+          style: TextStyle(
+            color: colors.muted,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BackupPreviewRow extends StatelessWidget {
+  const _BackupPreviewRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: colors.primaryDark),
+        const SizedBox(width: 9),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+        const Spacer(),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: colors.primaryDark,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+String _formatBackupDate(DateTime date) {
+  return '${date.year}.${date.month.toString().padLeft(2, '0')}.'
+      '${date.day.toString().padLeft(2, '0')}';
+}
+
+String _formatBackupDateTime(DateTime? date) {
+  if (date == null) return '날짜 정보 없음';
+  return '${_formatBackupDate(date)} '
+      '${date.hour.toString().padLeft(2, '0')}:'
+      '${date.minute.toString().padLeft(2, '0')}';
+}
+
+String _formatBackupRange(BackupPreview preview) {
+  final earliest = preview.earliestEntry;
+  final latest = preview.latestEntry;
+  if (earliest == null || latest == null) return '기록 없음';
+  if (isSameDiaryDay(earliest, latest)) return _formatBackupDate(earliest);
+  return '${_formatBackupDate(earliest)} ~ ${_formatBackupDate(latest)}';
 }
 
 class _DataManagementSection extends StatelessWidget {

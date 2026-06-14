@@ -63,7 +63,7 @@ DiaryRepository → Drift/SQLite
 ## 7. 품질과 배포
 
 - Analyze: 0 issues
-- Tests: 39 passed
+- Tests: 44 passed
 - Unit + Integration Widget
 - Web Release + GitHub Pages
 - README / AGENTS / setup / deploy / testing

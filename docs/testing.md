@@ -23,14 +23,14 @@ flutter build web --release --base-href "/rhythm-archive/"
 | 검증 | 결과 |
 |---|---|
 | Flutter 정적 분석 | 통과, 이슈 0개 |
-| 전체 테스트 | 통과, 39개 |
+| 전체 테스트 | 통과, 44개 |
 | Flutter Web Release 빌드 | 통과 |
 
 ## 단위 테스트
 
 | 파일 | 검증 내용 |
 |---|---|
-| `test/diary_controller_test.dart` | JSON 변환, 로드, 생성, 저장, 수정, 삭제, 백업 복원, 잘못된 백업 보호 |
+| `test/diary_controller_test.dart` | JSON 변환, 로드, 생성, 저장, 수정, 삭제, 백업 미리보기·복원, 잘못된 백업 보호 |
 | `test/drift_diary_repository_test.dart` | Drift CRUD, 빈 저장 상태, SharedPreferences 자동 이전, 백업 트랜잭션 |
 | `test/pattern_analysis_test.dart` | 키워드별 평균, 전체 평균 차이, 대표 기분, 최소 표본, 조사 처리 |
 
@@ -41,7 +41,7 @@ flutter build web --release --base-href "/rhythm-archive/"
 | 파일 | 사용자 흐름 |
 |---|---|
 | `test/record_flow_test.dart` | 기분 → 키워드 → 한 줄 생성 → 결과 화면 → 저장 |
-| `test/screen_month_nav_test.dart` | 감정잔디 월 이동, 과거 날짜 기록, 통계 기간 전환, 데이터 관리 전체 삭제 확인창 |
+| `test/screen_month_nav_test.dart` | 한줄·감정잔디·통계 빈 상태, 월 이동, 과거 날짜 기록, 통계 기간 전환, 백업 미리보기와 전체 삭제 확인창 |
 
 통합 위젯 테스트는 여러 컴포넌트와 상태가 연결된 실제 사용자 시나리오를 검증한다.
 
@@ -56,7 +56,9 @@ flutter build web --release --base-href "/rhythm-archive/"
 - [x] 새로고침 후에도 Drift/SQLite 저장 기록이 유지된다.
 - [x] 네트워크 없이도 기록 생성과 조회가 가능하다.
 - [x] JSON 백업을 다른 저장소에 복원하고 잘못된 백업은 거부한다.
+- [x] 백업 복원 전 생성 날짜·기록 수·키워드 수·기록 기간을 보여준다.
 - [x] 전체 삭제 전 확인창을 표시하고 기록·키워드를 함께 삭제한다.
+- [x] 기록이 없을 때 한줄·감정잔디·통계에서 다음 행동을 안내한다.
 
 ## 코드 품질 관리
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'harutalk_theme.dart';
+import 'tori_mascot.dart';
 
 export 'harutalk_theme.dart';
 
@@ -123,6 +124,59 @@ class SmallPill extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class ToriEmptyStateCard extends StatelessWidget {
+  const ToriEmptyStateCard({
+    super.key,
+    required this.title,
+    required this.body,
+    this.actionLabel,
+    this.onAction,
+    this.expression = ToriExpression.thinking,
+  });
+
+  final String title;
+  final String body;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final ToriExpression expression;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return SoftCard(
+      color: colors.cream,
+      padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+      child: Column(
+        children: [
+          ToriMascot(expression: expression, size: 132),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 7),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.5),
+          ),
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: 18),
+            FilledButton.icon(
+              onPressed: onAction,
+              icon: const Icon(Icons.add_rounded),
+              label: Text(actionLabel!),
+            ),
+          ],
         ],
       ),
     );

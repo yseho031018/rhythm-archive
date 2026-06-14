@@ -7,9 +7,14 @@ import '../widgets/tori_mascot.dart';
 import 'summary_editor.dart';
 
 class DiaryScreen extends StatelessWidget {
-  const DiaryScreen({super.key, required this.controller});
+  const DiaryScreen({
+    super.key,
+    required this.controller,
+    required this.onRecord,
+  });
 
   final DiaryController controller;
+  final VoidCallback onRecord;
 
   @override
   Widget build(BuildContext context) {
@@ -24,69 +29,69 @@ class DiaryScreen extends StatelessWidget {
           children: [
             AppPageHeader(
               title: '한줄',
-              subtitle: '토리와 함께 남긴 ${entries.length}개의 하루',
+              subtitle: entries.isEmpty
+                  ? '첫 한 줄을 기다리고 있어요.'
+                  : '토리와 함께 남긴 ${entries.length}개의 하루',
               trailing: const SmallPill(
                 label: '토리 한 줄',
                 icon: Icons.spa_rounded,
               ),
             ),
             const SizedBox(height: 24),
-            if (latest != null) ...[
+            if (entries.isEmpty)
+              ToriEmptyStateCard(
+                title: '아직 남긴 한 줄이 없어요',
+                body: '오늘의 기분과 함께한 일을 고르면\n토리가 부담 없이 한 줄로 정리해줄게요.',
+                actionLabel: '오늘 기록 시작하기',
+                onAction: onRecord,
+                expression: ToriExpression.journal,
+              )
+            else ...[
               _LatestEntryCard(
-                entry: latest,
+                entry: latest!,
                 onTap: () => _openDetail(context, latest),
               ),
               const SizedBox(height: 28),
-            ],
-            Row(
-              children: [
-                Text('이전 기록', style: Theme.of(context).textTheme.titleLarge),
-                const Spacer(),
-                Text(
-                  '${previousEntries.length}개',
-                  style: TextStyle(
-                    color: context.colors.muted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+              Row(
+                children: [
+                  Text('이전 기록', style: Theme.of(context).textTheme.titleLarge),
+                  const Spacer(),
+                  Text(
+                    '${previousEntries.length}개',
+                    style: TextStyle(
+                      color: context.colors.muted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (entries.isEmpty)
-              const SoftCard(
-                child: Row(
-                  children: [
-                    ToriMascot(expression: ToriExpression.sleeping, size: 114),
-                    SizedBox(width: 14),
-                    Expanded(child: Text('아직 기록이 없어요.\n토리와 오늘의 한 줄을 남겨보세요.')),
-                  ],
-                ),
-              )
-            else if (previousEntries.isEmpty)
-              SoftCard(
-                color: context.colors.surfaceSoft,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.auto_awesome_rounded,
-                      color: context.colors.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text('첫 한 줄을 남겼어요.\n다음 기록부터 이곳에 차곡차곡 모여요.'),
-                    ),
-                  ],
-                ),
-              )
-            else
-              for (final entry in previousEntries) ...[
-                _DiaryListItem(
-                  entry: entry,
-                  onTap: () => _openDetail(context, entry),
-                ),
-                const SizedBox(height: 10),
-              ],
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (previousEntries.isEmpty)
+                SoftCard(
+                  color: context.colors.surfaceSoft,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        color: context.colors.primary,
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text('첫 한 줄을 남겼어요.\n다음 기록부터 이곳에 차곡차곡 모여요.'),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                for (final entry in previousEntries) ...[
+                  _DiaryListItem(
+                    entry: entry,
+                    onTap: () => _openDetail(context, entry),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+            ],
           ],
         );
       },

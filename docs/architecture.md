@@ -108,7 +108,7 @@ sequenceDiagram
 
 테스트에서는 브라우저 저장소를 직접 사용하지 않고 `MemoryDiaryRepository`를 주입한다. Drift 저장소 자체는 메모리 SQLite로 별도 검증한다. Repository 경계 덕분에 SharedPreferences에서 Drift로 교체할 때 Controller와 화면은 거의 바꾸지 않았다.
 
-백업 복원과 전체 삭제는 `DiaryRepository.replaceAll`을 사용한다. Drift 구현은 기록과 사용자 키워드를 한 트랜잭션에서 교체하며, 파일 선택과 다운로드는 `BackupFileService`로 분리했다.
+백업 복원과 전체 삭제는 `DiaryRepository.replaceAll`을 사용한다. Drift 구현은 기록과 사용자 키워드를 한 트랜잭션에서 교체하며, 파일 선택과 다운로드는 `BackupFileService`로 분리했다. Controller는 복원 전에 백업을 검증하고 생성 날짜·기록 수·키워드 수·기록 기간을 미리보기로 제공한다.
 
 ## 현재 구조와 향후 구조 구분
 

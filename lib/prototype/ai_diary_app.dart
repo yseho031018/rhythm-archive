@@ -68,7 +68,10 @@ class _AiDiaryShellState extends State<AiDiaryShell> {
         controller: _controller,
         onOpenDiary: () => setState(() => _index = 1),
       ),
-      DiaryScreen(controller: _controller),
+      DiaryScreen(
+        controller: _controller,
+        onRecord: () => setState(() => _index = 0),
+      ),
       MoodGrassScreen(
         controller: _controller,
         onRecord: (date) {
@@ -84,7 +87,10 @@ class _AiDiaryShellState extends State<AiDiaryShell> {
           );
         },
       ),
-      MyScreen(controller: _controller),
+      MyScreen(
+        controller: _controller,
+        onRecord: () => setState(() => _index = 0),
+      ),
     ];
 
     final colors = context.colors;

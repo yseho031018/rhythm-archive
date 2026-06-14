@@ -377,6 +377,45 @@ void main() {
       expect(targetRepository.storedKeywords, ['산책']);
     });
 
+    test('백업 미리보기는 생성 날짜와 기록 범위를 저장 전에 알려준다', () async {
+      final controller = DiaryController(
+        repository: MemoryDiaryRepository([]),
+        generationDelay: Duration.zero,
+      );
+      await controller.load();
+      await controller.addCustomKeyword('산책');
+      await controller.saveEntry(
+        DiaryEntry(
+          id: 'preview-first',
+          date: DateTime(2026, 6, 10),
+          mood: DiaryMood.normal,
+          keywords: const ['공부'],
+          satisfaction: 3,
+          summary: '공부 흐름을 지킨 하루',
+        ),
+      );
+      await controller.saveEntry(
+        DiaryEntry(
+          id: 'preview-last',
+          date: DateTime(2026, 6, 14),
+          mood: DiaryMood.happy,
+          keywords: const ['산책'],
+          satisfaction: 5,
+          summary: '산책하며 웃은 하루',
+        ),
+      );
+
+      final preview = controller.inspectBackupJson(
+        controller.createBackupJson(exportedAt: DateTime(2026, 6, 14, 15)),
+      );
+
+      expect(preview.exportedAt, DateTime(2026, 6, 14, 15));
+      expect(preview.entryCount, 2);
+      expect(preview.keywordCount, 1);
+      expect(preview.earliestEntry, DateTime(2026, 6, 10));
+      expect(preview.latestEntry, DateTime(2026, 6, 14));
+    });
+
     test('잘못된 백업은 현재 기록을 변경하지 않는다', () async {
       final repository = MemoryDiaryRepository([
         DiaryEntry(
@@ -399,6 +438,18 @@ void main() {
       expect(result.success, isFalse);
       expect(controller.entries.single.id, 'existing');
       expect(repository.stored!.single.id, 'existing');
+    });
+
+    test('잘못된 백업은 미리보기에서도 거부한다', () {
+      final controller = DiaryController(
+        repository: MemoryDiaryRepository([]),
+        generationDelay: Duration.zero,
+      );
+
+      expect(
+        () => controller.inspectBackupJson('{"app":"other"}'),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     test('형식이 깨진 기록이 포함된 백업도 현재 기록을 변경하지 않는다', () async {

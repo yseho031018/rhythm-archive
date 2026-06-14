@@ -123,6 +123,110 @@ void main() {
     expect(find.text('${prev.year}년 ${prev.month}월'), findsOneWidget);
   });
 
+  testWidgets('감정잔디: 연간 보기에서 한 해 기록을 넓게 확인한다', (tester) async {
+    final now = DateTime.now();
+    final entry = DiaryEntry(
+      id: 'year-entry',
+      date: DateTime(now.year, 1, 1),
+      mood: DiaryMood.happy,
+      keywords: const ['친구'],
+      satisfaction: 5,
+      summary: '새해 첫 마음 기록',
+    );
+    final controller = await _loadedController([entry]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MoodGrassScreen(
+            controller: controller,
+            onRecord: (_) {},
+            onOpenEntry: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('연간'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('${now.year}년'), findsOneWidget);
+    expect(find.textContaining('기록 1일'), findsOneWidget);
+    expect(find.byKey(const ValueKey('year-heatmap-scroll')), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(
+        ValueKey('year-day-${DateTime(now.year, 1, 1).toIso8601String()}'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('새해 첫 마음 기록'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    expect(find.text('새해 첫 마음 기록'), findsOneWidget);
+  });
+
+  testWidgets('감정잔디: 연간 보기에서 이전 연도로 이동한다', (tester) async {
+    final controller = await _loadedController();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MoodGrassScreen(
+            controller: controller,
+            onRecord: (_) {},
+            onOpenEntry: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('연간'));
+    await tester.pumpAndSettle();
+    final now = DateTime.now();
+    expect(find.text('${now.year}년'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('grass-period-previous')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('${now.year - 1}년'), findsOneWidget);
+  });
+
+  testWidgets('감정잔디: 연간 이동 버튼으로 12월 방향을 확인한다', (tester) async {
+    final controller = await _loadedController();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MoodGrassScreen(
+            controller: controller,
+            onRecord: (_) {},
+            onOpenEntry: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('연간'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('버튼으로 12월까지 이동할 수 있어요'), findsOneWidget);
+    final endButton = find.byTooltip('연말 방향으로 이동');
+    expect(endButton, findsOneWidget);
+
+    await tester.tap(endButton);
+    await tester.pumpAndSettle();
+    await tester.tap(endButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('12월까지 보고 있어요'), findsOneWidget);
+    expect(find.byTooltip('연초 방향으로 이동'), findsOneWidget);
+  });
+
   testWidgets('감정잔디: 빈 날짜에서 "이 날 기록하기"가 그 날짜로 콜백한다', (tester) async {
     final controller = await _loadedController();
     DateTime? recordedFor;

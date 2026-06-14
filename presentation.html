@@ -459,7 +459,7 @@
 
     .progress-line span {
       display: block;
-      width: 86%;
+      width: 100%;
       height: 100%;
       background: var(--green);
     }
@@ -580,9 +580,10 @@
     .decision-line {
       display: flex;
       align-items: center;
-      gap: 16px;
-      font-size: clamp(20px, 2.2vw, 34px);
+      gap: 12px;
+      font-size: clamp(18px, 1.7vw, 27px);
       font-weight: 900;
+      white-space: nowrap;
     }
 
     .decision-problem {
@@ -1288,9 +1289,9 @@
           <div class="progress-panel">
             <div>
               <div class="progress-line"><span></span></div>
-              <div class="progress-copy"><span>18 완료</span><span>2 진행 · 1 계획</span></div>
+              <div class="progress-copy"><span>핵심 기능 100%</span><span>전체 WBS 86% · 발표/데모 진행</span></div>
             </div>
-            <div class="progress-value">86%</div>
+            <div class="progress-value">100%</div>
           </div>
         </div>
       </div>
@@ -1354,11 +1355,11 @@
           <div class="decision-visual">
             <img src="assets/tori/tori_thinking.png" alt="고민하는 토리">
             <div class="decision-line">
-              <span class="decision-problem">자동 생성 결과</span>
+              <span class="decision-problem">잘못 선택한 입력</span>
               <span>→</span>
-              <span class="decision-answer">사용자가 제어</span>
+              <span class="decision-answer">이전 이동 · 선택 유지</span>
             </div>
-            <p class="small">선택한 사실만 사용하고, 다시 생성·직접 수정을 제공</p>
+            <p class="small">결과 수정, 날짜 선택, 확인 팝업까지 실수를 복구할 수 있게 설계</p>
           </div>
           <div class="adr-list">
             <article class="adr-card">
@@ -1390,7 +1391,7 @@
         </div>
         <div class="quality-layout">
           <div class="metric-grid">
-            <article class="metric-card"><strong>44</strong><span>단위 + 통합 위젯 테스트 통과</span></article>
+            <article class="metric-card"><strong>50</strong><span>단위 + 통합 위젯 테스트 통과</span></article>
             <article class="metric-card"><strong>0</strong><span>flutter analyze 이슈</span></article>
             <article class="metric-card"><strong>Web</strong><span>Release 빌드 성공</span></article>
             <article class="metric-card"><strong>Local</strong><span>핵심 흐름 오프라인 동작</span></article>
@@ -1403,8 +1404,8 @@
               <div class="pipeline-step">GitHub Pages</div>
             </div>
             <div class="evidence-list">
-              <div class="evidence-item">Repository 주입으로 메모리 저장소 테스트</div>
-              <div class="evidence-item">표본 부족 시 패턴을 단정하지 않는 규칙</div>
+              <div class="evidence-item">이전 이동 · 선택 유지 · 월/연간 감정잔디 검증</div>
+              <div class="evidence-item">Drift 저장 · JSON 백업/복원 · 전체 삭제 검증</div>
               <div class="evidence-item">PR · Push마다 GitHub Actions 자동 품질 검사</div>
               <div class="evidence-item">README · AGENTS · setup · deploy · testing</div>
             </div>
@@ -1428,9 +1429,9 @@
           <div class="phone-frame"><img src="docs/presentation/assets/app-pattern-detail.png" alt="생활 패턴 분석 화면"></div>
           <div class="outcome-copy">
             <div class="outcome-step"><strong>기록</strong><span>매일 30초, 부담 없이 시작</span></div>
-            <div class="outcome-step"><strong>패턴</strong><span>활동별 만족도와 감정 관계 확인</span></div>
+            <div class="outcome-step"><strong>패턴</strong><span>월간·연간 감정 흐름과 활동 관계 확인</span></div>
             <div class="outcome-step"><strong>회고</strong><span>다음 생활 선택에 참고</span></div>
-            <div class="outcome-step future"><strong>향후 확장</strong><span>로컬 AI 서버와 더 적합한 로컬 DB 연결</span></div>
+            <div class="outcome-step future"><strong>향후 확장</strong><span>로컬 AI 서버와 선택형 기기 동기화</span></div>
           </div>
         </div>
       </div>
@@ -1452,6 +1453,7 @@
               <span>친구</span><strong>→</strong>
               <span>5점</span><strong>→</strong>
               <span>한 줄</span><strong>→</strong>
+              <span>연간 잔디</span><strong>→</strong>
               <span>생활 패턴</span>
             </div>
             <div class="url-list">
@@ -1503,7 +1505,7 @@
             <div class="closing-points">
               <span class="pill">3번의 선택</span>
               <span class="pill">한 줄 기록</span>
-              <span class="pill">생활 패턴</span>
+              <span class="pill">연간 감정 회고</span>
             </div>
           </div>
           <div class="closing-visual">

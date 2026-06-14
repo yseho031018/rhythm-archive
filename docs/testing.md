@@ -23,7 +23,7 @@ flutter build web --release --base-href "/rhythm-archive/"
 | 검증 | 결과 |
 |---|---|
 | Flutter 정적 분석 | 통과, 이슈 0개 |
-| 전체 테스트 | 통과, 44개 |
+| 전체 테스트 | 통과, 50개 |
 | Flutter Web Release 빌드 | 통과 |
 
 ## 단위 테스트
@@ -40,8 +40,8 @@ flutter build web --release --base-href "/rhythm-archive/"
 
 | 파일 | 사용자 흐름 |
 |---|---|
-| `test/record_flow_test.dart` | 기분 → 키워드 → 한 줄 생성 → 결과 화면 → 저장 |
-| `test/screen_month_nav_test.dart` | 한줄·감정잔디·통계 빈 상태, 월 이동, 과거 날짜 기록, 통계 기간 전환, 백업 미리보기와 전체 삭제 확인창 |
+| `test/record_flow_test.dart` | 기분 → 키워드 → 한 줄 생성 → 결과 화면 → 저장, 이전 질문 이동과 선택값 유지 |
+| `test/screen_month_nav_test.dart` | 한줄·감정잔디·통계 빈 상태, 월간·연간 감정잔디 이동, 과거 날짜 기록, 통계 기간 전환, 백업 미리보기와 전체 삭제 확인창 |
 
 통합 위젯 테스트는 여러 컴포넌트와 상태가 연결된 실제 사용자 시나리오를 검증한다.
 
@@ -52,6 +52,8 @@ flutter build web --release --base-href "/rhythm-archive/"
 - [x] 한 줄을 수정하거나 다시 생성할 수 있다.
 - [x] 저장 후 한줄 목록과 감정잔디에 반영된다.
 - [x] 감정잔디의 빈 과거 날짜에서 기록을 시작할 수 있다.
+- [x] 기록 중 이전 질문으로 돌아가도 선택한 답변이 유지된다.
+- [x] 감정잔디를 월간과 연간 단위로 전환하고 연말까지 이동할 수 있다.
 - [x] 통계에서 생활 패턴 문장을 확인할 수 있다.
 - [x] 새로고침 후에도 Drift/SQLite 저장 기록이 유지된다.
 - [x] 네트워크 없이도 기록 생성과 조회가 가능하다.

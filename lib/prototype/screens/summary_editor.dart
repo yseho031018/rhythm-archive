@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/harutalk_ui.dart';
+
 Future<String?> showSummaryEditor(
   BuildContext context, {
   required String initialValue,
@@ -40,6 +42,7 @@ class _SummaryEditorDialogState extends State<_SummaryEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      icon: const HarutalkDialogIcon(icon: Icons.edit_note_rounded),
       title: const Text('오늘의 한 줄 수정'),
       content: TextField(
         controller: _controller,
@@ -48,15 +51,20 @@ class _SummaryEditorDialogState extends State<_SummaryEditorDialog> {
         maxLines: 3,
         decoration: const InputDecoration(
           hintText: '오늘을 기억할 한 줄을 적어보세요.',
-          border: OutlineInputBorder(),
+          filled: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('취소'),
+        HarutalkDialogActions(
+          cancelLabel: '취소',
+          confirmLabel: '적용',
+          onCancel: () => Navigator.pop(context),
+          onConfirm: _submit,
         ),
-        FilledButton(onPressed: _submit, child: const Text('적용')),
       ],
     );
   }

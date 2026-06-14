@@ -67,6 +67,7 @@ class _AiDiaryShellState extends State<AiDiaryShell> {
       RecordScreen(
         controller: _controller,
         onOpenDiary: () => setState(() => _index = 1),
+        onOpenMoodGrass: () => setState(() => _index = 2),
       ),
       DiaryScreen(
         controller: _controller,

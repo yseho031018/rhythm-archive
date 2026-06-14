@@ -229,6 +229,25 @@ ThemeData buildHarutalkTheme(Brightness brightness) {
     dialogTheme: DialogThemeData(
       backgroundColor: palette.surface,
       surfaceTintColor: Colors.transparent,
+      elevation: 8,
+      shadowColor: palette.shadow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(26),
+        side: BorderSide(color: palette.border),
+      ),
+      iconColor: palette.primaryDark,
+      titleTextStyle: TextStyle(
+        color: palette.ink,
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+      ),
+      contentTextStyle: TextStyle(
+        color: palette.muted,
+        fontSize: 14,
+        height: 1.5,
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
     ),
     datePickerTheme: DatePickerThemeData(
       backgroundColor: palette.surface,

@@ -130,6 +130,96 @@ class SmallPill extends StatelessWidget {
   }
 }
 
+class HarutalkDialogIcon extends StatelessWidget {
+  const HarutalkDialogIcon({
+    super.key,
+    required this.icon,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final foreground = destructive
+        ? Theme.of(context).colorScheme.error
+        : colors.primaryDark;
+    final background = destructive
+        ? foreground.withValues(
+            alpha: Theme.of(context).brightness == Brightness.dark ? 0.18 : 0.1,
+          )
+        : colors.primarySoft;
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(17),
+        ),
+        child: Icon(icon, color: foreground, size: 26),
+      ),
+    );
+  }
+}
+
+class HarutalkDialogActions extends StatelessWidget {
+  const HarutalkDialogActions({
+    super.key,
+    required this.cancelLabel,
+    required this.confirmLabel,
+    required this.onCancel,
+    required this.onConfirm,
+    this.destructive = false,
+  });
+
+  final String cancelLabel;
+  final String confirmLabel;
+  final VoidCallback onCancel;
+  final VoidCallback onConfirm;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final danger = Theme.of(context).colorScheme.error;
+    return SizedBox(
+      width: double.maxFinite,
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: onCancel,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: Text(cancelLabel),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: FilledButton(
+              onPressed: onConfirm,
+              style: destructive
+                  ? FilledButton.styleFrom(
+                      backgroundColor: danger,
+                      foregroundColor: Theme.of(context).colorScheme.onError,
+                    )
+                  : null,
+              child: Text(confirmLabel),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ToriEmptyStateCard extends StatelessWidget {
   const ToriEmptyStateCard({
     super.key,

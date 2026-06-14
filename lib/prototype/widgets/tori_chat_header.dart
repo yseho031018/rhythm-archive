@@ -11,6 +11,7 @@ class ToriChatHeader extends StatelessWidget {
     required this.totalSteps,
     this.expression = ToriExpression.hello,
     this.onClose,
+    this.onBack,
   });
 
   final String message;
@@ -18,6 +19,7 @@ class ToriChatHeader extends StatelessWidget {
   final int totalSteps;
   final ToriExpression expression;
   final VoidCallback? onClose;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +29,11 @@ class ToriChatHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: onClose,
-              tooltip: '처음으로',
-              icon: const Icon(Icons.close_rounded),
+              onPressed: onBack ?? onClose,
+              tooltip: onBack == null ? '처음으로' : '이전 질문',
+              icon: Icon(
+                onBack == null ? Icons.close_rounded : Icons.arrow_back_rounded,
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -52,7 +56,15 @@ class ToriChatHeader extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 42),
+            const SizedBox(width: 8),
+            if (onBack != null)
+              IconButton(
+                onPressed: onClose,
+                tooltip: '처음으로',
+                icon: const Icon(Icons.close_rounded),
+              )
+            else
+              const SizedBox(width: 40),
           ],
         ),
         const SizedBox(height: 22),

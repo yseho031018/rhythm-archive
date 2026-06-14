@@ -12,10 +12,12 @@ class RecordScreen extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onOpenDiary,
+    this.onOpenMoodGrass,
   });
 
   final DiaryController controller;
   final VoidCallback onOpenDiary;
+  final VoidCallback? onOpenMoodGrass;
 
   @override
   State<RecordScreen> createState() => _RecordScreenState();
@@ -75,6 +77,7 @@ class _RecordScreenState extends State<RecordScreen> {
           totalSteps: 3,
           expression: expressions[_step],
           onClose: _reset,
+          onBack: _step > 0 ? _previous : null,
         ),
         const SizedBox(height: 16),
         _RecordDateChip(
@@ -89,7 +92,14 @@ class _RecordScreenState extends State<RecordScreen> {
           _ => '오늘 하루에 몇 점을 줄래?',
         }, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 17),
-        if (_step == 0) _MoodChoices(controller: controller),
+        if (_step == 0) ...[
+          _MoodChoices(controller: controller),
+          const SizedBox(height: 28),
+          _MoodGrassPreviewCard(
+            controller: controller,
+            onTap: widget.onOpenMoodGrass,
+          ),
+        ],
         if (_step == 1)
           _KeywordChoices(
             controller: controller,
@@ -129,6 +139,11 @@ class _RecordScreenState extends State<RecordScreen> {
     }
   }
 
+  void _previous() {
+    if (_step == 0) return;
+    setState(() => _step--);
+  }
+
   void _skip() {
     if (_step == 0 && controller.selectedMood == null) {
       controller.selectMood(DiaryMood.normal);
@@ -149,14 +164,14 @@ class _RecordScreenState extends State<RecordScreen> {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showDialog<DateTime>(
       context: context,
-      initialDate: controller.recordDate,
-      firstDate: DateTime(now.year - 1, 1, 1),
-      lastDate: DateTime(now.year, now.month, now.day),
-      helpText: '기록할 날짜 선택',
-      cancelText: '취소',
-      confirmText: '선택',
+      builder: (context) => _HarutalkDatePickerDialog(
+        initialDate: controller.recordDate,
+        firstDate: DateTime(now.year - 1, 1, 1),
+        lastDate: DateTime(now.year, now.month, now.day),
+        controller: controller,
+      ),
     );
     if (picked != null) controller.setRecordDate(picked);
   }
@@ -180,16 +195,22 @@ class _RecordScreenState extends State<RecordScreen> {
     final remove = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        icon: const HarutalkDialogIcon(
+          icon: Icons.label_off_outlined,
+          destructive: true,
+        ),
         title: const Text('키워드 삭제'),
-        content: Text("'$keyword' 키워드를 목록에서 지울까요?"),
+        content: Text(
+          "'$keyword' 키워드를 목록에서 지울까요?",
+          textAlign: TextAlign.center,
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('삭제'),
+          HarutalkDialogActions(
+            cancelLabel: '취소',
+            confirmLabel: '삭제',
+            onCancel: () => Navigator.pop(context, false),
+            onConfirm: () => Navigator.pop(context, true),
+            destructive: true,
           ),
         ],
       ),
@@ -240,6 +261,364 @@ class _MoodChoices extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _MoodGrassPreviewCard extends StatelessWidget {
+  const _MoodGrassPreviewCard({required this.controller, this.onTap});
+
+  final DiaryController controller;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateTime.now();
+    final start = DateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).subtract(const Duration(days: 13));
+    final days = List.generate(14, (index) => start.add(Duration(days: index)));
+    final recordedCount = days
+        .where((date) => controller.entryForDay(date) != null)
+        .length;
+    final colors = context.colors;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '최근 마음',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            if (onTap != null)
+              TextButton.icon(
+                onPressed: onTap,
+                icon: const Icon(Icons.grid_view_rounded, size: 17),
+                label: const Text('감정잔디 보기'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SoftCard(
+          onTap: onTap,
+          color: colors.cream,
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: days.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 1.35,
+                ),
+                itemBuilder: (context, index) {
+                  final date = days[index];
+                  final entry = controller.entryForDay(date);
+                  final isToday = isSameDiaryDay(date, today);
+                  return Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color:
+                          entry?.mood.color.withValues(alpha: 0.82) ??
+                          colors.surface,
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(
+                        color: isToday ? colors.primaryDark : colors.border,
+                        width: isToday ? 1.6 : 1,
+                      ),
+                    ),
+                    child: Text(
+                      '${date.day}',
+                      style: TextStyle(
+                        color: entry == null ? colors.muted : Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.spa_rounded, size: 17, color: colors.primary),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      recordedCount == 0
+                          ? '첫 한 줄을 남기면 여기에 오늘의 색이 생겨요.'
+                          : '최근 2주 동안 마음의 색 $recordedCount개가 쌓였어요.',
+                      style: TextStyle(
+                        color: colors.muted,
+                        fontSize: 11.5,
+                        height: 1.4,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  if (onTap != null)
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: colors.primaryDark,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HarutalkDatePickerDialog extends StatefulWidget {
+  const _HarutalkDatePickerDialog({
+    required this.initialDate,
+    required this.firstDate,
+    required this.lastDate,
+    required this.controller,
+  });
+
+  final DateTime initialDate;
+  final DateTime firstDate;
+  final DateTime lastDate;
+  final DiaryController controller;
+
+  @override
+  State<_HarutalkDatePickerDialog> createState() =>
+      _HarutalkDatePickerDialogState();
+}
+
+class _HarutalkDatePickerDialogState extends State<_HarutalkDatePickerDialog> {
+  late DateTime _selectedDate;
+  late DateTime _month;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime(
+      widget.initialDate.year,
+      widget.initialDate.month,
+      widget.initialDate.day,
+    );
+    _month = DateTime(_selectedDate.year, _selectedDate.month);
+  }
+
+  bool get _canGoPrevious {
+    final previous = DateTime(_month.year, _month.month - 1);
+    return !previous.isBefore(
+      DateTime(widget.firstDate.year, widget.firstDate.month),
+    );
+  }
+
+  bool get _canGoNext {
+    final next = DateTime(_month.year, _month.month + 1);
+    return !next.isAfter(DateTime(widget.lastDate.year, widget.lastDate.month));
+  }
+
+  void _shiftMonth(int delta) {
+    setState(() => _month = DateTime(_month.year, _month.month + delta));
+  }
+
+  bool _isEnabled(DateTime date) {
+    return !date.isBefore(widget.firstDate) && !date.isAfter(widget.lastDate);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final firstDay = DateTime(_month.year, _month.month);
+    final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
+    final leading = firstDay.weekday % 7;
+    final dates = List.generate(
+      daysInMonth,
+      (index) => DateTime(_month.year, _month.month, index + 1),
+    );
+
+    return Dialog(
+      backgroundColor: colors.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: Theme.of(context).dialogTheme.shape,
+      insetPadding: const EdgeInsets.all(24),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 400,
+          maxHeight: MediaQuery.sizeOf(context).height - 48,
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const HarutalkDialogIcon(icon: Icons.calendar_month_rounded),
+              const SizedBox(height: 14),
+              Text(
+                '기록할 날짜를 골라주세요',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                decoration: BoxDecoration(
+                  color: colors.surfaceSoft,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      tooltip: '이전 달',
+                      onPressed: _canGoPrevious ? () => _shiftMonth(-1) : null,
+                      icon: const Icon(Icons.chevron_left_rounded),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '${_month.year}년 ${_month.month}월',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: '다음 달',
+                      onPressed: _canGoNext ? () => _shiftMonth(1) : null,
+                      icon: const Icon(Icons.chevron_right_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  for (final day in ['일', '월', '화', '수', '목', '금', '토'])
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          day,
+                          style: TextStyle(
+                            color: colors.muted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  const gap = 5.0;
+                  final tileSize = (constraints.maxWidth - gap * 6) / 7;
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
+                    children: [
+                      for (var index = 0; index < leading; index++)
+                        SizedBox.square(dimension: tileSize),
+                      for (final date in dates)
+                        _HarutalkCalendarDay(
+                          size: tileSize,
+                          date: date,
+                          enabled: _isEnabled(date),
+                          selected: isSameDiaryDay(_selectedDate, date),
+                          mood: widget.controller.entryForDay(date)?.mood,
+                          onTap: (date) => setState(() => _selectedDate = date),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              HarutalkDialogActions(
+                cancelLabel: '취소',
+                confirmLabel: '이 날짜 선택',
+                onCancel: () => Navigator.pop(context),
+                onConfirm: () => Navigator.pop(context, _selectedDate),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HarutalkCalendarDay extends StatelessWidget {
+  const _HarutalkCalendarDay({
+    required this.size,
+    required this.date,
+    required this.enabled,
+    required this.selected,
+    required this.mood,
+    required this.onTap,
+  });
+
+  final double size;
+  final DateTime date;
+  final bool enabled;
+  final bool selected;
+  final DiaryMood? mood;
+  final ValueChanged<DateTime> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return SizedBox.square(
+      dimension: size,
+      child: InkWell(
+        onTap: enabled ? () => onTap(date) : null,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? colors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? colors.primary : Colors.transparent,
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                '${date.day}',
+                style: TextStyle(
+                  color: selected
+                      ? colors.onPrimary
+                      : enabled
+                      ? colors.ink
+                      : colors.muted.withValues(alpha: 0.35),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (mood != null && !selected)
+                Positioned(
+                  bottom: 4,
+                  child: Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: mood!.color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -667,6 +1046,7 @@ class _KeywordInputDialogState extends State<_KeywordInputDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      icon: const HarutalkDialogIcon(icon: Icons.add_comment_outlined),
       title: const Text('오늘의 키워드'),
       content: TextField(
         controller: _controller,
@@ -674,16 +1054,21 @@ class _KeywordInputDialogState extends State<_KeywordInputDialog> {
         maxLength: 10,
         decoration: const InputDecoration(
           hintText: '예: 발표, 가족, 산책',
-          border: OutlineInputBorder(),
+          filled: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+            borderSide: BorderSide.none,
+          ),
         ),
         onSubmitted: (_) => _submit(),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('취소'),
+        HarutalkDialogActions(
+          cancelLabel: '취소',
+          confirmLabel: '추가',
+          onCancel: () => Navigator.pop(context),
+          onConfirm: _submit,
         ),
-        FilledButton(onPressed: _submit, child: const Text('추가')),
       ],
     );
   }

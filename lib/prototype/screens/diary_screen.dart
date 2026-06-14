@@ -399,16 +399,22 @@ class DiaryDetailScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        icon: const HarutalkDialogIcon(
+          icon: Icons.delete_outline_rounded,
+          destructive: true,
+        ),
         title: const Text('기록을 삭제할까요?'),
-        content: Text('${formatDiaryDate(entry.date)} 기록이 삭제됩니다.'),
+        content: Text(
+          '${formatDiaryDate(entry.date)} 기록이 삭제됩니다.',
+          textAlign: TextAlign.center,
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('삭제'),
+          HarutalkDialogActions(
+            cancelLabel: '취소',
+            confirmLabel: '삭제',
+            onCancel: () => Navigator.pop(context, false),
+            onConfirm: () => Navigator.pop(context, true),
+            destructive: true,
           ),
         ],
       ),

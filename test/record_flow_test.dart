@@ -28,6 +28,68 @@ class MemoryDiaryRepository extends DiaryRepository {
 }
 
 void main() {
+  testWidgets('기록 화면에서 하루톡 날짜 선택 팝업을 연다', (tester) async {
+    final controller = DiaryController(
+      repository: MemoryDiaryRepository([]),
+      generationDelay: Duration.zero,
+    );
+    await controller.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RecordScreen(controller: controller, onOpenDiary: () {}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.textContaining('오늘 ·'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('기록할 날짜를 골라주세요'), findsOneWidget);
+    expect(find.text('이 날짜 선택'), findsOneWidget);
+    expect(
+      find.text('${DateTime.now().year}년 ${DateTime.now().month}월'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    expect(find.text('기록할 날짜를 골라주세요'), findsNothing);
+  });
+
+  testWidgets('기록 화면의 최근 마음에서 감정잔디를 연다', (tester) async {
+    final controller = DiaryController(
+      repository: MemoryDiaryRepository([]),
+      generationDelay: Duration.zero,
+    );
+    await controller.load();
+    var openedMoodGrass = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RecordScreen(
+            controller: controller,
+            onOpenDiary: () {},
+            onOpenMoodGrass: () => openedMoodGrass = true,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('감정잔디 보기'),
+      220,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('감정잔디 보기'));
+
+    expect(openedMoodGrass, isTrue);
+  });
+
   testWidgets('처음으로 버튼은 작성 중 선택을 모두 초기화한다', (tester) async {
     final controller = DiaryController(
       repository: MemoryDiaryRepository([]),
@@ -55,6 +117,46 @@ void main() {
     expect(controller.selectedKeywords, isEmpty);
     expect(find.text('기분을 골라줘'), findsOneWidget);
     expect(find.text('보통으로 넘기기'), findsOneWidget);
+  });
+
+  testWidgets('이전 질문으로 돌아가도 선택한 답변을 유지한다', (tester) async {
+    final controller = DiaryController(
+      repository: MemoryDiaryRepository([]),
+      generationDelay: Duration.zero,
+    );
+    await controller.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RecordScreen(controller: controller, onOpenDiary: () {}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('행복'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('다음'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('공부'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('다음'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('오늘 하루에 몇 점을 줄래?'), findsOneWidget);
+    expect(find.byTooltip('이전 질문'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('이전 질문'));
+    await tester.pumpAndSettle();
+    expect(find.text('무엇과 함께한 하루였어?'), findsOneWidget);
+    expect(controller.selectedKeywords, contains('공부'));
+
+    await tester.tap(find.byTooltip('이전 질문'));
+    await tester.pumpAndSettle();
+    expect(find.text('오늘 기분은 어땠어?'), findsOneWidget);
+    expect(controller.selectedMood, DiaryMood.happy);
+    expect(find.byTooltip('이전 질문'), findsNothing);
   });
 
   testWidgets('기록 플로우: 기분→키워드→토리 한 줄→전체화면→저장', (tester) async {

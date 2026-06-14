@@ -23,7 +23,7 @@
 ## 3. 30초 사용자 시나리오
 
 ```text
-기분 → 키워드 → 만족도 → 한 줄 → 감정잔디 → 생활 패턴
+기분 → 키워드 → 만족도 → 한 줄 → 월간·연간 감정잔디 → 생활 패턴
 ```
 
 말할 내용: 선택한 사실만 사용하고 수정 가능함
@@ -54,6 +54,7 @@ DiaryRepository → Drift/SQLite
 
 ## 6. 구현 판단과 시행착오
 
+- 잘못 선택한 입력 → 이전 이동·선택 유지로 실수 복구
 - 생성 결과 → 다시 생성·직접 수정으로 사용자 제어권 제공
 - 패턴 분석 → 최소 표본 기준으로 섣부른 단정 방지
 - SharedPreferences → Repository 경계를 이용해 Drift로 교체
@@ -63,7 +64,7 @@ DiaryRepository → Drift/SQLite
 ## 7. 품질과 배포
 
 - Analyze: 0 issues
-- Tests: 44 passed
+- Tests: 50 passed
 - Unit + Integration Widget
 - Web Release + GitHub Pages
 - README / AGENTS / setup / deploy / testing
@@ -73,7 +74,7 @@ DiaryRepository → Drift/SQLite
 ## 8. 활용과 향후 발전
 
 - 매일 30초 기록
-- 감정과 생활의 관계 회고
+- 월간·연간 감정과 생활의 관계 회고
 - 실제 로컬 AI 서버 연결
 - 여러 기기 동기화를 위한 서버 저장 확장
 

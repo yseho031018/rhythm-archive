@@ -5,6 +5,15 @@ import '../diary_entry.dart';
 import '../widgets/harutalk_ui.dart';
 import '../widgets/tori_mascot.dart';
 
+enum MoodGrassRange {
+  monthly('월간'),
+  yearly('연간');
+
+  const MoodGrassRange(this.label);
+
+  final String label;
+}
+
 class MoodGrassScreen extends StatefulWidget {
   const MoodGrassScreen({
     super.key,
@@ -28,12 +37,15 @@ class MoodGrassScreen extends StatefulWidget {
 class _MoodGrassScreenState extends State<MoodGrassScreen> {
   DateTime? _selectedDay;
   late DateTime _month;
+  late int _year;
+  MoodGrassRange _range = MoodGrassRange.monthly;
 
   @override
   void initState() {
     super.initState();
     final now = DateTime.now();
     _month = DateTime(now.year, now.month);
+    _year = now.year;
   }
 
   bool get _isCurrentMonth {
@@ -48,137 +60,63 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
     });
   }
 
+  bool get _isCurrentYear => _year == DateTime.now().year;
+
+  void _shiftYear(int delta) {
+    setState(() {
+      _year += delta;
+      _selectedDay = null;
+    });
+  }
+
+  void _selectRange(MoodGrassRange range) {
+    setState(() {
+      _range = range;
+      _selectedDay = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final firstDay = _month;
-    final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
-    final leading = firstDay.weekday % 7;
-    final cells = leading + daysInMonth;
-
     return ListenableBuilder(
       listenable: widget.controller,
       builder: (context, _) {
         final selectedEntry = _selectedDay == null
             ? null
             : widget.controller.entryForDay(_selectedDay!);
-        final colors = context.colors;
         return ListView(
           padding: const EdgeInsets.fromLTRB(22, 24, 22, 32),
           children: [
-            const AppPageHeader(
+            AppPageHeader(
               title: '감정잔디',
-              subtitle: '매일의 마음이 모여 이번 달의 색이 돼요.',
-              trailing: SmallPill(label: '오늘'),
+              subtitle: _range == MoodGrassRange.monthly
+                  ? '매일의 마음이 모여 이번 달의 색이 돼요.'
+                  : '한 해의 마음 흐름을 넓게 돌아봐요.',
+              trailing: const SmallPill(label: '오늘'),
             ),
-            const SizedBox(height: 24),
-            SoftCard(
-              padding: const EdgeInsets.fromLTRB(17, 18, 17, 18),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => _shiftMonth(-1),
-                        icon: const Icon(Icons.chevron_left_rounded),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '${_month.year}년 ${_month.month}월',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ),
-                      IconButton(
-                        // 미래 달은 데이터가 없으므로 현재 달까지만 이동.
-                        onPressed: _isCurrentMonth
-                            ? null
-                            : () => _shiftMonth(1),
-                        icon: const Icon(Icons.chevron_right_rounded),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      for (final day in ['일', '월', '화', '수', '목', '금', '토'])
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              day,
-                              style: TextStyle(
-                                color: colors.muted,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 9),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: cells,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                        ),
-                    itemBuilder: (context, index) {
-                      if (index < leading) return const SizedBox.shrink();
-                      final day = index - leading + 1;
-                      final date = DateTime(_month.year, _month.month, day);
-                      final entry = widget.controller.entryForDay(date);
-                      final selected =
-                          _selectedDay != null &&
-                          isSameDiaryDay(_selectedDay!, date);
-                      final future = date.isAfter(
-                        DateTime(now.year, now.month, now.day),
-                      );
-                      return InkWell(
-                        onTap: future
-                            ? null
-                            : () => setState(() => _selectedDay = date),
-                        borderRadius: BorderRadius.circular(11),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 170),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color:
-                                entry?.mood.color.withValues(
-                                  alpha: selected ? 1 : 0.78,
-                                ) ??
-                                colors.surfaceSoft,
-                            borderRadius: BorderRadius.circular(11),
-                            border: selected
-                                ? Border.all(
-                                    color: colors.primaryDark,
-                                    width: 2,
-                                  )
-                                : null,
-                          ),
-                          child: Text(
-                            '$day',
-                            style: TextStyle(
-                              color: entry != null
-                                  ? Colors.white
-                                  : future
-                                  ? colors.muted.withValues(alpha: 0.45)
-                                  : colors.muted,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+            const SizedBox(height: 20),
+            _MoodGrassRangeTabs(selected: _range, onSelect: _selectRange),
+            const SizedBox(height: 14),
+            if (_range == MoodGrassRange.monthly)
+              _MonthlyMoodGrass(
+                controller: widget.controller,
+                month: _month,
+                selectedDay: _selectedDay,
+                canGoNext: !_isCurrentMonth,
+                onPrevious: () => _shiftMonth(-1),
+                onNext: () => _shiftMonth(1),
+                onSelectDay: (date) => setState(() => _selectedDay = date),
+              )
+            else
+              _YearlyMoodGrass(
+                controller: widget.controller,
+                year: _year,
+                selectedDay: _selectedDay,
+                canGoNext: !_isCurrentYear,
+                onPrevious: () => _shiftYear(-1),
+                onNext: () => _shiftYear(1),
+                onSelectDay: (date) => setState(() => _selectedDay = date),
               ),
-            ),
             const SizedBox(height: 15),
             _MoodLegend(),
             const SizedBox(height: 24),
@@ -224,6 +162,555 @@ class _MoodGrassScreenState extends State<MoodGrassScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+class _MoodGrassRangeTabs extends StatelessWidget {
+  const _MoodGrassRangeTabs({required this.selected, required this.onSelect});
+
+  final MoodGrassRange selected;
+  final ValueChanged<MoodGrassRange> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.surfaceSoft,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          for (final range in MoodGrassRange.values)
+            Expanded(
+              child: InkWell(
+                onTap: () => onSelect(range),
+                borderRadius: BorderRadius.circular(12),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 170),
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: range == selected
+                        ? colors.surface
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: range == selected
+                        ? [
+                            BoxShadow(
+                              color: colors.shadow,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Text(
+                    range.label,
+                    style: TextStyle(
+                      color: range == selected
+                          ? colors.primaryDark
+                          : colors.muted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthlyMoodGrass extends StatelessWidget {
+  const _MonthlyMoodGrass({
+    required this.controller,
+    required this.month,
+    required this.selectedDay,
+    required this.canGoNext,
+    required this.onPrevious,
+    required this.onNext,
+    required this.onSelectDay,
+  });
+
+  final DiaryController controller;
+  final DateTime month;
+  final DateTime? selectedDay;
+  final bool canGoNext;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+  final ValueChanged<DateTime> onSelectDay;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final leading = month.weekday % 7;
+    final cells = leading + daysInMonth;
+    final colors = context.colors;
+
+    return SoftCard(
+      padding: const EdgeInsets.fromLTRB(17, 18, 17, 18),
+      child: Column(
+        children: [
+          _GrassPeriodHeader(
+            label: '${month.year}년 ${month.month}월',
+            onPrevious: onPrevious,
+            onNext: canGoNext ? onNext : null,
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              for (final day in ['일', '월', '화', '수', '목', '금', '토'])
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      day,
+                      style: TextStyle(
+                        color: colors.muted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 9),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: cells,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemBuilder: (context, index) {
+              if (index < leading) return const SizedBox.shrink();
+              final day = index - leading + 1;
+              final date = DateTime(month.year, month.month, day);
+              final entry = controller.entryForDay(date);
+              final selected =
+                  selectedDay != null && isSameDiaryDay(selectedDay!, date);
+              final future = date.isAfter(
+                DateTime(now.year, now.month, now.day),
+              );
+              return InkWell(
+                key: ValueKey('month-day-${date.toIso8601String()}'),
+                onTap: future ? null : () => onSelectDay(date),
+                borderRadius: BorderRadius.circular(11),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 170),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color:
+                        entry?.mood.color.withValues(
+                          alpha: selected ? 1 : 0.78,
+                        ) ??
+                        colors.surfaceSoft,
+                    borderRadius: BorderRadius.circular(11),
+                    border: selected
+                        ? Border.all(color: colors.primaryDark, width: 2)
+                        : null,
+                  ),
+                  child: Text(
+                    '$day',
+                    style: TextStyle(
+                      color: entry != null
+                          ? Colors.white
+                          : future
+                          ? colors.muted.withValues(alpha: 0.45)
+                          : colors.muted,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _YearlyMoodGrass extends StatefulWidget {
+  const _YearlyMoodGrass({
+    required this.controller,
+    required this.year,
+    required this.selectedDay,
+    required this.canGoNext,
+    required this.onPrevious,
+    required this.onNext,
+    required this.onSelectDay,
+  });
+
+  final DiaryController controller;
+  final int year;
+  final DateTime? selectedDay;
+  final bool canGoNext;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+  final ValueChanged<DateTime> onSelectDay;
+
+  @override
+  State<_YearlyMoodGrass> createState() => _YearlyMoodGrassState();
+}
+
+class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
+  final ScrollController _scrollController = ScrollController();
+  bool _canScrollBack = false;
+  bool _canScrollForward = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateScrollButtons);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollButtons());
+  }
+
+  @override
+  void didUpdateWidget(covariant _YearlyMoodGrass oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.year != widget.year) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scrollController.hasClients) return;
+        _scrollController.jumpTo(0);
+        _updateScrollButtons();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_updateScrollButtons)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _updateScrollButtons() {
+    if (!_scrollController.hasClients || !mounted) return;
+    final position = _scrollController.position;
+    final canBack = position.pixels > 1;
+    final canForward = position.pixels < position.maxScrollExtent - 1;
+    if (canBack == _canScrollBack && canForward == _canScrollForward) return;
+    setState(() {
+      _canScrollBack = canBack;
+      _canScrollForward = canForward;
+    });
+  }
+
+  void _scrollYear(int direction) {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final target = (position.pixels + position.viewportDimension * direction)
+        .clamp(0.0, position.maxScrollExtent);
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const cellSize = 15.0;
+    const gap = 4.0;
+    const step = cellSize + gap;
+    final colors = context.colors;
+    final now = DateTime.now();
+    final first = DateTime(widget.year);
+    final last = DateTime(widget.year, 12, 31);
+    final start = first.subtract(Duration(days: first.weekday % 7));
+    final totalDays = last.difference(start).inDays + 1;
+    final weekCount = (totalDays / 7).ceil();
+    final heatmapWidth = weekCount * step - gap;
+    final yearEntries = widget.controller.entries
+        .where((entry) => entry.date.year == widget.year)
+        .length;
+
+    return SoftCard(
+      padding: const EdgeInsets.fromLTRB(17, 18, 17, 17),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _GrassPeriodHeader(
+            label: '${widget.year}년',
+            onPrevious: widget.onPrevious,
+            onNext: widget.canGoNext ? widget.onNext : null,
+          ),
+          const SizedBox(height: 5),
+          Text(
+            '기록 $yearEntries일 · 가로로 밀어 한 해를 살펴보세요.',
+            style: TextStyle(
+              color: colors.muted,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 21),
+                child: Column(
+                  children: [
+                    for (var weekday = 0; weekday < 7; weekday++)
+                      SizedBox(
+                        width: 18,
+                        height: step,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            weekday.isOdd ? ['월', '수', '금'][weekday ~/ 2] : '',
+                            style: TextStyle(
+                              color: colors.muted,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: SingleChildScrollView(
+                  key: const ValueKey('year-heatmap-scroll'),
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: heatmapWidth,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 17,
+                          child: Stack(
+                            children: [
+                              for (var month = 1; month <= 12; month++)
+                                Positioned(
+                                  left:
+                                      DateTime(
+                                        widget.year,
+                                        month,
+                                      ).difference(start).inDays ~/
+                                      7 *
+                                      step,
+                                  child: Text(
+                                    '$month월',
+                                    style: TextStyle(
+                                      color: colors.muted,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (var week = 0; week < weekCount; week++) ...[
+                              if (week > 0) const SizedBox(width: gap),
+                              Column(
+                                children: [
+                                  for (var weekday = 0; weekday < 7; weekday++)
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        bottom: weekday == 6 ? 0 : gap,
+                                      ),
+                                      child: _YearGrassCell(
+                                        size: cellSize,
+                                        date: start.add(
+                                          Duration(days: week * 7 + weekday),
+                                        ),
+                                        year: widget.year,
+                                        entry: widget.controller.entryForDay(
+                                          start.add(
+                                            Duration(days: week * 7 + weekday),
+                                          ),
+                                        ),
+                                        selected:
+                                            widget.selectedDay != null &&
+                                            isSameDiaryDay(
+                                              widget.selectedDay!,
+                                              start.add(
+                                                Duration(
+                                                  days: week * 7 + weekday,
+                                                ),
+                                              ),
+                                            ),
+                                        future: start
+                                            .add(
+                                              Duration(
+                                                days: week * 7 + weekday,
+                                              ),
+                                            )
+                                            .isAfter(
+                                              DateTime(
+                                                now.year,
+                                                now.month,
+                                                now.day,
+                                              ),
+                                            ),
+                                        onTap: widget.onSelectDay,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            decoration: BoxDecoration(
+              color: colors.surfaceSoft,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  tooltip: '연초 방향으로 이동',
+                  onPressed: _canScrollBack ? () => _scrollYear(-1) : null,
+                  icon: const Icon(Icons.chevron_left_rounded),
+                ),
+                Expanded(
+                  child: Text(
+                    _canScrollForward ? '버튼으로 12월까지 이동할 수 있어요' : '12월까지 보고 있어요',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: colors.muted,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: '연말 방향으로 이동',
+                  onPressed: _canScrollForward ? () => _scrollYear(1) : null,
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _YearGrassCell extends StatelessWidget {
+  const _YearGrassCell({
+    required this.size,
+    required this.date,
+    required this.year,
+    required this.entry,
+    required this.selected,
+    required this.future,
+    required this.onTap,
+  });
+
+  final double size;
+  final DateTime date;
+  final int year;
+  final DiaryEntry? entry;
+  final bool selected;
+  final bool future;
+  final ValueChanged<DateTime> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final inYear = date.year == year;
+    final enabled = inYear && !future;
+    final label =
+        '${date.year}년 ${date.month}월 ${date.day}일'
+        '${entry == null ? '' : ' · ${entry!.mood.label}'}';
+
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        label: label,
+        button: enabled,
+        child: InkWell(
+          key: ValueKey('year-day-${date.toIso8601String()}'),
+          onTap: enabled ? () => onTap(date) : null,
+          borderRadius: BorderRadius.circular(4),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: !inYear
+                  ? Colors.transparent
+                  : entry?.mood.color.withValues(alpha: 0.82) ??
+                        colors.surfaceSoft.withValues(alpha: future ? 0.35 : 1),
+              borderRadius: BorderRadius.circular(4),
+              border: selected
+                  ? Border.all(color: colors.primaryDark, width: 2)
+                  : inYear
+                  ? Border.all(color: colors.border.withValues(alpha: 0.7))
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GrassPeriodHeader extends StatelessWidget {
+  const _GrassPeriodHeader({
+    required this.label,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  final String label;
+  final VoidCallback onPrevious;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          key: const ValueKey('grass-period-previous'),
+          onPressed: onPrevious,
+          icon: const Icon(Icons.chevron_left_rounded),
+        ),
+        Expanded(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        IconButton(
+          key: const ValueKey('grass-period-next'),
+          onPressed: onNext,
+          icon: const Icon(Icons.chevron_right_rounded),
+        ),
+      ],
     );
   }
 }

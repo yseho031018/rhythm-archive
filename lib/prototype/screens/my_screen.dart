@@ -129,19 +129,20 @@ class _MyScreenState extends State<MyScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
+          icon: const HarutalkDialogIcon(
+            icon: Icons.settings_backup_restore_rounded,
+          ),
           title: const Text('백업을 복원할까요?'),
           content: _BackupPreviewContent(
             preview: preview,
             currentEntryCount: controller.entries.length,
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('복원하기'),
+            HarutalkDialogActions(
+              cancelLabel: '취소',
+              confirmLabel: '복원하기',
+              onCancel: () => Navigator.pop(context, false),
+              onConfirm: () => Navigator.pop(context, true),
             ),
           ],
         ),
@@ -164,19 +165,22 @@ class _MyScreenState extends State<MyScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        icon: const HarutalkDialogIcon(
+          icon: Icons.delete_sweep_outlined,
+          destructive: true,
+        ),
         title: const Text('모든 기록을 삭제할까요?'),
-        content: const Text('삭제한 기록은 복구할 수 없습니다. 먼저 백업을 권장해요.'),
+        content: const Text(
+          '삭제한 기록은 다시 복구할 수 없어요.\n필요한 경우 먼저 백업해 주세요.',
+          textAlign: TextAlign.center,
+        ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('전체 삭제'),
+          HarutalkDialogActions(
+            cancelLabel: '취소',
+            confirmLabel: '전체 삭제',
+            onCancel: () => Navigator.pop(context, false),
+            onConfirm: () => Navigator.pop(context, true),
+            destructive: true,
           ),
         ],
       ),

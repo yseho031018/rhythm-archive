@@ -364,6 +364,10 @@ class _YearlyMoodGrass extends StatefulWidget {
 }
 
 class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
+  static const _cellSize = 17.0;
+  static const _gap = 3.0;
+  static const _step = _cellSize + _gap;
+
   final ScrollController _scrollController = ScrollController();
   bool _canScrollBack = false;
   bool _canScrollForward = true;
@@ -372,18 +376,14 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
   void initState() {
     super.initState();
     _scrollController.addListener(_updateScrollButtons);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollButtons());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _positionYear());
   }
 
   @override
   void didUpdateWidget(covariant _YearlyMoodGrass oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.year != widget.year) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_scrollController.hasClients) return;
-        _scrollController.jumpTo(0);
-        _updateScrollButtons();
-      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _positionYear());
     }
   }
 
@@ -419,11 +419,30 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
     );
   }
 
+  void _positionYear() {
+    if (!_scrollController.hasClients) return;
+    final now = DateTime.now();
+    final position = _scrollController.position;
+    if (widget.year != now.year) {
+      _scrollController.jumpTo(0);
+      _updateScrollButtons();
+      return;
+    }
+
+    final first = DateTime(widget.year);
+    final start = first.subtract(Duration(days: first.weekday % 7));
+    final focusDay = DateTime(widget.year, now.month, 15);
+    final focusWeek = focusDay.difference(start).inDays ~/ 7;
+    final target = (focusWeek * _step - position.viewportDimension / 2).clamp(
+      0.0,
+      position.maxScrollExtent,
+    );
+    _scrollController.jumpTo(target);
+    _updateScrollButtons();
+  }
+
   @override
   Widget build(BuildContext context) {
-    const cellSize = 15.0;
-    const gap = 4.0;
-    const step = cellSize + gap;
     final colors = context.colors;
     final now = DateTime.now();
     final first = DateTime(widget.year);
@@ -431,7 +450,7 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
     final start = first.subtract(Duration(days: first.weekday % 7));
     final totalDays = last.difference(start).inDays + 1;
     final weekCount = (totalDays / 7).ceil();
-    final heatmapWidth = weekCount * step - gap;
+    final heatmapWidth = weekCount * _step - _gap;
     final yearEntries = widget.controller.entries
         .where((entry) => entry.date.year == widget.year)
         .length;
@@ -451,7 +470,7 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
             '기록 $yearEntries일 · 가로로 밀어 한 해를 살펴보세요.',
             style: TextStyle(
               color: colors.muted,
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -460,20 +479,20 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 21),
+                padding: const EdgeInsets.only(top: 25),
                 child: Column(
                   children: [
                     for (var weekday = 0; weekday < 7; weekday++)
                       SizedBox(
-                        width: 18,
-                        height: step,
+                        width: 22,
+                        height: _step,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             weekday.isOdd ? ['월', '수', '금'][weekday ~/ 2] : '',
                             style: TextStyle(
                               color: colors.muted,
-                              fontSize: 8,
+                              fontSize: 10,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -482,7 +501,7 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
                   ],
                 ),
               ),
-              const SizedBox(width: 5),
+              const SizedBox(width: 7),
               Expanded(
                 child: SingleChildScrollView(
                   key: const ValueKey('year-heatmap-scroll'),
@@ -494,7 +513,7 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: 17,
+                          height: 21,
                           child: Stack(
                             children: [
                               for (var month = 1; month <= 12; month++)
@@ -505,12 +524,12 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
                                         month,
                                       ).difference(start).inDays ~/
                                       7 *
-                                      step,
+                                      _step,
                                   child: Text(
                                     '$month월',
                                     style: TextStyle(
                                       color: colors.muted,
-                                      fontSize: 8,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -522,16 +541,16 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             for (var week = 0; week < weekCount; week++) ...[
-                              if (week > 0) const SizedBox(width: gap),
+                              if (week > 0) const SizedBox(width: _gap),
                               Column(
                                 children: [
                                   for (var weekday = 0; weekday < 7; weekday++)
                                     Padding(
                                       padding: EdgeInsets.only(
-                                        bottom: weekday == 6 ? 0 : gap,
+                                        bottom: weekday == 6 ? 0 : _gap,
                                       ),
                                       child: _YearGrassCell(
-                                        size: cellSize,
+                                        size: _cellSize,
                                         date: start.add(
                                           Duration(days: week * 7 + weekday),
                                         ),
@@ -599,7 +618,7 @@ class _YearlyMoodGrassState extends State<_YearlyMoodGrass> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: colors.muted,
-                      fontSize: 10.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

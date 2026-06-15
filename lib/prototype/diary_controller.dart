@@ -13,10 +13,13 @@ import 'shared_preferences_diary_repository.dart';
 class DiaryController extends ChangeNotifier {
   DiaryController({
     DiaryRepository? repository,
+    bool? seedSampleHistory,
     this.generationDelay = const Duration(milliseconds: 950),
-  }) : _repository = repository ?? _defaultRepository();
+  }) : _repository = repository ?? _defaultRepository(),
+       _seedSampleHistory = seedSampleHistory ?? repository == null;
 
   final DiaryRepository _repository;
+  final bool _seedSampleHistory;
   final Duration generationDelay;
   final List<DiaryEntry> _entries = [];
   int _summaryVariant = 0;
@@ -125,7 +128,14 @@ class DiaryController extends ChangeNotifier {
       _entries
         ..clear()
         ..addAll(saved ?? _sampleEntries());
-      if (saved == null) await _persist();
+      // 프로토타입 데이터가 한 건이라도 있으면 연간 흐름을 볼 수 있게 보강한다.
+      // 사용자가 전체 삭제한 빈 저장소는 그대로 유지한다.
+      final refreshedSamples =
+          _seedSampleHistory &&
+          saved != null &&
+          saved.isNotEmpty &&
+          _addMissingSampleEntries();
+      if (saved == null || refreshedSamples) await _persist();
     } catch (_) {
       storageError = '저장된 기록을 불러오지 못했어요.';
       _entries
@@ -412,34 +422,80 @@ class DiaryController extends ChangeNotifier {
   }
 
   List<DiaryEntry> _sampleEntries() {
-    final now = DateTime.now();
-    final samples = [
-      (1, DiaryMood.normal, ['공부'], 3, '차분하게 공부 흐름을 이어간 하루'),
-      (2, DiaryMood.happy, ['친구', '카페'], 5, '친구와의 대화가 오래 남은 하루'),
-      (3, DiaryMood.tired, ['과제'], 2, '과제를 끝내고 깊게 쉬고 싶었던 하루'),
-      (4, DiaryMood.happy, ['운동'], 4, '몸을 움직이며 기분까지 가벼워진 하루'),
-      (5, DiaryMood.angry, ['과제', '공부'], 2, '막히는 과제 때문에 마음이 급했던 하루'),
-      (6, DiaryMood.normal, ['게임'], 3, '게임으로 조용히 숨을 돌린 하루'),
-      (7, DiaryMood.sad, ['공부'], 2, '마음이 느렸지만 할 일을 이어간 하루'),
-      (8, DiaryMood.happy, ['친구'], 4, '반가운 사람 덕분에 웃을 수 있었던 하루'),
+    final today = _dateOnly(DateTime.now());
+    final lastSampleDay = today.subtract(const Duration(days: 1));
+    final moods = [
+      DiaryMood.normal,
+      DiaryMood.happy,
+      DiaryMood.tired,
+      DiaryMood.happy,
+      DiaryMood.normal,
+      DiaryMood.sad,
+      DiaryMood.happy,
+      DiaryMood.normal,
+      DiaryMood.tired,
+      DiaryMood.angry,
     ];
+    final keywordSets = [
+      ['공부'],
+      ['친구', '카페'],
+      ['과제'],
+      ['운동'],
+      ['게임'],
+      ['공부', '카페'],
+      ['친구'],
+      ['운동', '친구'],
+      ['과제', '공부'],
+      ['게임', '카페'],
+    ];
+    final samples = <DiaryEntry>[];
 
-    return [
-      for (final sample in samples)
+    for (
+      var day = DateTime(today.year, 1, 1);
+      !day.isAfter(lastSampleDay);
+      day = day.add(const Duration(days: 1))
+    ) {
+      final index = day.difference(DateTime(today.year)).inDays;
+      // 대부분의 날을 채우되 가끔 쉰 날을 남겨 자연스러운 기록 흐름을 만든다.
+      if (index % 12 == 0) {
+        continue;
+      }
+      final mood = moods[index % moods.length];
+      final keywords = keywordSets[index % keywordSets.length];
+      final satisfaction = switch (mood) {
+        DiaryMood.happy => index.isEven ? 5 : 4,
+        DiaryMood.normal => index.isEven ? 4 : 3,
+        DiaryMood.tired => 3,
+        DiaryMood.sad || DiaryMood.angry => 2,
+      };
+      samples.add(
         DiaryEntry(
-          id: 'sample-${sample.$1}',
-          date: DateTime(now.year, now.month, sample.$1),
-          mood: sample.$2,
-          keywords: sample.$3,
-          satisfaction: sample.$4,
-          summary: sample.$5,
+          id: 'sample-${day.year}-${day.month}-${day.day}',
+          date: day,
+          mood: mood,
+          keywords: keywords,
+          satisfaction: satisfaction,
+          summary: _buildSummary(mood, keywords, satisfaction, index),
           isSample: true,
         ),
-    ];
+      );
+    }
+    return samples;
+  }
+
+  bool _addMissingSampleEntries() {
+    final occupiedDays = _entries.map((entry) => _dayKey(entry.date)).toSet();
+    final missing = _sampleEntries()
+        .where((entry) => !occupiedDays.contains(_dayKey(entry.date)))
+        .toList();
+    _entries.addAll(missing);
+    return missing.isNotEmpty;
   }
 }
 
 DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+String _dayKey(DateTime date) => '${date.year}-${date.month}-${date.day}';
 
 DiaryRepository _defaultRepository() {
   return MigratingDiaryRepository(

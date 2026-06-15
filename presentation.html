@@ -315,7 +315,7 @@
       flex: 1;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: clamp(12px, 2vw, 28px);
+      gap: clamp(14px, 1.6vw, 24px);
       align-items: center;
       min-height: 0;
     }
@@ -341,10 +341,17 @@
     }
 
     .flow-step .phone-frame {
-      width: min(100%, 235px);
+      width: min(100%, 285px);
+      aspect-ratio: 560 / 900;
       border-width: 5px;
       border-radius: 22px;
       box-shadow: 0 16px 28px rgba(42, 64, 53, 0.12);
+    }
+
+    .flow-step .phone-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .flow-label {
@@ -352,19 +359,23 @@
       align-items: center;
       gap: 8px;
       color: #41564b;
-      font-size: clamp(13px, 1.2vw, 18px);
+      font-size: clamp(16px, 1.45vw, 23px);
       font-weight: 900;
     }
 
     .step-dot {
-      width: 28px;
-      height: 28px;
+      width: 34px;
+      height: 34px;
       display: grid;
       place-items: center;
       border-radius: 50%;
       background: var(--green);
       color: white;
-      font-size: 13px;
+      font-size: 16px;
+    }
+
+    .scenario-slide .section-heading {
+      margin-bottom: clamp(14px, 2vh, 24px);
     }
 
     .timeline-wrap {
@@ -1217,7 +1228,7 @@
       </div>
     </section>
 
-    <section class="slide" data-title="사용자 시나리오">
+    <section class="slide scenario-slide" data-title="사용자 시나리오">
       <div class="slide-inner">
         <div class="slide-top">
           <span class="brand"><span class="brand-mark">02</span> 사용자 시나리오</span>
@@ -1241,7 +1252,7 @@
             <div class="flow-label"><span class="step-dot">3</span>만족도</div>
           </div>
           <div class="flow-step">
-            <div class="phone-frame"><img src="docs/presentation/assets/app-result.png" alt="한 줄 결과 화면"></div>
+            <div class="phone-frame"><img src="docs/presentation/assets/app-result.png?v=20260615" alt="한 줄 결과 화면"></div>
             <div class="flow-label"><span class="step-dot">4</span>한 줄 저장</div>
           </div>
         </div>
@@ -1280,7 +1291,7 @@
               <strong>분석·조회</strong>
               <span>기록 목록, 잔디, 생활 패턴</span>
             </div>
-            <div class="phase active">
+            <div class="phase">
               <div class="phase-dot">5</div>
               <strong>품질·발표</strong>
               <span>테스트, 문서, Web 배포</span>
@@ -1289,7 +1300,7 @@
           <div class="progress-panel">
             <div>
               <div class="progress-line"><span></span></div>
-              <div class="progress-copy"><span>핵심 기능 100%</span><span>전체 WBS 86% · 발표/데모 진행</span></div>
+              <div class="progress-copy"><span>핵심 기능 100%</span><span>전체 WBS 100% · 21개 항목 완료</span></div>
             </div>
             <div class="progress-value">100%</div>
           </div>
@@ -1391,7 +1402,7 @@
         </div>
         <div class="quality-layout">
           <div class="metric-grid">
-            <article class="metric-card"><strong>50</strong><span>단위 + 통합 위젯 테스트 통과</span></article>
+            <article class="metric-card"><strong>53</strong><span>단위 + 통합 위젯 테스트 통과</span></article>
             <article class="metric-card"><strong>0</strong><span>flutter analyze 이슈</span></article>
             <article class="metric-card"><strong>Web</strong><span>Release 빌드 성공</span></article>
             <article class="metric-card"><strong>Local</strong><span>핵심 흐름 오프라인 동작</span></article>

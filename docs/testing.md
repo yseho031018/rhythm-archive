@@ -23,7 +23,7 @@ flutter build web --release --base-href "/rhythm-archive/"
 | 검증 | 결과 |
 |---|---|
 | Flutter 정적 분석 | 통과, 이슈 0개 |
-| 전체 테스트 | 통과, 50개 |
+| 전체 테스트 | 통과, 53개 |
 | Flutter Web Release 빌드 | 통과 |
 
 ## 단위 테스트

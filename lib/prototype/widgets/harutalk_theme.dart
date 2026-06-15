@@ -229,6 +229,7 @@ ThemeData buildHarutalkTheme(Brightness brightness) {
     dialogTheme: DialogThemeData(
       backgroundColor: palette.surface,
       surfaceTintColor: Colors.transparent,
+      constraints: const BoxConstraints(maxWidth: 520),
       elevation: 8,
       shadowColor: palette.shadow,
       shape: RoundedRectangleBorder(

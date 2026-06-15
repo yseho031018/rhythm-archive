@@ -256,123 +256,132 @@ class DiaryDetailScreen extends StatelessWidget {
       listenable: controller,
       builder: (context, _) {
         final entry = controller.entryById(entryId);
-        if (entry == null) {
-          return const Scaffold(body: Center(child: Text('삭제된 기록입니다.')));
-        }
         final colors = context.colors;
         return Scaffold(
-          appBar: AppBar(
-            backgroundColor: colors.background,
-            surfaceTintColor: Colors.transparent,
-            title: const Text('오늘의 기록'),
-          ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(22, 10, 22, 32),
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const ToriMascot(
-                        expression: ToriExpression.journal,
-                        size: 128,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: colors.cream,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            '내가 정리한 한 줄이 마음에 들지 않으면 언제든 고쳐도 괜찮아!',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ),
-                      ),
-                    ],
+          backgroundColor: colors.surfaceSoft,
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Scaffold(
+                  key: const ValueKey('diary-detail-mobile-frame'),
+                  appBar: AppBar(
+                    backgroundColor: colors.background,
+                    surfaceTintColor: Colors.transparent,
+                    title: const Text('오늘의 기록'),
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    formatDiaryDate(entry.date),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    '오늘의 한 줄',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 10),
-                  SoftCard(
-                    padding: const EdgeInsets.all(21),
-                    child: Text(
-                      entry.summary,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineMedium?.copyWith(height: 1.5),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      SmallPill(
-                        label: '${entry.mood.emoji} ${entry.mood.label}',
-                      ),
-                      for (final keyword in entry.keywords)
-                        SmallPill(
-                          label: keyword,
-                          color: colors.cream,
-                          foreground: colors.ink,
-                        ),
-                      SmallPill(
-                        label: '${entry.satisfaction}점',
-                        icon: Icons.star_rounded,
-                        color: colors.accentSoft,
-                        foreground: colors.accent,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _edit(context, entry),
-                          icon: const Icon(Icons.edit_outlined),
-                          label: const Text('수정하기'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(52),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
+                  body: entry == null
+                      ? const Center(child: Text('삭제된 기록입니다.'))
+                      : ListView(
+                          padding: const EdgeInsets.fromLTRB(22, 10, 22, 32),
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const ToriMascot(
+                                  expression: ToriExpression.journal,
+                                  size: 128,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.all(15),
+                                    decoration: BoxDecoration(
+                                      color: colors.cream,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      '내가 정리한 한 줄이 마음에 들지 않으면 언제든 고쳐도 괜찮아!',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: 24),
+                            Text(
+                              formatDiaryDate(entry.date),
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 7),
+                            Text(
+                              '오늘의 한 줄',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 10),
+                            SoftCard(
+                              padding: const EdgeInsets.all(21),
+                              child: Text(
+                                entry.summary,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(height: 1.5),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                SmallPill(
+                                  label:
+                                      '${entry.mood.emoji} ${entry.mood.label}',
+                                ),
+                                for (final keyword in entry.keywords)
+                                  SmallPill(
+                                    label: keyword,
+                                    color: colors.cream,
+                                    foreground: colors.ink,
+                                  ),
+                                SmallPill(
+                                  label: '${entry.satisfaction}점',
+                                  icon: Icons.star_rounded,
+                                  color: colors.accentSoft,
+                                  foreground: colors.accent,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => _edit(context, entry),
+                                    icon: const Icon(Icons.edit_outlined),
+                                    label: const Text('수정하기'),
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size.fromHeight(52),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 9),
+                                Expanded(
+                                  child: FilledButton.icon(
+                                    onPressed: () => Navigator.pop(context),
+                                    icon: const Icon(Icons.check_rounded),
+                                    label: const Text('확인'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton.icon(
+                              onPressed: () => _delete(context, entry),
+                              icon: const Icon(Icons.delete_outline),
+                              label: const Text('기록 삭제'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFFC75252),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 9),
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.check_rounded),
-                          label: const Text('확인'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton.icon(
-                    onPressed: () => _delete(context, entry),
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('기록 삭제'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFC75252),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

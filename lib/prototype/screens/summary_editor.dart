@@ -8,7 +8,16 @@ Future<String?> showSummaryEditor(
 }) {
   return showDialog<String>(
     context: context,
-    builder: (context) => _SummaryEditorDialog(initialValue: initialValue),
+    builder: (context) {
+      final width = (MediaQuery.sizeOf(context).width - 48).clamp(0.0, 520.0);
+      return Center(
+        child: SizedBox(
+          key: const ValueKey('summary-editor-mobile-frame'),
+          width: width,
+          child: _SummaryEditorDialog(initialValue: initialValue),
+        ),
+      );
+    },
   );
 }
 

@@ -7,6 +7,8 @@ import 'package:rhythm_archive/prototype/diary_repository.dart';
 import 'package:rhythm_archive/prototype/screens/diary_screen.dart';
 import 'package:rhythm_archive/prototype/screens/mood_grass_screen.dart';
 import 'package:rhythm_archive/prototype/screens/my_screen.dart';
+import 'package:rhythm_archive/prototype/screens/summary_editor.dart';
+import 'package:rhythm_archive/prototype/widgets/harutalk_theme.dart';
 
 class MemoryDiaryRepository extends DiaryRepository {
   MemoryDiaryRepository([List<DiaryEntry>? entries])
@@ -43,6 +45,63 @@ Future<DiaryController> _loadedController([List<DiaryEntry>? entries]) async {
 }
 
 void main() {
+  testWidgets('한줄 수정 다이얼로그: 와이드 화면에서도 모바일 폭을 유지한다', (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildHarutalkTheme(Brightness.light),
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showSummaryEditor(
+              context,
+              initialValue: '와이드 화면에서도 모바일 폭을 유지하는 한 줄',
+            ),
+            child: const Text('수정 열기'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('수정 열기'));
+    await tester.pumpAndSettle();
+
+    final frame = find.byKey(const ValueKey('summary-editor-mobile-frame'));
+    expect(frame, findsOneWidget);
+    expect(tester.getSize(frame).width, 520);
+    expect(tester.getCenter(frame).dx, 800);
+  });
+
+  testWidgets('한줄 상세: 와이드 화면에서도 모바일 폭을 유지한다', (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final entry = DiaryEntry(
+      id: 'detail-entry',
+      date: DateTime(2026, 6, 15),
+      mood: DiaryMood.happy,
+      keywords: const ['공부'],
+      satisfaction: 5,
+      summary: '와이드 화면에서도 모바일 폭을 유지하는 기록',
+    );
+    final controller = await _loadedController([entry]);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DiaryDetailScreen(controller: controller, entryId: entry.id),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final frame = find.byKey(const ValueKey('diary-detail-mobile-frame'));
+    expect(frame, findsOneWidget);
+    expect(tester.getSize(frame).width, 560);
+    expect(tester.getTopLeft(frame).dx, 520);
+  });
+
   testWidgets('한줄: 기록이 없으면 첫 기록 행동을 안내한다', (tester) async {
     final controller = await _loadedController();
     var started = false;
@@ -127,7 +186,7 @@ void main() {
     final now = DateTime.now();
     final entry = DiaryEntry(
       id: 'year-entry',
-      date: DateTime(now.year, 1, 1),
+      date: DateTime(now.year, now.month, 1),
       mood: DiaryMood.happy,
       keywords: const ['친구'],
       satisfaction: 5,
@@ -153,11 +212,18 @@ void main() {
 
     expect(find.text('${now.year}년'), findsOneWidget);
     expect(find.textContaining('기록 1일'), findsOneWidget);
-    expect(find.byKey(const ValueKey('year-heatmap-scroll')), findsOneWidget);
+    final yearScroll = find.byKey(const ValueKey('year-heatmap-scroll'));
+    expect(yearScroll, findsOneWidget);
+    if (now.month > 2) {
+      final scrollView = tester.widget<SingleChildScrollView>(yearScroll);
+      expect(scrollView.controller!.offset, greaterThan(0));
+    }
 
     await tester.tap(
       find.byKey(
-        ValueKey('year-day-${DateTime(now.year, 1, 1).toIso8601String()}'),
+        ValueKey(
+          'year-day-${DateTime(now.year, now.month, 1).toIso8601String()}',
+        ),
       ),
     );
     await tester.pumpAndSettle();

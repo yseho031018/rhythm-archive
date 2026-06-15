@@ -107,6 +107,44 @@ void main() {
       expect(controller.entries.every((entry) => entry.isSample), isTrue);
     });
 
+    test('기존 프로토타입 기록은 연간 감정잔디용 데이터로 보강한다', () async {
+      final existingEntry = DiaryEntry(
+        id: 'existing-entry',
+        date: DateTime(DateTime.now().year, DateTime.now().month, 1),
+        mood: DiaryMood.happy,
+        keywords: const ['친구'],
+        satisfaction: 5,
+        summary: '기존 사용자 기록',
+      );
+      final repository = MemoryDiaryRepository([existingEntry]);
+      final controller = DiaryController(
+        repository: repository,
+        seedSampleHistory: true,
+        generationDelay: Duration.zero,
+      );
+
+      await controller.load();
+
+      expect(controller.entries.length, greaterThan(20));
+      expect(
+        controller.entries.where(
+          (entry) => entry.date.month < DateTime.now().month,
+        ),
+        isNotEmpty,
+      );
+      expect(
+        controller.entries.any((entry) => entry.id == existingEntry.id),
+        isTrue,
+      );
+      expect(repository.stored, hasLength(controller.entries.length));
+      expect(
+        controller.entries.where(
+          (entry) => !entry.date.isBefore(DateTime.now()),
+        ),
+        isEmpty,
+      );
+    });
+
     test('기분과 키워드를 선택하면 미리보기만 생성한다', () async {
       final repository = MemoryDiaryRepository([]);
       final controller = DiaryController(

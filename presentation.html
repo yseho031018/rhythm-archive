@@ -24,6 +24,7 @@
       --blue-soft: #e4edf5;
       --white: #fffefa;
       --shadow: 0 12px 30px rgba(48, 65, 56, 0.10);
+      --app-screen-width: min(100%, 360px);
     }
 
     * {
@@ -63,12 +64,143 @@
 
     .slide.active {
       display: grid;
-      animation: appear 220ms ease-out;
+      animation: appear 260ms ease-out;
     }
 
     @keyframes appear {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes reveal-up {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes reveal-right {
+      from {
+        opacity: 0;
+        transform: translateX(-22px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes play-cue {
+      0% { transform: scale(0.92); opacity: 0; }
+      55% { transform: scale(1.04); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes progress-fill {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    .scenario-slide.active .flow-step,
+    .slide.active .insight-card,
+    .slide.active .demo-play,
+    .slide.active .demo-copy > * {
+      opacity: 0;
+      animation: reveal-up 380ms ease-out forwards;
+    }
+
+    .scenario-slide.active .flow-step:nth-child(1) { animation-delay: 80ms; }
+    .scenario-slide.active .flow-step:nth-child(2) { animation-delay: 230ms; }
+    .scenario-slide.active .flow-step:nth-child(3) { animation-delay: 380ms; }
+    .scenario-slide.active .flow-step:nth-child(4) { animation-delay: 530ms; }
+
+    .slide.active .insight-card:nth-child(1) { animation-delay: 100ms; }
+    .slide.active .insight-card:nth-child(2) { animation-delay: 300ms; }
+    .slide.active .insight-card:nth-child(3) { animation-delay: 500ms; }
+
+    .slide.active .demo-play {
+      animation-name: play-cue;
+      animation-duration: 560ms;
+      animation-delay: 100ms;
+    }
+
+    .slide.active .demo-copy > :nth-child(1) { animation-delay: 180ms; }
+    .slide.active .demo-copy > :nth-child(2) { animation-delay: 300ms; }
+    .slide.active .demo-copy > :nth-child(3) { animation-delay: 420ms; }
+    .slide.active .demo-copy > :nth-child(4) { animation-delay: 540ms; }
+
+    .slide.active .demo-route span {
+      opacity: 0;
+      animation: reveal-right 260ms ease-out forwards;
+    }
+
+    .slide.active .demo-route span:nth-child(1) { animation-delay: 560ms; }
+    .slide.active .demo-route span:nth-child(2) { animation-delay: 650ms; }
+    .slide.active .demo-route span:nth-child(3) { animation-delay: 740ms; }
+    .slide.active .demo-route span:nth-child(4) { animation-delay: 830ms; }
+    .slide.active .demo-route span:nth-child(5) { animation-delay: 920ms; }
+    .slide.active .demo-route span:nth-child(6) { animation-delay: 1010ms; }
+
+    .vision-slide.active .problem-card,
+    .vision-slide.active .problem-arrow,
+    .vision-slide.active .vision-strip,
+    .architecture-slide.active .layer,
+    .architecture-slide.active .tech-stack,
+    .quality-slide.active .metric-card,
+    .quality-slide.active .pipeline-step,
+    .quality-slide.active .evidence-list {
+      opacity: 0;
+      animation: reveal-up 360ms ease-out forwards;
+    }
+
+    .vision-slide.active .problem-card.long { animation-delay: 100ms; }
+    .vision-slide.active .problem-arrow { animation-delay: 260ms; }
+    .vision-slide.active .problem-card.list { animation-delay: 400ms; }
+    .vision-slide.active .vision-strip { animation-delay: 600ms; }
+
+    .architecture-slide.active .layer:nth-child(1) { animation-delay: 80ms; }
+    .architecture-slide.active .layer:nth-child(2) { animation-delay: 220ms; }
+    .architecture-slide.active .layer:nth-child(3) { animation-delay: 360ms; }
+    .architecture-slide.active .layer:nth-child(4) { animation-delay: 500ms; }
+    .architecture-slide.active .tech-stack { animation-delay: 680ms; }
+
+    .quality-slide.active .metric-card:nth-child(1) { animation-delay: 80ms; }
+    .quality-slide.active .metric-card:nth-child(2) { animation-delay: 170ms; }
+    .quality-slide.active .metric-card:nth-child(3) { animation-delay: 260ms; }
+    .quality-slide.active .metric-card:nth-child(4) { animation-delay: 350ms; }
+    .quality-slide.active .pipeline-step:nth-child(1) { animation-delay: 470ms; }
+    .quality-slide.active .pipeline-step:nth-child(2) { animation-delay: 570ms; }
+    .quality-slide.active .pipeline-step:nth-child(3) { animation-delay: 670ms; }
+    .quality-slide.active .pipeline-step:nth-child(4) { animation-delay: 770ms; }
+    .quality-slide.active .evidence-list { animation-delay: 900ms; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slide.active,
+      .scenario-slide.active .flow-step,
+      .slide.active .insight-card,
+      .slide.active .demo-play,
+      .slide.active .demo-copy > *,
+      .slide.active .demo-route span,
+      .vision-slide.active .problem-card,
+      .vision-slide.active .problem-arrow,
+      .vision-slide.active .vision-strip,
+      .architecture-slide.active .layer,
+      .architecture-slide.active .tech-stack,
+      .quality-slide.active .metric-card,
+      .quality-slide.active .pipeline-step,
+      .quality-slide.active .evidence-list {
+        opacity: 1;
+        transform: none;
+        animation: none;
+      }
+
+      .wbs-slide.active .progress-line span {
+        animation: none;
+      }
     }
 
     .slide-inner {
@@ -212,7 +344,7 @@
     }
 
     .cover-visual .phone-frame {
-      width: min(330px, 64%);
+      width: var(--app-screen-width);
       transform: rotate(2deg);
       z-index: 2;
     }
@@ -227,6 +359,14 @@
     }
 
     .phone-frame {
+      width: var(--app-screen-width);
+      height: min(54vh, 579px);
+      aspect-ratio: 560 / 900;
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      contain: size;
       overflow: hidden;
       border: 8px solid #283c32;
       border-radius: 30px;
@@ -237,7 +377,11 @@
     .phone-frame img {
       display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
+      object-fit: contain;
+      object-position: center;
     }
 
     .section-heading {
@@ -315,7 +459,7 @@
       flex: 1;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: clamp(14px, 1.6vw, 24px);
+      gap: clamp(16px, 1.8vw, 28px);
       align-items: center;
       min-height: 0;
     }
@@ -332,26 +476,122 @@
     .flow-step:not(:last-child)::after {
       content: "→";
       position: absolute;
-      right: clamp(-24px, -1.7vw, -14px);
-      top: 43%;
+      right: clamp(-29px, -2vw, -18px);
+      top: 45%;
       color: #9ab1a3;
-      font-size: clamp(25px, 2.6vw, 42px);
+      font-size: clamp(30px, 3vw, 48px);
       font-weight: 900;
       z-index: 4;
     }
 
-    .flow-step .phone-frame {
-      width: min(100%, 285px);
-      aspect-ratio: 560 / 900;
-      border-width: 5px;
-      border-radius: 22px;
-      box-shadow: 0 16px 28px rgba(42, 64, 53, 0.12);
+    .scenario-card {
+      width: 100%;
+      min-height: min(390px, 43vh);
+      padding: clamp(22px, 2vw, 32px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+      border: 2px solid #dbe3dc;
+      border-top: 8px solid var(--green);
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: var(--shadow);
     }
 
-    .flow-step .phone-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .scenario-card.activity {
+      border-top-color: var(--blue);
+    }
+
+    .scenario-card.score {
+      border-top-color: var(--yellow);
+    }
+
+    .scenario-card.result {
+      border-top-color: var(--coral);
+      background: var(--green-soft);
+    }
+
+    .scenario-prompt {
+      color: #31463b;
+      font-size: clamp(18px, 1.7vw, 27px);
+      line-height: 1.35;
+      font-weight: 900;
+    }
+
+    .scenario-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .scenario-option {
+      min-height: 68px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: #516158;
+      font-size: clamp(13px, 1.15vw, 17px);
+      font-weight: 850;
+    }
+
+    .scenario-option strong {
+      font-size: clamp(22px, 2.2vw, 35px);
+    }
+
+    .scenario-option.selected {
+      border-color: var(--green);
+      background: var(--green);
+      color: white;
+    }
+
+    .scenario-score {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .scenario-score span {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--paper);
+      font-size: clamp(16px, 1.5vw, 23px);
+      font-weight: 900;
+    }
+
+    .scenario-score span.selected {
+      background: var(--green);
+      color: white;
+    }
+
+    .scenario-summary {
+      padding: 20px;
+      border-left: 6px solid var(--green);
+      background: var(--white);
+      color: #31463b;
+      font-size: clamp(17px, 1.45vw, 23px);
+      line-height: 1.45;
+      font-weight: 900;
+    }
+
+    .scenario-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .scenario-meta span {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--green);
+      font-size: clamp(12px, 1vw, 15px);
+      font-weight: 850;
     }
 
     .flow-label {
@@ -376,6 +616,11 @@
 
     .scenario-slide .section-heading {
       margin-bottom: clamp(14px, 2vh, 24px);
+    }
+
+    .scenario-slide .slide-inner {
+      padding-left: clamp(22px, 2.5vw, 44px);
+      padding-right: clamp(22px, 2.5vw, 44px);
     }
 
     .timeline-wrap {
@@ -472,7 +717,12 @@
       display: block;
       width: 100%;
       height: 100%;
+      transform-origin: left center;
       background: var(--green);
+    }
+
+    .wbs-slide.active .progress-line span {
+      animation: progress-fill 900ms 140ms cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .progress-copy {
@@ -682,7 +932,7 @@
 
     .quality-evidence {
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto;
       gap: 18px;
       align-content: center;
     }
@@ -722,10 +972,16 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+      align-content: start;
     }
 
     .evidence-item {
-      padding: 16px 18px;
+      min-height: 76px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
       border-left: 5px solid var(--green);
       background: var(--green-soft);
       color: #40584b;
@@ -734,62 +990,241 @@
       line-height: 1.45;
     }
 
-    .outcome-grid {
-      flex: 1;
+    .evidence-item strong {
+      color: var(--ink);
+      font-size: clamp(14px, 1.2vw, 18px);
+      line-height: 1.2;
+    }
+
+    .evidence-item span {
+      color: #52685c;
+      font-size: clamp(11px, 0.95vw, 15px);
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .insight-flow {
+      flex: 0 0 min(500px, 55vh);
+      height: min(500px, 55vh);
       display: grid;
-      grid-template-columns: 0.85fr 0.85fr 0.7fr;
-      gap: clamp(18px, 3vw, 46px);
-      align-items: start;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(22px, 3vw, 46px);
+      align-items: stretch;
+      margin-bottom: clamp(58px, 7vh, 78px);
+      transform: translateY(-14px);
       min-height: 0;
     }
 
-    .outcome-grid .phone-frame {
-      width: min(100%, 262px);
-      justify-self: center;
-      border-width: 6px;
-      border-radius: 24px;
+    .insight-card {
+      height: 100%;
+      min-height: 0;
+      position: relative;
+      padding: clamp(24px, 2.5vw, 38px);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: var(--shadow);
     }
 
-    .outcome-copy {
-      display: grid;
-      gap: 20px;
+    .insight-card:first-child {
+      padding: clamp(20px, 2vw, 30px);
+      padding-bottom: clamp(32px, 3vw, 42px);
+      gap: 12px;
     }
 
-    .outcome-step {
-      padding: 18px;
-      border-left: 6px solid var(--green);
+    .insight-card:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: clamp(-48px, -3.5vw, -28px);
+      top: 46%;
+      color: #9ab1a3;
+      font-size: clamp(34px, 3.5vw, 58px);
+      font-weight: 900;
+      z-index: 3;
+    }
+
+    .insight-kicker {
+      color: var(--green);
+      font-size: clamp(13px, 1.15vw, 18px);
+      font-weight: 900;
+    }
+
+    .insight-card h3 {
+      font-size: clamp(25px, 2.3vw, 37px);
+    }
+
+    .grass-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .grass-month {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #40564a;
+      font-size: clamp(16px, 1.35vw, 21px);
+      font-weight: 900;
+    }
+
+    .grass-month span {
+      padding: 5px 9px;
+      border-radius: 999px;
       background: var(--green-soft);
+      color: var(--green);
+      font-size: clamp(13px, 1.05vw, 16px);
     }
 
-    .outcome-step strong {
+    .grass-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      color: #829087;
+      text-align: center;
+      font-size: clamp(13px, 1.05vw, 17px);
+      font-weight: 850;
+    }
+
+    .mini-heatmap {
+      width: min(100%, 292px);
+      align-self: center;
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-rows: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      aspect-ratio: 7 / 5;
+    }
+
+    .mini-heatmap span {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #e1ddd1;
+      border-radius: 4px;
+      background: var(--paper-soft);
+    }
+
+    .mini-heatmap .happy { background: #69b88d; }
+    .mini-heatmap .normal { background: #e8c45f; }
+    .mini-heatmap .tired { background: #ef9d5f; }
+    .mini-heatmap .sad { background: #6f9dd2; }
+    .mini-heatmap .angry { background: #df7c7c; }
+
+    .grass-legend {
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+      margin-bottom: 4px;
+      color: #68766e;
+      font-size: clamp(14px, 1.1vw, 17px);
+      font-weight: 800;
+    }
+
+    .grass-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .grass-legend i {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: var(--green);
+    }
+
+    .grass-legend .normal { background: #e8c45f; }
+    .grass-legend .tired { background: #ef9d5f; }
+    .grass-legend .sad { background: #6f9dd2; }
+    .grass-legend .angry { background: #df7c7c; }
+
+    .relation-bars {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .relation-row {
+      display: grid;
+      grid-template-columns: 55px 1fr 38px;
+      gap: 10px;
+      align-items: center;
+      color: #465a4f;
+      font-size: clamp(14px, 1.1vw, 17px);
+      font-weight: 850;
+    }
+
+    .relation-track {
+      height: 16px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--paper-soft);
+    }
+
+    .relation-track i {
+      height: 100%;
       display: block;
-      margin-bottom: 5px;
-      font-size: clamp(17px, 1.5vw, 23px);
+      border-radius: inherit;
+      background: var(--green);
     }
 
-    .outcome-step span {
-      color: var(--muted);
-      font-size: clamp(12px, 1.05vw, 16px);
-      line-height: 1.45;
-    }
-
-    .future {
-      border-left-color: var(--yellow);
+    .relation-callout {
+      padding: 16px;
+      border-left: 6px solid var(--yellow);
       background: var(--yellow-soft);
+      color: #4b5b53;
+      font-size: clamp(15px, 1.3vw, 20px);
+      line-height: 1.45;
+      font-weight: 850;
     }
 
-    .demo-layout {
+    .reflection-target {
       flex: 1;
       display: grid;
-      grid-template-columns: 0.85fr 1.15fr;
-      gap: clamp(28px, 5vw, 80px);
+      place-items: center;
+      text-align: center;
+      color: var(--green);
+      font-size: clamp(72px, 8vw, 130px);
+      line-height: 1;
+    }
+
+    .reflection-answer {
+      padding: 18px;
+      background: var(--green-soft);
+      color: #344b3f;
+      font-size: clamp(16px, 1.45vw, 23px);
+      line-height: 1.4;
+      font-weight: 900;
+    }
+
+    .demo-stage {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 0.75fr 1.25fr;
+      gap: clamp(34px, 5vw, 80px);
       align-items: center;
       min-height: 0;
     }
 
-    .demo-layout .phone-frame {
-      width: min(310px, 80%);
+    .demo-play {
+      width: min(390px, 72%);
+      aspect-ratio: 1;
       justify-self: center;
+      display: grid;
+      place-items: center;
+      border: 2px solid #c5d8ca;
+      border-radius: 50%;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: clamp(90px, 10vw, 160px);
+      box-shadow: var(--shadow);
     }
 
     .demo-copy {
@@ -806,19 +1241,31 @@
     }
 
     .demo-route {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
     }
 
     .demo-route span {
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--green-soft);
-      color: var(--green);
-      font-size: clamp(13px, 1.2vw, 18px);
+      min-height: 84px;
+      position: relative;
+      padding: 14px 8px;
+      display: grid;
+      place-items: center;
+      border-top: 6px solid var(--green);
+      background: var(--white);
+      color: #40564a;
+      text-align: center;
+      font-size: clamp(13px, 1.1vw, 17px);
       font-weight: 900;
+    }
+
+    .demo-route span:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -11px;
+      color: #94ab9d;
+      z-index: 2;
     }
 
     .url-list {
@@ -1066,7 +1513,7 @@
       .decision-grid,
       .quality-layout,
       .agent-layout,
-      .demo-layout,
+      .demo-stage,
       .closing-grid {
         grid-template-columns: 1fr;
       }
@@ -1074,7 +1521,7 @@
       .cover-visual,
       .decision-visual,
       .agent-visual,
-      .demo-layout .phone-frame,
+      .demo-play,
       .closing-visual {
         display: none;
       }
@@ -1125,11 +1572,11 @@
         display: none;
       }
 
-      .outcome-grid {
-        grid-template-columns: 1fr 1fr;
+      .insight-flow {
+        grid-template-columns: 1fr;
       }
 
-      .outcome-copy {
+      .insight-card:not(:last-child)::after {
         display: none;
       }
 
@@ -1197,7 +1644,7 @@
       </div>
     </section>
 
-    <section class="slide" data-title="비전과 문제 정의">
+    <section class="slide vision-slide" data-title="비전과 문제 정의">
       <div class="slide-inner">
         <div class="slide-top">
           <span class="brand"><span class="brand-mark">01</span> 비전과 문제 정의</span>
@@ -1240,26 +1687,52 @@
         </div>
         <div class="flow-grid">
           <div class="flow-step">
-            <div class="phone-frame"><img src="docs/presentation/assets/app-record-mood.png" alt="기분 선택 화면"></div>
+            <div class="scenario-card">
+              <p class="scenario-prompt">오늘 기분은 어땠어?</p>
+              <div class="scenario-options">
+                <span class="scenario-option selected"><strong>😊</strong>행복</span>
+                <span class="scenario-option"><strong>🙂</strong>보통</span>
+                <span class="scenario-option"><strong>😴</strong>피곤</span>
+              </div>
+              <p class="small">질문 하나에 선택 하나</p>
+            </div>
             <div class="flow-label"><span class="step-dot">1</span>기분</div>
           </div>
           <div class="flow-step">
-            <div class="phone-frame"><img src="docs/presentation/assets/app-record-keyword.png" alt="키워드 선택 화면"></div>
+            <div class="scenario-card activity">
+              <p class="scenario-prompt">무엇과 함께한 하루였어?</p>
+              <div class="scenario-options">
+                <span class="scenario-option">📚 공부</span>
+                <span class="scenario-option selected">👥 친구</span>
+                <span class="scenario-option">🏃 운동</span>
+              </div>
+              <p class="small">생활 맥락을 짧게 선택</p>
+            </div>
             <div class="flow-label"><span class="step-dot">2</span>활동</div>
           </div>
           <div class="flow-step">
-            <div class="phone-frame"><img src="docs/presentation/assets/app-record-satisfaction.png" alt="만족도 선택 화면"></div>
+            <div class="scenario-card score">
+              <p class="scenario-prompt">오늘 하루에 몇 점을 줄래?</p>
+              <div class="scenario-score">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span class="selected">5</span>
+              </div>
+              <p class="small">하루를 숫자로 돌아보기</p>
+            </div>
             <div class="flow-label"><span class="step-dot">3</span>만족도</div>
           </div>
           <div class="flow-step">
-            <div class="phone-frame"><img src="docs/presentation/assets/app-result.png?v=20260615" alt="한 줄 결과 화면"></div>
+            <div class="scenario-card result">
+              <p class="scenario-prompt">토리가 만든 오늘의 한 줄</p>
+              <div class="scenario-summary">친구 속에서 기분 좋은 순간을 발견한, 꽤 만족스러운 하루.</div>
+              <div class="scenario-meta"><span>😊 행복</span><span>친구</span><span>★ 5점</span></div>
+            </div>
             <div class="flow-label"><span class="step-dot">4</span>한 줄 저장</div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-title="WBS와 진행 과정">
+    <section class="slide wbs-slide" data-title="WBS와 진행 과정">
       <div class="slide-inner">
         <div class="slide-top">
           <span class="brand"><span class="brand-mark">03</span> WBS와 진행 과정</span>
@@ -1302,13 +1775,13 @@
               <div class="progress-line"><span></span></div>
               <div class="progress-copy"><span>핵심 기능 100%</span><span>전체 WBS 100% · 21개 항목 완료</span></div>
             </div>
-            <div class="progress-value">100%</div>
+            <div class="progress-value" data-final-value="100">100%</div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="slide" data-title="기술과 앱 구조">
+    <section class="slide architecture-slide" data-title="기술과 앱 구조">
       <div class="slide-inner">
         <div class="slide-top">
           <span class="brand"><span class="brand-mark">04</span> 기술과 앱 구조</span>
@@ -1390,7 +1863,7 @@
       </div>
     </section>
 
-    <section class="slide" data-title="품질과 배포">
+    <section class="slide quality-slide" data-title="품질과 배포">
       <div class="slide-inner">
         <div class="slide-top">
           <span class="brand"><span class="brand-mark">06</span> 품질과 배포</span>
@@ -1415,10 +1888,22 @@
               <div class="pipeline-step">GitHub Pages</div>
             </div>
             <div class="evidence-list">
-              <div class="evidence-item">이전 이동 · 선택 유지 · 월/연간 감정잔디 검증</div>
-              <div class="evidence-item">Drift 저장 · JSON 백업/복원 · 전체 삭제 검증</div>
-              <div class="evidence-item">PR · Push마다 GitHub Actions 자동 품질 검사</div>
-              <div class="evidence-item">README · AGENTS · setup · deploy · testing</div>
+              <div class="evidence-item">
+                <strong>사용자 흐름</strong>
+                <span>이전 이동 · 선택 유지 · 월/연간 감정잔디 검증</span>
+              </div>
+              <div class="evidence-item">
+                <strong>데이터 안정성</strong>
+                <span>Drift 저장 · JSON 백업/복원 · 전체 삭제 검증</span>
+              </div>
+              <div class="evidence-item">
+                <strong>자동 품질 검사</strong>
+                <span>PR · Push마다 GitHub Actions 실행</span>
+              </div>
+              <div class="evidence-item">
+                <strong>문서화</strong>
+                <span>README · AGENTS · setup · deploy · testing</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1435,15 +1920,41 @@
           <p class="eyebrow">FROM RECORD TO REFLECTION</p>
           <h2>한 줄이 쌓이면,<br><span class="accent">내 생활의 관계가 보입니다.</span></h2>
         </div>
-        <div class="outcome-grid">
-          <div class="phone-frame"><img src="docs/presentation/assets/app-grass.png" alt="감정잔디 화면"></div>
-          <div class="phone-frame"><img src="docs/presentation/assets/app-pattern-detail.png" alt="생활 패턴 분석 화면"></div>
-          <div class="outcome-copy">
-            <div class="outcome-step"><strong>기록</strong><span>매일 30초, 부담 없이 시작</span></div>
-            <div class="outcome-step"><strong>패턴</strong><span>월간·연간 감정 흐름과 활동 관계 확인</span></div>
-            <div class="outcome-step"><strong>회고</strong><span>다음 생활 선택에 참고</span></div>
-            <div class="outcome-step future"><strong>향후 확장</strong><span>로컬 AI 서버와 선택형 기기 동기화</span></div>
-          </div>
+        <div class="insight-flow">
+          <article class="insight-card">
+            <p class="insight-kicker">01 · 기록이 쌓이면</p>
+            <h3>월간 감정잔디로<br>흐름이 보이고</h3>
+            <div class="grass-panel">
+              <div class="grass-month">2026년 6월 <span>감정잔디</span></div>
+              <div class="grass-weekdays"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+              <div class="mini-heatmap" aria-label="6월 감정잔디 예시">
+                <span class="happy"></span><span class="normal"></span><span class="happy"></span><span class="tired"></span><span class="sad"></span><span class="happy"></span><span class="normal"></span>
+                <span class="normal"></span><span class="happy"></span><span class="happy"></span><span class="angry"></span><span class="tired"></span><span class="happy"></span><span class="happy"></span>
+                <span class="happy"></span><span class="happy"></span><span class="normal"></span><span class="tired"></span><span class="happy"></span><span class="sad"></span><span class="normal"></span>
+                <span class="tired"></span><span class="happy"></span><span class="happy"></span><span class="normal"></span><span class="happy"></span><span class="happy"></span><span class="tired"></span>
+                <span class="sad"></span><span class="normal"></span><span class="happy"></span><span class="happy"></span><span class="angry"></span><span class="normal"></span><span class="happy"></span>
+              </div>
+              <div class="grass-legend">
+                <span><i></i>행복</span><span><i class="normal"></i>보통</span><span><i class="tired"></i>피곤</span><span><i class="sad"></i>우울</span><span><i class="angry"></i>화남</span>
+              </div>
+            </div>
+          </article>
+          <article class="insight-card">
+            <p class="insight-kicker">02 · 활동과 비교하면</p>
+            <h3>생활의 관계를 발견하고</h3>
+            <div class="relation-bars">
+              <div class="relation-row"><span>친구</span><div class="relation-track"><i style="width:94%"></i></div><strong>4.7</strong></div>
+              <div class="relation-row"><span>운동</span><div class="relation-track"><i style="width:70%"></i></div><strong>3.5</strong></div>
+              <div class="relation-row"><span>과제</span><div class="relation-track"><i style="width:40%"></i></div><strong>2.0</strong></div>
+            </div>
+            <div class="relation-callout">친구와 함께한 날은<br>평균 만족도가 더 높았어요.</div>
+          </article>
+          <article class="insight-card">
+            <p class="insight-kicker">03 · 다음 선택에서</p>
+            <h3>나에게 맞는<br>다음 하루를 선택합니다</h3>
+            <div class="reflection-target">↗</div>
+            <div class="reflection-answer">“이번 주에는 친구와 보내는 시간을 조금 더 만들어볼까?”</div>
+          </article>
         </div>
       </div>
     </section>
@@ -1454,17 +1965,17 @@
           <span class="brand"><span class="brand-mark">08</span> 사용자 시나리오 기반 시연</span>
           <span class="slide-number">08 / 10</span>
         </div>
-        <div class="demo-layout">
-          <div class="phone-frame"><img src="docs/presentation/assets/app-list.png" alt="하루톡 한 줄 기록 목록"></div>
+        <div class="demo-stage">
+          <div class="demo-play" aria-label="데모 영상 재생">▶</div>
           <div class="demo-copy">
             <div class="demo-time">30초</div>
-            <h2>세 번 고르고,<br>한 줄을 저장합니다.</h2>
+            <h2>설명보다 빠르게,<br>실제 흐름으로 보여줍니다.</h2>
             <div class="demo-route">
-              <span>행복</span><strong>→</strong>
-              <span>친구</span><strong>→</strong>
-              <span>5점</span><strong>→</strong>
-              <span>한 줄</span><strong>→</strong>
-              <span>연간 잔디</span><strong>→</strong>
+              <span>기분 선택</span>
+              <span>활동 선택</span>
+              <span>만족도 선택</span>
+              <span>한 줄 저장</span>
+              <span>연간 잔디</span>
               <span>생활 패턴</span>
             </div>
             <div class="url-list">
@@ -1616,10 +2127,41 @@
     const prev = document.getElementById("prev");
     const next = document.getElementById("next");
     let index = Math.max(0, Math.min(slides.length - 1, Number(location.hash.slice(1)) - 1 || 0));
+    let progressAnimationFrame = 0;
+    let progressAnimationDelay = 0;
+
+    function animateWbsProgress(slide) {
+      cancelAnimationFrame(progressAnimationFrame);
+      clearTimeout(progressAnimationDelay);
+
+      const value = slide.querySelector(".progress-value");
+      if (!value) return;
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        value.textContent = `${value.dataset.finalValue}%`;
+        return;
+      }
+
+      value.textContent = "0%";
+      progressAnimationDelay = setTimeout(() => {
+        const startedAt = performance.now();
+        const duration = 900;
+
+        function update(now) {
+          const progressValue = Math.min(1, (now - startedAt) / duration);
+          const eased = 1 - Math.pow(1 - progressValue, 3);
+          value.textContent = `${Math.round(eased * Number(value.dataset.finalValue))}%`;
+          if (progressValue < 1) progressAnimationFrame = requestAnimationFrame(update);
+        }
+
+        progressAnimationFrame = requestAnimationFrame(update);
+      }, 140);
+    }
 
     function render(nextIndex) {
       index = Math.max(0, Math.min(slides.length - 1, nextIndex));
       slides.forEach((slide, slideIndex) => slide.classList.toggle("active", slideIndex === index));
+      animateWbsProgress(slides[index]);
       if (index === 0) {
         counter.textContent = "표지";
       } else if (index <= 10) {

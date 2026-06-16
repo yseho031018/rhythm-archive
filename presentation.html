@@ -1399,6 +1399,61 @@
       flex-wrap: wrap;
     }
 
+    .closing-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .closing-link {
+      padding: 12px 14px;
+      display: grid;
+      gap: 3px;
+      border: 1px solid #bfd3c6;
+      border-radius: 8px;
+      background: rgba(255, 254, 250, 0.82);
+      color: var(--ink);
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(48, 65, 56, 0.08);
+    }
+
+    .closing-link strong {
+      color: var(--green);
+      font-size: clamp(12px, 1.05vw, 16px);
+      line-height: 1.2;
+    }
+
+    .closing-link span {
+      overflow: hidden;
+      color: #52685c;
+      font-family: Consolas, monospace;
+      font-size: clamp(10px, 0.85vw, 13px);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .closing-link.adr-shortcut {
+      grid-column: 1 / -1;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      column-gap: 14px;
+      border-color: #8fb5a1;
+      background: #eef7f0;
+    }
+
+    .closing-link.adr-shortcut strong {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--green);
+      color: var(--white);
+    }
+
+    .closing-link.adr-shortcut span {
+      font-family: inherit;
+      font-size: clamp(12px, 0.95vw, 15px);
+      font-weight: 850;
+    }
+
     .closing-visual {
       display: grid;
       place-items: center;
@@ -2123,6 +2178,28 @@
               <span class="pill">한 줄 기록</span>
               <span class="pill">연간 감정 회고</span>
             </div>
+            <div class="closing-links" aria-label="프로젝트 링크">
+              <a class="closing-link" href="https://yseho031018.github.io/rhythm-archive/" target="_blank" rel="noreferrer">
+                <strong>앱 데모</strong>
+                <span>yseho031018.github.io/rhythm-archive/</span>
+              </a>
+              <a class="closing-link" href="https://yseho031018.github.io/rhythm-archive/presentation.html" target="_blank" rel="noreferrer">
+                <strong>발표자료</strong>
+                <span>/presentation.html</span>
+              </a>
+              <a class="closing-link" href="https://yseho031018.github.io/rhythm-archive/wbs-gantt.html" target="_blank" rel="noreferrer">
+                <strong>WBS/Gantt</strong>
+                <span>/wbs-gantt.html</span>
+              </a>
+              <a class="closing-link" href="https://github.com/yseho031018/rhythm-archive" target="_blank" rel="noreferrer">
+                <strong>GitHub</strong>
+                <span>github.com/yseho031018/rhythm-archive</span>
+              </a>
+              <a class="closing-link adr-shortcut" href="#12" data-slide-target="12">
+                <strong>ADR 3개</strong>
+                <span>질의응답 시 부록 A1에서 결정 기록을 바로 확인</span>
+              </a>
+            </div>
           </div>
           <div class="closing-visual">
             <img src="assets/tori/tori_journal.png" alt="일기를 쓰는 토리">
@@ -2142,9 +2219,30 @@
           <h2>결정의 이유와<br><span class="accent">포기한 선택까지 기록했습니다.</span></h2>
         </div>
         <div class="appendix-grid">
-          <article class="appendix-card"><h3>ADR-0001 · Flutter</h3><p>모바일 중심 UI와 GitHub Pages Web 데모를 하나의 Dart 코드베이스에서 관리합니다.</p></article>
-          <article class="appendix-card"><h3>ADR-0002 · 구조</h3><p>ChangeNotifier와 Repository Pattern으로 현재 규모에 맞는 책임 분리와 테스트 가능성을 확보합니다.</p></article>
-          <article class="appendix-card"><h3>ADR-0003 · 저장</h3><p>Drift/SQLite로 오프라인 기록을 구조화하고, 기존 SharedPreferences 기록은 최초 실행에 자동 이전합니다.</p></article>
+          <article class="appendix-card">
+            <h3>ADR-0001 · Flutter</h3>
+            <p>모바일 중심 UI와 GitHub Pages Web 데모를 하나의 Dart 코드베이스에서 관리합니다.</p>
+            <ul>
+              <li>Material 3 기반 앱 UI</li>
+              <li>Web URL 발표 시연</li>
+            </ul>
+          </article>
+          <article class="appendix-card">
+            <h3>ADR-0002 · 구조</h3>
+            <p>ChangeNotifier와 Repository Pattern으로 현재 규모에 맞는 책임 분리와 테스트 가능성을 확보합니다.</p>
+            <ul>
+              <li>UI · Controller · Domain · Data 분리</li>
+              <li>Memory Repository로 테스트</li>
+            </ul>
+          </article>
+          <article class="appendix-card">
+            <h3>ADR-0003 · 저장</h3>
+            <p>Drift/SQLite로 오프라인 기록을 구조화하고, 기존 SharedPreferences 기록은 최초 실행에 자동 이전합니다.</p>
+            <ul>
+              <li>Web은 SQLite WASM + IndexedDB</li>
+              <li>JSON 백업/복원 유지</li>
+            </ul>
+          </article>
         </div>
       </div>
     </section>
@@ -2298,6 +2396,14 @@
     demoClose?.addEventListener("click", closeDemoVideo);
     demoOverlay?.addEventListener("click", (event) => {
       if (event.target === demoOverlay) closeDemoVideo();
+    });
+    document.querySelectorAll("[data-slide-target]").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const slideNumber = Number(link.dataset.slideTarget);
+        if (!Number.isFinite(slideNumber)) return;
+        event.preventDefault();
+        render(slideNumber - 1);
+      });
     });
 
     prev.addEventListener("click", () => render(index - 1));

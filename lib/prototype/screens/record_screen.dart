@@ -756,6 +756,7 @@ class _KeywordChoices extends StatelessWidget {
     '카페': Icons.local_cafe_rounded,
     '과제': Icons.assignment_rounded,
     '운동': Icons.fitness_center_rounded,
+    '가족': Icons.home_rounded,
   };
 
   // 활동별 고유 색(목업의 컬러 일러스트 아이콘 톤에 맞춤).
@@ -766,6 +767,7 @@ class _KeywordChoices extends StatelessWidget {
     '카페': Color(0xFFB07C53), // 브라운
     '과제': Color(0xFF45A36B), // 그린
     '운동': Color(0xFF3FAE9A), // 틸
+    '가족': Color(0xFFD97E97), // 로즈
   };
 
   static const _fallbackColor = Color(0xFF6E9E84);
@@ -808,12 +810,8 @@ class _KeywordChoices extends StatelessWidget {
             onLongPress: null,
           ),
         ];
-        final lastRowCount = items.length % columns;
-        final fullTileWidth = (gridWidth - spacing * (columns - 1)) / columns;
-        final lastRowTileWidth = lastRowCount == 0
-            ? fullTileWidth
-            : (gridWidth - spacing * (lastRowCount - 1)) / lastRowCount;
-        final lastRowStart = items.length - lastRowCount;
+        // 모든 칸을 같은 크기로 둔다(마지막 줄을 늘려 채우지 않음).
+        final tileWidth = (gridWidth - spacing * (columns - 1)) / columns;
 
         return Align(
           alignment: Alignment.centerLeft,
@@ -825,9 +823,7 @@ class _KeywordChoices extends StatelessWidget {
               children: [
                 for (var index = 0; index < items.length; index++)
                   _ChoiceTile(
-                    width: lastRowCount != 0 && index >= lastRowStart
-                        ? lastRowTileWidth
-                        : fullTileWidth,
+                    width: tileWidth,
                     height: compact ? 88 : 100,
                     icon: items[index].icon,
                     accentColor: items[index].color,
@@ -1186,6 +1182,7 @@ class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
     '카페': '☕',
     '과제': '📝',
     '운동': '🏃',
+    '가족': '🏠',
     '일상': '🌿',
   };
 

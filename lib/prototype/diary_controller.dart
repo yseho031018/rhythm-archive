@@ -35,7 +35,7 @@ class DiaryController extends ChangeNotifier {
   bool loaded = false;
   String? storageError;
 
-  static const keywordOptions = ['공부', '친구', '게임', '카페', '과제', '운동'];
+  static const keywordOptions = ['공부', '친구', '게임', '카페', '과제', '운동', '가족'];
 
   /// 사용자가 직접 추가한 키워드(기본 키워드 다음에 노출, 로컬 저장됨).
   final List<String> customKeywords = [];

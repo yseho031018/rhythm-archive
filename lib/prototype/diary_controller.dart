@@ -14,7 +14,7 @@ class DiaryController extends ChangeNotifier {
   DiaryController({
     DiaryRepository? repository,
     bool? seedSampleHistory,
-    this.generationDelay = const Duration(milliseconds: 950),
+    this.generationDelay = const Duration(milliseconds: 1900),
   }) : _repository = repository ?? _defaultRepository(),
        _seedSampleHistory = seedSampleHistory ?? repository == null;
 

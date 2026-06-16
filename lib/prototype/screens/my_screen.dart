@@ -923,7 +923,7 @@ class _LifePatternSection extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const ToriMascot(expression: ToriExpression.sleeping, size: 88),
+                const ToriMascot(expression: ToriExpression.sleeping, size: 104),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -951,7 +951,7 @@ class _LifePatternSection extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const ToriMascot(expression: ToriExpression.thinking, size: 92),
+                const ToriMascot(expression: ToriExpression.thinking, size: 110),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

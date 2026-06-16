@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../diary_controller.dart';
@@ -219,7 +221,17 @@ class _RecordScreenState extends State<RecordScreen> {
   }
 
   Future<void> _generate() async {
-    final entry = await controller.generatePreview();
+    if (controller.generating) return;
+    // 실제 AI처럼 토리가 "생각하는" 버퍼링 화면을 거쳐 한 줄을 만든다.
+    final entry = await Navigator.of(context).push<DiaryEntry>(
+      MaterialPageRoute<DiaryEntry>(
+        fullscreenDialog: true,
+        builder: (_) => _ToriThinkingScreen(
+          headline: '토리가 한 줄을 쓰고 있어요',
+          task: controller.generatePreview,
+        ),
+      ),
+    );
     if (entry == null || !mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -1236,7 +1248,7 @@ class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
                           children: [
                             const ToriMascot(
                               expression: ToriExpression.complete,
-                              size: 104,
+                              size: 124,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -1291,15 +1303,7 @@ class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
                           alignment: Alignment.centerRight,
                           child: TextButton.icon(
                             onPressed: _working ? null : _regenerate,
-                            icon: _working
-                                ? SizedBox.square(
-                                    dimension: 15,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: colors.primary,
-                                    ),
-                                  )
-                                : const Icon(Icons.refresh_rounded, size: 18),
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
                             label: const Text('토리가 다시 정리'),
                             style: TextButton.styleFrom(
                               foregroundColor: colors.primary,
@@ -1329,7 +1333,7 @@ class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
                             children: [
                               const ToriMascot(
                                 expression: ToriExpression.journal,
-                                size: 48,
+                                size: 60,
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -1401,13 +1405,18 @@ class _GeneratedDiaryScreenState extends State<_GeneratedDiaryScreen> {
   }
 
   Future<void> _regenerate() async {
-    setState(() => _working = true);
-    final entry = await widget.controller.regeneratePreview(_entry);
-    if (!mounted) return;
-    setState(() {
-      _entry = entry;
-      _working = false;
-    });
+    if (widget.controller.generating) return;
+    final entry = await Navigator.of(context).push<DiaryEntry>(
+      MaterialPageRoute<DiaryEntry>(
+        fullscreenDialog: true,
+        builder: (_) => _ToriThinkingScreen(
+          headline: '토리가 다시 정리하고 있어요',
+          task: () => widget.controller.regeneratePreview(_entry),
+        ),
+      ),
+    );
+    if (entry == null || !mounted) return;
+    setState(() => _entry = entry);
   }
 
   Future<void> _edit() async {
@@ -1482,5 +1491,218 @@ class _GeneratedInputSummary extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// 토리가 "생각하는" 버퍼링 화면. 실제 AI가 응답을 만드는 듯한 인상을 주기 위해
+/// 단계별 상태 메시지와 타이핑 점 애니메이션을 보여주다가, [task]가 끝나면 결과로 닫힌다.
+class _ToriThinkingScreen extends StatefulWidget {
+  const _ToriThinkingScreen({required this.headline, required this.task});
+
+  final String headline;
+  final Future<DiaryEntry?> Function() task;
+
+  @override
+  State<_ToriThinkingScreen> createState() => _ToriThinkingScreenState();
+}
+
+class _ToriThinkingScreenState extends State<_ToriThinkingScreen> {
+  static const _stages = [
+    '오늘 이야기를 읽고 있어요',
+    '기분과 키워드를 살펴보는 중',
+    '어울리는 한 줄을 고르는 중',
+    '문장을 다듬고 있어요',
+  ];
+
+  int _stage = 0;
+  Timer? _stageTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // 약 600ms마다 다음 상태 메시지로 넘어가 "처리 중"인 느낌을 준다.
+    _stageTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
+      if (!mounted) return;
+      setState(() => _stage = (_stage + 1).clamp(0, _stages.length - 1));
+    });
+    // 생성 작업은 notifyListeners를 동기로 호출하므로, mount 중 다른 위젯의
+    // setState가 일어나지 않도록 첫 프레임 이후에 시작한다.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _run());
+  }
+
+  Future<void> _run() async {
+    final result = await widget.task();
+    if (!mounted) return;
+    Navigator.of(context).pop(result);
+  }
+
+  @override
+  void dispose() {
+    _stageTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Scaffold(
+      backgroundColor: colors.surfaceSoft,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            // 전체 폭(최대 560)을 채워, 단계 문구가 바뀌어도 배경이 좌우로 줄지 않게 한다.
+            child: SizedBox.expand(
+              child: ColoredBox(
+                color: colors.background,
+                child: Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const _BreathingTori(),
+                      const SizedBox(height: 28),
+                      Text(
+                        widget.headline,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 14),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Row(
+                          key: ValueKey(_stage),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _stages[_stage],
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: colors.muted,
+                                  fontSize: 14,
+                                  height: 1.4,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const _TypingDots(),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: 160,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                            minHeight: 6,
+                            backgroundColor: colors.border,
+                            color: colors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 토리 마스코트가 살짝 커졌다 작아지며 "생각하는" 느낌을 주는 위젯.
+class _BreathingTori extends StatefulWidget {
+  const _BreathingTori();
+
+  @override
+  State<_BreathingTori> createState() => _BreathingToriState();
+}
+
+class _BreathingToriState extends State<_BreathingTori>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: Tween<double>(
+        begin: 0.94,
+        end: 1.06,
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
+      child: const ToriMascot(expression: ToriExpression.thinking, size: 168),
+    );
+  }
+}
+
+/// "● ● ●"가 차례로 밝아지는 타이핑 인디케이터.
+class _TypingDots extends StatefulWidget {
+  const _TypingDots();
+
+  @override
+  State<_TypingDots> createState() => _TypingDotsState();
+}
+
+class _TypingDotsState extends State<_TypingDots>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1000),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = context.colors.primary;
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < 3; i++)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                child: Opacity(
+                  opacity: _dotOpacity(i),
+                  child: Container(
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  double _dotOpacity(int index) {
+    final phase = (_controller.value * 3 - index).clamp(0.0, 1.0);
+    // 0→1 구간에서 밝아졌다가 다시 어두워지도록 삼각파를 만든다.
+    final wave = 1 - (phase - 0.5).abs() * 2;
+    return 0.3 + 0.7 * wave;
   }
 }

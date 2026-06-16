@@ -244,7 +244,7 @@ class ToriEmptyStateCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
       child: Column(
         children: [
-          ToriMascot(expression: expression, size: 132),
+          ToriMascot(expression: expression, size: 156),
           const SizedBox(height: 8),
           Text(
             title,

@@ -205,6 +205,12 @@ void main() {
 
     // STEP 4: 전체화면 결과 — 핵심 요소가 보여야 한다.
     expect(find.text('오늘의 한 줄'), findsOneWidget);
+    // 글씨/마스코트가 커지며 입력 요약이 리스트 하단에 있어 스크롤해서 확인한다.
+    await tester.scrollUntilVisible(
+      find.text('토리가 들은 오늘'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('토리가 들은 오늘'), findsOneWidget);
     expect(find.text('저장하기'), findsOneWidget);
     expect(find.text('수정하기'), findsOneWidget);
@@ -225,6 +231,55 @@ void main() {
     expect(openedDiary, isTrue);
     expect(controller.entries, hasLength(1));
     expect(find.text('오늘의 한 줄'), findsNothing); // 전체화면 닫힘
+  });
+
+  testWidgets('토리 한 줄 만들기: 생성 중 "생각 중" 버퍼링 화면을 거쳐 결과로 간다', (
+    tester,
+  ) async {
+    final controller = DiaryController(
+      repository: MemoryDiaryRepository([]),
+      generationDelay: const Duration(milliseconds: 1900),
+    );
+    await controller.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: RecordScreen(controller: controller, onOpenDiary: () {}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 기분 → 키워드 → 점수(기본값)
+    await tester.tap(find.text('행복'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('다음'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('공부'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('다음'));
+    await tester.pumpAndSettle();
+
+    // 토리 한 줄 만들기 → 버퍼링 화면 진입 (반복 애니메이션이 있어 pumpAndSettle 대신 명시적 pump)
+    await tester.tap(find.text('토리 한 줄 만들기'));
+    await tester.pump(); // _generate가 라우트를 push
+    await tester.pump(const Duration(milliseconds: 400)); // 라우트 전환 + 첫 프레임
+
+    // 아직 결과는 없고, 토리가 "생각 중"인 버퍼링 화면이 보여야 한다.
+    expect(controller.generating, isTrue);
+    expect(find.text('토리가 한 줄을 쓰고 있어요'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.text('오늘의 한 줄'), findsNothing);
+
+    // 지연이 끝나면 결과 화면으로 전환된다.
+    await tester.pump(const Duration(milliseconds: 1900));
+    await tester.pump(const Duration(milliseconds: 400)); // pop + push 전환
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('토리가 한 줄을 쓰고 있어요'), findsNothing);
+    expect(find.text('오늘의 한 줄'), findsOneWidget);
+    expect(controller.generating, isFalse);
   });
 
   testWidgets('직접 입력한 키워드가 그리드 타일로 추가된다', (tester) async {

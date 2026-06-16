@@ -127,7 +127,7 @@ class _LatestEntryCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ToriMascot(expression: ToriExpression.complete, size: 104),
+              const ToriMascot(expression: ToriExpression.complete, size: 124),
               const SizedBox(width: 12),
               Expanded(
                 child: Container(
@@ -280,7 +280,7 @@ class DiaryDetailScreen extends StatelessWidget {
                               children: [
                                 const ToriMascot(
                                   expression: ToriExpression.journal,
-                                  size: 128,
+                                  size: 150,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(

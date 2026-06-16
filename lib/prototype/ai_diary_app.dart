@@ -21,6 +21,18 @@ class AiDiaryApp extends StatelessWidget {
           theme: buildHarutalkTheme(Brightness.light),
           darkTheme: buildHarutalkTheme(Brightness.dark),
           themeMode: mode,
+          // 전체 글씨를 한 단계 키워 가독성을 높인다(사용자 시스템 배율 위에 더한다).
+          builder: (context, child) {
+            final media = MediaQuery.of(context);
+            return MediaQuery(
+              data: media.copyWith(
+                textScaler: TextScaler.linear(
+                  media.textScaler.scale(1) * 1.14,
+                ),
+              ),
+              child: child!,
+            );
+          },
           home: const AiDiaryShell(),
         );
       },

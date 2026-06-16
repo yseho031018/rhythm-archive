@@ -50,9 +50,11 @@ jobs:
       - name: Add presentation and WBS to the Pages artifact
         run: |
           mkdir -p build/web/docs/presentation/assets
+          mkdir -p build/web/docs/presentation/demo-video
           mkdir -p build/web/assets/tori
           cp presentation.html wbs-gantt.html build/web/
           cp docs/presentation/assets/*.png build/web/docs/presentation/assets/
+          cp docs/presentation/demo-video/*.mp4 build/web/docs/presentation/demo-video/
           cp assets/tori/*.png build/web/assets/tori/
           touch build/web/.nojekyll
 

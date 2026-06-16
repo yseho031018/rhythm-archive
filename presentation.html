@@ -1214,6 +1214,7 @@
     }
 
     .demo-play {
+      appearance: none;
       width: min(390px, 72%);
       aspect-ratio: 1;
       justify-self: center;
@@ -1225,6 +1226,21 @@
       color: var(--green);
       font-size: clamp(90px, 10vw, 160px);
       box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .demo-play:hover,
+    .demo-play:focus-visible {
+      transform: translateY(-4px) scale(1.02);
+      background: #d9eadf;
+      box-shadow: 0 18px 44px rgba(48, 65, 56, 0.16);
+      outline: none;
+    }
+
+    .demo-play:focus-visible {
+      border-color: var(--green);
+      box-shadow: 0 0 0 6px rgba(63, 125, 98, 0.16), var(--shadow);
     }
 
     .demo-copy {
@@ -1266,6 +1282,72 @@
       right: -11px;
       color: #94ab9d;
       z-index: 2;
+    }
+
+    .demo-video-overlay {
+      position: absolute;
+      inset: clamp(32px, 4vw, 64px);
+      z-index: 30;
+      display: none;
+      place-items: center;
+      padding: clamp(18px, 2.4vw, 34px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(251, 250, 244, 0.96);
+      box-shadow: 0 28px 70px rgba(35, 48, 41, 0.22);
+    }
+
+    .demo-video-overlay.active {
+      display: grid;
+      animation: appear 180ms ease-out;
+    }
+
+    .demo-video-frame {
+      width: min(100%, 1040px);
+      display: grid;
+      gap: 16px;
+    }
+
+    .demo-video-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      color: var(--green);
+      font-weight: 900;
+      font-size: clamp(17px, 1.3vw, 22px);
+    }
+
+    .demo-video-close {
+      appearance: none;
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .demo-video-close:hover,
+    .demo-video-close:focus-visible {
+      outline: none;
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .demo-video {
+      width: 100%;
+      max-height: min(72vh, 720px);
+      display: block;
+      border: 6px solid #294337;
+      border-radius: 26px;
+      background: #111813;
+      box-shadow: var(--shadow);
     }
 
     .url-list {
@@ -1966,7 +2048,7 @@
           <span class="slide-number">08 / 10</span>
         </div>
         <div class="demo-stage">
-          <div class="demo-play" aria-label="데모 영상 재생">▶</div>
+          <button class="demo-play" type="button" aria-label="데모 영상 재생" data-demo-open>▶</button>
           <div class="demo-copy">
             <div class="demo-time">30초</div>
             <h2>설명보다 빠르게,<br>실제 흐름으로 보여줍니다.</h2>
@@ -1982,6 +2064,18 @@
               <a class="url-link" href="https://yseho031018.github.io/rhythm-archive/" target="_blank" rel="noreferrer">앱 데모 · yseho031018.github.io/rhythm-archive/</a>
               <a class="url-link" href="wbs-gantt.html" target="_blank" rel="noreferrer">WBS / Gantt · wbs-gantt.html</a>
             </div>
+          </div>
+        </div>
+        <div class="demo-video-overlay" data-demo-overlay aria-hidden="true">
+          <div class="demo-video-frame">
+            <div class="demo-video-header">
+              <span>하루톡 30초 데모 영상</span>
+              <button class="demo-video-close" type="button" aria-label="데모 영상 닫기" data-demo-close>×</button>
+            </div>
+            <video class="demo-video" data-demo-video controls preload="metadata" playsinline muted>
+              <source src="docs/presentation/demo-video/harutalk-demo-final.mp4" type="video/mp4">
+              이 브라우저에서는 데모 영상을 재생할 수 없습니다.
+            </video>
           </div>
         </div>
       </div>
@@ -2129,6 +2223,29 @@
     let index = Math.max(0, Math.min(slides.length - 1, Number(location.hash.slice(1)) - 1 || 0));
     let progressAnimationFrame = 0;
     let progressAnimationDelay = 0;
+    const demoOverlay = document.querySelector("[data-demo-overlay]");
+    const demoVideo = document.querySelector("[data-demo-video]");
+    const demoOpen = document.querySelector("[data-demo-open]");
+    const demoClose = document.querySelector("[data-demo-close]");
+
+    function closeDemoVideo() {
+      if (!demoOverlay || !demoVideo) return;
+      demoVideo.pause();
+      demoOverlay.classList.remove("active");
+      demoOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function openDemoVideo() {
+      if (!demoOverlay || !demoVideo) return;
+      demoOverlay.classList.add("active");
+      demoOverlay.setAttribute("aria-hidden", "false");
+      demoVideo.currentTime = 0;
+      demoVideo.muted = true;
+      requestAnimationFrame(() => {
+        const playPromise = demoVideo.play();
+        if (playPromise) playPromise.catch(() => demoVideo.focus());
+      });
+    }
 
     function animateWbsProgress(slide) {
       cancelAnimationFrame(progressAnimationFrame);
@@ -2159,6 +2276,7 @@
     }
 
     function render(nextIndex) {
+      closeDemoVideo();
       index = Math.max(0, Math.min(slides.length - 1, nextIndex));
       slides.forEach((slide, slideIndex) => slide.classList.toggle("active", slideIndex === index));
       animateWbsProgress(slides[index]);
@@ -2176,9 +2294,25 @@
       history.replaceState(null, "", `#${index + 1}`);
     }
 
+    demoOpen?.addEventListener("click", openDemoVideo);
+    demoClose?.addEventListener("click", closeDemoVideo);
+    demoOverlay?.addEventListener("click", (event) => {
+      if (event.target === demoOverlay) closeDemoVideo();
+    });
+
     prev.addEventListener("click", () => render(index - 1));
     next.addEventListener("click", () => render(index + 1));
     window.addEventListener("keydown", (event) => {
+      const targetTag = event.target?.tagName?.toLowerCase();
+      const isInteractiveTarget = ["button", "a", "video", "input", "textarea", "select"].includes(targetTag);
+      if (demoOverlay?.classList.contains("active")) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeDemoVideo();
+        }
+        return;
+      }
+      if (isInteractiveTarget) return;
       if (["ArrowRight", "PageDown", " ", "Enter"].includes(event.key)) {
         event.preventDefault();
         render(index + 1);

@@ -665,31 +665,28 @@ class _YearGrassCell extends StatelessWidget {
         '${date.year}년 ${date.month}월 ${date.day}일'
         '${entry == null ? '' : ' · ${entry!.mood.label}'}';
 
-    return Tooltip(
-      message: label,
-      child: Semantics(
-        label: label,
-        button: enabled,
-        child: InkWell(
-          key: ValueKey('year-day-${date.toIso8601String()}'),
-          onTap: enabled ? () => onTap(date) : null,
-          borderRadius: BorderRadius.circular(4),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: !inYear
-                  ? Colors.transparent
-                  : entry?.mood.color.withValues(alpha: 0.82) ??
-                        colors.surfaceSoft.withValues(alpha: future ? 0.35 : 1),
-              borderRadius: BorderRadius.circular(4),
-              border: selected
-                  ? Border.all(color: colors.primaryDark, width: 2)
-                  : inYear
-                  ? Border.all(color: colors.border.withValues(alpha: 0.7))
-                  : null,
-            ),
+    return Semantics(
+      label: label,
+      button: enabled,
+      child: InkWell(
+        key: ValueKey('year-day-${date.toIso8601String()}'),
+        onTap: enabled ? () => onTap(date) : null,
+        borderRadius: BorderRadius.circular(4),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: !inYear
+                ? Colors.transparent
+                : entry?.mood.color.withValues(alpha: 0.82) ??
+                      colors.surfaceSoft.withValues(alpha: future ? 0.35 : 1),
+            borderRadius: BorderRadius.circular(4),
+            border: selected
+                ? Border.all(color: colors.primaryDark, width: 2)
+                : inYear
+                ? Border.all(color: colors.border.withValues(alpha: 0.7))
+                : null,
           ),
         ),
       ),
